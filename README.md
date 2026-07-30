@@ -27,13 +27,7 @@ An AI-powered mini project that helps **students** and **anyone confused about t
 - Recommendation logic in `src/lib/career-engine.ts` 
 
 ## Getting started
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
+Open:"https://smart-career-path-recommendation.vercel.app/"
 
 1. **Start assessment** → Complete all 4 steps → Save.
 2. **Dashboard** → See your profile completeness stats → Click **Generate recommendations**.
@@ -76,10 +70,3 @@ The `CAREER_DATABASE` has been vastly expanded and organized. It now includes **
 - **Engineering, Law, Content, Digital Marketing, and more!**
 
 Each path includes a description, required skills, timeline, salary range (where applicable), and a structured 4-step learning path with resources.
-
-## Optional next steps
-
-- Add **OpenAI/Claude API** for more natural-language recommendations and custom learning steps
-- Add **auth** (e.g. NextAuth) and **database** (e.g. Supabase, PostgreSQL) to persist profiles across devices
-- Add **progress tracking** (mark learning steps complete) and store in localStorage or DB
-- Add **export PDF** of the recommended path
