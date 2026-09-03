@@ -19,9 +19,9 @@ export function getFallbackResponse(userMessage: string, context?: AssistantCont
   // Handle simple greetings dynamically
   if (/^(hi|hello|hey|greetings|hola|howdy)( there)?$/.test(msg)) {
     const greetings = [
-      `Hello${context?.userName && context.userName !== 'Anonymous' ? ` ${context.userName}` : ''}! How can I help you today?`,
-      `Hi there! I'm here to help you navigate your career path. What would you like to know?`,
-      `Greetings! Ask me anything about career recommendations or how to use this platform.`
+      `Hello${context?.userName && context.userName !== 'Anonymous' ? ` ${context.userName}` : ''}! I'm **V**, your AI career navigator. How can I help you today?`,
+      `Hi there! I'm **V**, ready to help you navigate your career path and skills. What would you like to know?`,
+      `Greetings! I'm **V**. Ask me anything about career recommendations, skills, or how to use this platform.`
     ];
     return greetings[Math.floor(Math.random() * greetings.length)];
   }

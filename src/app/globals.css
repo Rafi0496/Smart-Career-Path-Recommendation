@@ -9,18 +9,34 @@
   --border: #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #f1f5f9;
-    --background: #0f172a;
-    --card: #1e293b;
-    --border: #334155;
-  }
+.dark {
+  --foreground: #f8fafc;
+  --background: #090d16;
+  --card: #111827;
+  --border: #1f293d;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Page Transition Animation */
+.page-enter-transition {
+  animation: pageEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer utilities {
@@ -56,17 +72,30 @@ body {
 .backface-hidden {
   backface-visibility: hidden;
 }
+
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
+
+.dark .glass-panel {
+  background: rgba(17, 24, 39, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
 .dashboard-orb {
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.5;
   pointer-events: none;
 }
+
+.dark .dashboard-orb {
+  opacity: 0.28;
+}
+
 @keyframes float {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(10px, -10px) scale(1.02); }
@@ -85,3 +114,27 @@ body {
   transform: rotate(-90deg); /* Start from top */
 }
 
+/* Subtle 3D lift on button hover */
+.btn-3d {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-3d:hover {
+  transform: translateY(-1.5px);
+}
+.btn-3d:active {
+  transform: translateY(0.5px);
+}
+
+.link-3d {
+  transition: all 0.2s ease;
+}
+.link-3d:hover {
+  transform: translateY(-1px);
+}
+
+.card-3d {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-3d:hover {
+  transform: translateY(-3px);
+}

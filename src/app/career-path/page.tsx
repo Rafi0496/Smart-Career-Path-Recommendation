@@ -3,42 +3,45 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { Compass, Check, ArrowLeft, Clock, DollarSign, BookOpen, Target, ListOrdered, ExternalLink, Star } from "lucide-react";
+import { Check, ArrowLeft, Clock, DollarSign, BookOpen, Target, ListOrdered, ExternalLink, Star } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import { getStoredRecommendations, getStoredFavorites, toggleFavorite } from "@/lib/storage";
 import { getCareerByTitle } from "@/lib/career-engine";
 import type { CareerRecommendation, LearningStep } from "@/lib/types";
 
-function StepBlock({ step, stepIndex }: { step: LearningStep; stepIndex: number }) {
+function StepBlock({ step }: { step: LearningStep; stepIndex: number }) {
   const hasProcedure = step.procedure && step.procedure.length > 0;
   const hasResources = step.resources && step.resources.length > 0;
 
   return (
-    <div className="rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden card-3d">
-      <div className="bg-slate-50 px-5 py-3 border-b border-slate-100 flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white font-semibold text-sm">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden card-3d">
+      <div className="bg-slate-50/80 dark:bg-slate-800/80 px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white font-bold text-xs shadow-md shadow-primary-500/20">
           {step.order}
         </span>
-        <h3 className="font-semibold text-slate-900">{step.title}</h3>
-        <span className="ml-auto text-xs text-slate-500 font-medium">{step.duration}</span>
+        <h3 className="font-bold text-slate-900 dark:text-white text-base">{step.title}</h3>
+        <span className="ml-auto text-xs text-slate-500 dark:text-slate-400 font-medium px-2.5 py-0.5 rounded-full bg-slate-200/60 dark:bg-slate-700/60">
+          {step.duration}
+        </span>
       </div>
-      <div className="p-5 space-y-5">
+      <div className="p-5 sm:p-6 space-y-5">
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-            <Target className="w-3.5 h-3.5" />
+          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <Target className="w-3.5 h-3.5 text-primary-500" />
             What to do
           </p>
-          <p className="text-slate-700">{step.description}</p>
+          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{step.description}</p>
         </div>
 
         {hasProcedure && (
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <ListOrdered className="w-3.5 h-3.5" />
-              How to do it (step-by-step)
+            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <ListOrdered className="w-3.5 h-3.5 text-emerald-500" />
+              How to do it (step-by-step procedure)
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-slate-700 text-sm">
+            <ol className="list-decimal list-inside space-y-2 text-slate-700 dark:text-slate-300 text-sm">
               {step.procedure!.map((item, i) => (
-                <li key={i} className="pl-1">
+                <li key={i} className="pl-1 leading-relaxed">
                   {item}
                 </li>
               ))}
@@ -48,13 +51,13 @@ function StepBlock({ step, stepIndex }: { step: LearningStep; stepIndex: number 
 
         {hasResources && (
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <ExternalLink className="w-3.5 h-3.5" />
+            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <ExternalLink className="w-3.5 h-3.5 text-indigo-500" />
               Where to learn
             </p>
             <ul className="space-y-1.5">
               {step.resources!.map((resource, i) => (
-                <li key={i} className="text-sm text-slate-700 flex items-center gap-2">
+                <li key={i} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
                   {resource}
                 </li>
@@ -64,7 +67,9 @@ function StepBlock({ step, stepIndex }: { step: LearningStep; stepIndex: number 
         )}
 
         {!hasProcedure && !hasResources && (
-          <p className="text-sm text-slate-500">Complete this step in order before moving to the next.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Complete this step in order before moving to the next.
+          </p>
         )}
       </div>
     </div>
@@ -95,12 +100,15 @@ function CareerPathContent() {
 
   if (!title) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-slate-600 mb-4">No career selected.</p>
-          <Link href="/dashboard" className="text-primary-600 font-medium link-3d">
-            Back to dashboard
-          </Link>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <p className="text-slate-600 dark:text-slate-400 mb-4">No career selected.</p>
+            <Link href="/dashboard" className="text-primary-600 dark:text-primary-400 font-semibold link-3d">
+              Back to dashboard
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -108,89 +116,94 @@ function CareerPathContent() {
 
   if (!rec) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-slate-600 mb-4">
-            Recommendation not found. Generate recommendations from your dashboard first.
-          </p>
-          <Link href="/dashboard" className="text-primary-600 font-medium link-3d">
-            Go to dashboard
-          </Link>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">
+              Recommendation not found. Generate recommendations from your dashboard first.
+            </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-600 text-white font-semibold text-xs shadow-md transition btn-3d"
+            >
+              <span>Go to dashboard</span>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-slate-100">
-      <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-slate-600 hover:text-primary-600 transition link-3d"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Dashboard</span>
-          </Link>
-          <Link href="/" className="flex items-center gap-2 text-slate-700 link-3d">
-            <Compass className="w-6 h-6" />
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-slate-100 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
+      <Navbar />
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-8">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {rec.careerTitle}
             </h1>
             {rec.matchScore > 0 && (
-              <span className="rounded-full bg-primary-100 text-primary-700 px-3 py-1 text-sm font-medium">
+              <span className="rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 px-3 py-1 text-xs font-bold">
                 {rec.matchScore}% match
               </span>
             )}
             <button
               type="button"
               onClick={handleToggleFavorite}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition btn-3d ${isFavorite ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-slate-100 text-slate-700 border border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200"}`}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition btn-3d ${
+                isFavorite
+                  ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800"
+                  : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-amber-300 hover:text-amber-600"
+              }`}
             >
-              <Star className={`w-4 h-4 ${isFavorite ? "fill-amber-500" : ""}`} />
-              {isFavorite ? "Saved" : "Save to favorites"}
+              <Star className={`w-3.5 h-3.5 ${isFavorite ? "fill-amber-500 text-amber-500" : ""}`} />
+              <span>{isFavorite ? "Saved" : "Save to Favorites"}</span>
             </button>
           </div>
-          <p className="text-slate-600">{rec.description}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{rec.description}</p>
         </div>
 
         {rec.simpleSummary && (
-          <div className="rounded-2xl bg-primary-50/80 border border-primary-100 p-4 mb-8">
-            <p className="text-sm font-medium text-primary-900 mb-1 flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Summary
+          <div className="rounded-2xl bg-primary-50/80 dark:bg-primary-950/40 border border-primary-200/80 dark:border-primary-800/60 p-4 mb-8">
+            <p className="text-xs font-bold uppercase tracking-wider text-primary-900 dark:text-primary-300 mb-1 flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+              <span>Core Summary</span>
             </p>
-            <p className="text-slate-700">{rec.simpleSummary}</p>
+            <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{rec.simpleSummary}</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {rec.estimatedTimeline && (
-            <div className="rounded-xl bg-white border border-slate-100 shadow-sm p-4 flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5 text-slate-600" />
+            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                <Clock className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Timeline</p>
-                <p className="text-slate-800 font-medium">{rec.estimatedTimeline}</p>
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Timeline
+                </p>
+                <p className="text-slate-800 dark:text-slate-200 font-semibold text-sm mt-0.5">
+                  {rec.estimatedTimeline}
+                </p>
               </div>
             </div>
           )}
           {rec.salaryRange && (
-            <div className="rounded-xl bg-white border border-slate-100 shadow-sm p-4 flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                <DollarSign className="w-5 h-5 text-emerald-700" />
+            <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <DollarSign className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Salary range</p>
-                <p className="text-slate-800 font-medium text-sm">{rec.salaryRange}</p>
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Salary Range
+                </p>
+                <p className="text-slate-800 dark:text-slate-200 font-semibold text-sm mt-0.5">
+                  {rec.salaryRange}
+                </p>
               </div>
             </div>
           )}
@@ -198,15 +211,15 @@ function CareerPathContent() {
 
         {rec.whyRecommended.length > 0 && (
           <section className="mb-8">
-            <h2 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <Check className="w-5 h-5 text-primary-600" />
-              Why this path fits you
+            <h2 className="font-bold text-slate-900 dark:text-white text-base mb-3 flex items-center gap-2">
+              <Check className="w-5 h-5 text-emerald-500" />
+              <span>Why This Path Fits You</span>
             </h2>
             <ul className="space-y-2">
               {rec.whyRecommended.map((reason, i) => (
-                <li key={i} className="flex items-start gap-2 text-slate-600 text-sm pl-1">
-                  <span className="text-primary-500 mt-0.5">•</span>
-                  {reason}
+                <li key={i} className="flex items-start gap-2.5 text-slate-600 dark:text-slate-300 text-sm pl-1">
+                  <span className="text-primary-500 mt-1 font-bold">•</span>
+                  <span>{reason}</span>
                 </li>
               ))}
             </ul>
@@ -215,12 +228,12 @@ function CareerPathContent() {
 
         {rec.requiredSkills.length > 0 && (
           <section className="mb-8">
-            <h2 className="font-semibold text-slate-900 mb-3">Skills you will build</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white text-base mb-3">Skills You Will Build</h2>
             <div className="flex flex-wrap gap-2">
               {rec.requiredSkills.map((skill) => (
                 <span
                   key={skill}
-                  className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium"
+                  className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold"
                 >
                   {skill}
                 </span>
@@ -230,12 +243,12 @@ function CareerPathContent() {
         )}
 
         <section>
-          <h2 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary-600" />
-            Sequential learning path
+          <h2 className="font-bold text-slate-900 dark:text-white text-lg mb-2 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <span>Sequential Learning Path</span>
           </h2>
-          <p className="text-sm text-slate-600 mb-6">
-            Follow the steps in order. Each step includes what to do, how to do it, and where to learn.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-6">
+            Follow the steps in order. Each step details what to do, how to do it, and where to learn.
           </p>
           <ol className="space-y-6">
             {rec.learningPath.map((step, index) => (
@@ -246,13 +259,13 @@ function CareerPathContent() {
           </ol>
         </section>
 
-        <div className="mt-10 pt-6 border-t border-slate-200">
+        <div className="mt-12 pt-6 border-t border-slate-200/80 dark:border-slate-800">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-primary-600 font-medium hover:underline link-3d"
+            className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold hover:underline text-sm link-3d"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to recommendations
+            <span>Back to Recommendations</span>
           </Link>
         </div>
       </main>
@@ -264,8 +277,8 @@ export default function CareerPathPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <p className="text-slate-500">Loading...</p>
+        <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
         </div>
       }
     >

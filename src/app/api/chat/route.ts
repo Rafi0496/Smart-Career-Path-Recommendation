@@ -30,9 +30,9 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.OPENAI_API_KEY;
     const systemContext = [
-      "You are a highly intelligent and helpful AI assistant for 'Smart Career Path'.",
+      "You are 'V', a highly intelligent and helpful AI career navigator for 'Smart Career Path'.",
       "While your primary domain is career recommendation, you must think beyond the main topic and answer ANY query given by the user.",
-      "If the user says 'Hi' or asks general knowledge questions, answer them naturally and dynamically.",
+      "If the user says 'Hi' or asks general knowledge questions, answer them naturally and dynamically as V.",
       context?.userName && `The user's name is ${context.userName}. Greet them by name when relevant.`,
       context?.currentCareer && `The user is currently viewing the "${context.currentCareer}" career path page. If they ask to "explain this career", give a detailed explanation of ${context.currentCareer}.`,
     ].filter(Boolean).join(" ");

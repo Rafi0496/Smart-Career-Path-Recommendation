@@ -14,10 +14,22 @@ import {
   X,
   Pencil,
   Star,
+  LogIn,
+  UserPlus,
+  AlertCircle,
+  FileEdit,
+  ShieldCheck,
 } from "lucide-react";
-import { getStoredProfile, getStoredRecommendations, getStoredFavorites } from "@/lib/storage";
+import Navbar from "@/components/Navbar";
+import {
+  getActiveUser,
+  getStoredProfile,
+  getStoredRecommendations,
+  getStoredFavorites,
+  saveRecommendations,
+} from "@/lib/storage";
 import { getCategorizedCareers } from "@/lib/career-engine";
-import type { UserProfile, CareerRecommendation } from "@/lib/types";
+import type { UserProfile, CareerRecommendation, UserAccount } from "@/lib/types";
 
 type DetailPanel = "academics" | "interests" | "aspirations" | null;
 
@@ -44,9 +56,9 @@ function CircularStat({
     <button
       type="button"
       onClick={onClick}
-      className="group relative flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-full card-3d"
+      className="group relative flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-2xl p-3 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all card-3d"
     >
-      <div className="relative w-28 h-28 transition-transform duration-300 group-hover:scale-110">
+      <div className="relative w-28 h-28 transition-transform duration-300 group-hover:scale-105">
         <svg className="w-full h-full ring-progress" viewBox="0 0 100 100">
           <circle
             cx="50"
@@ -55,7 +67,7 @@ function CircularStat({
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-slate-200"
+            className="text-slate-200 dark:text-slate-700"
           />
           <circle
             cx="50"
@@ -71,16 +83,18 @@ function CircularStat({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-white/90 shadow-lg flex items-center justify-center border border-slate-100 group-hover:shadow-xl transition-shadow">
-            <Icon className="w-6 h-6 text-slate-700" />
+          <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:shadow-lg transition-shadow">
+            <Icon className="w-6 h-6 text-slate-700 dark:text-slate-200" />
           </div>
         </div>
       </div>
-      <span className="mt-3 text-sm font-medium text-slate-700 group-hover:text-slate-900">
+      <span className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400">
         {label}
       </span>
-      <span className="text-xs text-slate-500">{Math.round(pct)}% complete</span>
-      <span className="text-xs text-slate-400 mt-0.5 max-w-[120px] truncate" title={detail}>{detail}</span>
+      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{Math.round(pct)}% complete</span>
+      <span className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 max-w-[120px] truncate" title={detail}>
+        {detail}
+      </span>
     </button>
   );
 }
@@ -97,132 +111,185 @@ function DetailModal({
   if (!panel) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-page-enter"
+      onClick={onClose}
+    >
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-900">
-            {panel === "academics" && "Academic profile"}
-            {panel === "interests" && "Interests & skills"}
-            {panel === "aspirations" && "Career aspirations"}
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/70">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            {panel === "academics" && "Academic Profile"}
+            {panel === "interests" && "Interests & Skills"}
+            {panel === "aspirations" && "Career Aspirations"}
           </h3>
           <div className="flex items-center gap-2">
+            {/* Prominent Edit Profile CTA inside modal */}
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-primary-600 hover:bg-primary-50 btn-3d"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-sm shadow-primary-500/20 transition btn-3d"
             >
-              <Pencil className="w-4 h-4" />
-              Edit profile
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit Details</span>
             </Link>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
-        <div className="p-5 overflow-y-auto flex-1">
+
+        <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {panel === "academics" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Education level</dt>
-                <dd className="text-slate-800">{profile.academics.educationLevel || "—"}</dd>
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Education Level
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.academics.educationLevel || "—"}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Stream / field</dt>
-                <dd className="text-slate-800">{profile.academics.streamOrField || "—"}</dd>
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Stream / Field
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.academics.streamOrField || "—"}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Subjects</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Subjects
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.academics.subjects.length ? profile.academics.subjects.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Strengths</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Key Strengths
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.academics.strengths.length ? profile.academics.strengths.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Grades / performance</dt>
-                <dd className="text-slate-800">{profile.academics.grades || "—"}</dd>
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Academic Performance
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.academics.grades || "—"}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Certifications</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Certifications
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.academics.certifications.length ? profile.academics.certifications.join(", ") : "—"}
                 </dd>
               </div>
             </dl>
           )}
+
           {panel === "interests" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Interests</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Personal Interests
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.interests.interests.length ? profile.interests.interests.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Hobbies</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Hobbies
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.interests.hobbies.length ? profile.interests.hobbies.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Skills</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Current Skills
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.interests.skills.length ? profile.interests.skills.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Preferred work style</dt>
-                <dd className="text-slate-800">
-                  {profile.interests.preferredWorkStyle.length ? profile.interests.preferredWorkStyle.join(", ") : "—"}
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Preferred Work Style
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.interests.preferredWorkStyle.length
+                    ? profile.interests.preferredWorkStyle.join(", ")
+                    : "—"}
                 </dd>
               </div>
             </dl>
           )}
+
           {panel === "aspirations" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Dream roles</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Target Dream Roles
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.aspirations.dreamRoles.length ? profile.aspirations.dreamRoles.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Willing to do</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Willing To Learn & Do
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.aspirations.willingToDo.length ? profile.aspirations.willingToDo.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Work environment</dt>
-                <dd className="text-slate-800">
-                  {profile.aspirations.workEnvironment.length ? profile.aspirations.workEnvironment.join(", ") : "—"}
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Work Environment
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.aspirations.workEnvironment.length
+                    ? profile.aspirations.workEnvironment.join(", ")
+                    : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Priorities</dt>
-                <dd className="text-slate-800">
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Key Priorities
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
                   {profile.aspirations.priorities.length ? profile.aspirations.priorities.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Timeline</dt>
-                <dd className="text-slate-800">{profile.aspirations.timeline || "—"}</dd>
+                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  Target Timeline
+                </dt>
+                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  {profile.aspirations.timeline || "—"}
+                </dd>
               </div>
               {profile.aspirations.additionalNotes && (
                 <div>
-                  <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Notes</dt>
-                  <dd className="text-slate-800">{profile.aspirations.additionalNotes}</dd>
+                  <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                    Notes
+                  </dt>
+                  <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                    {profile.aspirations.additionalNotes}
+                  </dd>
                 </div>
               )}
             </dl>
@@ -234,19 +301,29 @@ function DetailModal({
 }
 
 export default function DashboardPage() {
+  const [activeUser, setActiveUser] = useState<UserAccount | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [recommendations, setRecommendations] = useState<CareerRecommendation[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [detailPanel, setDetailPanel] = useState<DetailPanel>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [categories, setCategories] = useState<Record<string, {title: string, description: string}[]>>({});
+  const [categories, setCategories] = useState<Record<string, { title: string; description: string }[]>>({});
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setProfile(getStoredProfile());
-    setRecommendations(getStoredRecommendations());
-    setFavorites(getStoredFavorites());
+    setMounted(true);
+    const user = getActiveUser();
+    setActiveUser(user);
+    if (user && user.hasDashboard && user.profile) {
+      setProfile(user.profile);
+      setRecommendations(user.recommendations || getStoredRecommendations());
+      setFavorites(user.favorites || getStoredFavorites());
+    } else {
+      setProfile(null);
+      setRecommendations(null);
+      setFavorites([]);
+    }
     setCategories(getCategorizedCareers());
   }, []);
 
@@ -262,8 +339,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (data.recommendations) {
         setRecommendations(data.recommendations);
-        if (typeof window !== "undefined")
-          localStorage.setItem("career_path_recommendations", JSON.stringify(data.recommendations));
+        saveRecommendations(data.recommendations);
       }
     } catch (e) {
       console.error(e);
@@ -271,31 +347,114 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
-  if (!profile) {
+  if (!mounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-primary-50/20 to-emerald-50/30 flex items-center justify-center px-4 perspective-1000">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="dashboard-orb w-96 h-96 bg-primary-300 absolute -top-32 -right-32 animate-pulse-glow" />
-          <div className="dashboard-orb w-80 h-80 bg-emerald-300 absolute bottom-20 -left-20 animate-float" />
-        </div>
-        <div className="relative text-center max-w-md glass-panel rounded-3xl p-8 shadow-2xl border border-white/50">
-          <Compass className="w-16 h-16 text-primary-500 mx-auto mb-4 opacity-90" />
-          <h1 className="text-xl font-semibold text-slate-900 mb-2">No profile yet</h1>
-          <p className="text-slate-600 mb-6">
-            Complete the assessment to view your profile overview and receive career recommendations.
-          </p>
-          <Link
-            href="/assessment"
-            className="inline-flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-primary-700 transition shadow-lg shadow-primary-200 btn-3d"
-          >
-            Start assessment
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
       </div>
     );
   }
 
+  // =========================================================================
+  // Case 1: USER IS NOT LOGGED IN
+  // Must NOT leak any hardcoded details!
+  // =========================================================================
+  if (!activeUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center p-4 py-16">
+          <div className="relative text-center max-w-lg glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-page-enter">
+            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-5 shadow-inner">
+              <Compass className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+              Access Your Career Dashboard
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+              Your personalized World Dashboard holds your academic assessment, career recommendations,
+              and sequential learning paths. Sign in or create an account to view or build your profile.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition btn-3d text-sm"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In</span>
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500 px-5 py-3 rounded-xl font-semibold shadow-sm transition btn-3d text-sm"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create an Account</span>
+              </Link>
+            </div>
+            <div className="mt-8 pt-6 border-t border-slate-200/70 dark:border-slate-800 text-xs text-slate-500">
+              Want to take the assessment first?{" "}
+              <Link href="/assessment" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">
+                Start Assessment as Guest
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // Case 2: LOGGED IN USER, BUT NO DASHBOARD CREATED YET (Requirement 8)
+  // Show acknowledgment: "Create a dashboard by entering details"
+  // Must NOT display default details!
+  // =========================================================================
+  if (!profile || !activeUser.hasDashboard) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center p-4 py-16">
+          <div className="relative text-center max-w-lg glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-page-enter">
+            {/* Acknowledgment Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-semibold mb-6 border border-amber-200/70 dark:border-amber-800">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Dashboard Status: Not Created Yet</span>
+            </div>
+
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-500 to-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/25">
+              <GraduationCap className="w-8 h-8" />
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              Welcome, {activeUser.name}!
+            </h1>
+
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base mb-8 leading-relaxed">
+              You haven't created your Career Dashboard yet. Enter your academic background, genuine interests,
+              and dream aspirations to unlock your personalized career paths and roadmaps.
+            </p>
+
+            <Link
+              href="/assessment"
+              className="inline-flex items-center justify-center gap-2.5 bg-primary-600 hover:bg-primary-700 text-white px-7 py-3.5 rounded-xl font-bold shadow-xl shadow-primary-500/25 transition btn-3d text-sm sm:text-base w-full sm:w-auto"
+            >
+              <span>Create Your Dashboard (Enter Details)</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-6">
+              Takes approximately 3 minutes • 100% free • Powered by AI Navigator V
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // Case 3: LOGGED IN USER WITH DASHBOARD CREATED (Requirement 7 & 8)
+  // Show active user's authentic dashboard, prominent Edit Profile button,
+  // completeness gauges, recommendations, and category explorer.
+  // =========================================================================
   const academicScore =
     (profile.academics.educationLevel ? 1 : 0) * 25 +
     Math.min(25, profile.academics.subjects.length * 8) +
@@ -313,51 +472,86 @@ export default function DashboardPage() {
   const aspirationMax = 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-primary-50/20 to-emerald-50/30 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <Navbar />
+
       {detailPanel && profile && (
         <DetailModal panel={detailPanel} profile={profile} onClose={() => setDetailPanel(null)} />
       )}
 
+      {/* Floating Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="dashboard-orb w-[500px] h-[500px] bg-primary-200 absolute -top-40 -right-40 animate-float" />
-        <div className="dashboard-orb w-[400px] h-[400px] bg-emerald-200 absolute top-1/2 -left-32 animate-pulse-glow" />
-        <div className="dashboard-orb w-[300px] h-[300px] bg-violet-200 absolute bottom-0 right-1/3 animate-float" style={{ animationDelay: "-2s" }} />
+        <div className="dashboard-orb w-[500px] h-[500px] bg-primary-300 dark:bg-primary-900/30 absolute -top-40 -right-40 animate-float" />
+        <div className="dashboard-orb w-[400px] h-[400px] bg-emerald-300 dark:bg-emerald-900/30 absolute top-1/2 -left-32 animate-pulse-glow" />
       </div>
 
-      <header className="relative border-b border-white/40 bg-white/60 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-slate-700 hover:text-primary-600 transition link-3d">
-            <Compass className="w-7 h-7" />
-            <span className="font-semibold">Smart Career Path</span>
-          </Link>
+      <main className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
+        {/* Dashboard Header with PROMINENT Edit Profile / Alter Details Button (Requirement 7) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/80 dark:border-slate-800">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-2">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>World Profile Verified</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {profile.name}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+              Personalized career overview, profile metrics, and actionable recommendations.
+            </p>
+          </div>
+
+          {/* Prominent Edit Profile Button in Header */}
           <div className="flex items-center gap-3">
-            <Link href="/assessment" className="text-slate-600 hover:text-primary-600 text-sm font-medium link-3d">
-              Edit profile
-            </Link>
-            <Link href="/" className="text-slate-600 hover:text-primary-600 text-sm font-medium link-3d">
-              Home
+            <Link
+              href="/assessment"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary-500/25 transition btn-3d"
+              title="Click to alter or update your academic and career details"
+            >
+              <Pencil className="w-4 h-4" />
+              <span>Edit Profile Details</span>
             </Link>
           </div>
         </div>
-      </header>
 
-      <main className="relative max-w-5xl mx-auto px-4 py-10">
-        <h1 className="text-3xl font-bold text-slate-900 mb-1">
-          {profile.name}
-        </h1>
-        <p className="text-slate-600 mb-10">
-          Profile overview and career recommendations.
-        </p>
+        {/* Prominent Acknowledgement Banner for Altering Details (Requirement 7) */}
+        <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-primary-50/80 dark:bg-primary-950/40 border border-primary-200/80 dark:border-primary-800/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-300 shrink-0">
+              <FileEdit className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Need to Update or Alter Your Details?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+                Keep your academic scores, preferred work style, and dream roles fresh anytime to get the most accurate AI matches.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/assessment"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700 hover:border-primary-300 text-xs sm:text-sm font-bold shadow-sm transition btn-3d shrink-0"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>Alter Details Now</span>
+          </Link>
+        </div>
 
-        
-        {/* Dashboard Overview Section */}
+        {/* Profile Completeness & Career Engine Section */}
         <section className="mb-12 flex flex-col lg:flex-row gap-6">
           {/* Analytics Header */}
-          <div className="flex-1 glass-panel rounded-3xl p-6 border border-white/60 shadow-lg">
-            <h2 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary-600" />
-              Profile Completeness
-            </h2>
+          <div className="flex-1 glass-panel bg-white/80 dark:bg-slate-900/80 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <span>Profile Completeness</span>
+              </h2>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Click any metric for details
+              </span>
+            </div>
+
             <div className="flex flex-wrap justify-around gap-6">
               <CircularStat
                 label="Academics"
@@ -377,7 +571,7 @@ export default function DashboardPage() {
               />
               <CircularStat
                 label="Aspirations"
-                percent={(aspirationScore / aspirationMax) || 0}
+                percent={aspirationScore / aspirationMax || 0}
                 color="text-amber-500"
                 icon={Target}
                 detail={profile.aspirations.dreamRoles[0] || "Not set"}
@@ -387,68 +581,70 @@ export default function DashboardPage() {
           </div>
 
           {/* Action / Suggestions Panel */}
-          <div className="w-full lg:w-1/3 glass-panel rounded-3xl p-6 border border-white/60 shadow-lg flex flex-col justify-center text-center">
-            <Sparkles className="w-10 h-10 text-primary-500 mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">
+          <div className="w-full lg:w-1/3 glass-panel bg-white/80 dark:bg-slate-900/80 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg flex flex-col justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Career Engine
             </h2>
-            <p className="text-sm text-slate-600 mb-5">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-5 leading-relaxed">
               {recommendations && recommendations.length > 0
-                ? "Your profile has been analyzed. Update your profile to get new insights."
-                : "Match your profile to career paths and receive a structured learning plan."}
+                ? "Your profile has been analyzed. Update your details to generate fresh insights."
+                : "Match your profile against 50+ career paths and receive a structured procedure."}
             </p>
             <button
               type="button"
               onClick={generateRecommendations}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-60 transition shadow-md"
+              className="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-semibold disabled:opacity-60 transition shadow-md shadow-primary-500/25 btn-3d text-sm"
             >
               {loading ? (
-                "Generating..."
+                "Calculating Matches..."
               ) : recommendations?.length ? (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Regenerate Recommendations
+                  <span>Regenerate Recommendations</span>
                 </>
               ) : (
-                "Generate Recommendations"
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generate Recommendations</span>
+                </>
               )}
             </button>
           </div>
         </section>
 
+        {/* Recommendations Section */}
         <section className="mb-16">
-          <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary-600" />
-            Top Recommendations for You
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <span>Top Recommendations for You</span>
           </h2>
 
           {recommendations && recommendations.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {recommendations.map((rec, i) => (
+              {recommendations.map((rec) => (
                 <Link
                   key={rec.careerTitle}
                   href={`/career-path?title=${encodeURIComponent(rec.careerTitle)}`}
-                  onMouseEnter={() => setHoveredCard(i)}
-                  onMouseLeave={() => setHoveredCard(null)}
                   className="group block preserve-3d"
                 >
-                  <div
-                    className="glass-panel bg-white/80 rounded-2xl p-5 border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary-200"
-                  >
+                  <div className="glass-panel bg-white/85 dark:bg-slate-900/85 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500/50 card-3d">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-semibold text-slate-900 group-hover:text-primary-700 transition">
+                      <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                         {rec.careerTitle}
                       </h3>
-                      <span className="shrink-0 rounded-full bg-primary-100 text-primary-700 px-2 py-0.5 text-xs font-medium">
+                      <span className="shrink-0 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 px-2.5 py-0.5 text-xs font-bold">
                         {rec.matchScore}%
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 line-clamp-2 mb-3">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4 leading-relaxed">
                       {rec.description}
                     </p>
-                    <span className="inline-flex items-center gap-1 text-primary-600 text-sm font-medium">
-                      View learning path
+                    <span className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 text-xs font-bold">
+                      <span>View Learning Path</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
@@ -456,30 +652,31 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="glass-panel bg-white/60 rounded-2xl p-10 text-center border border-slate-100 border-dashed shadow-sm">
-              <p className="text-slate-500">
+            <div className="glass-panel bg-white/60 dark:bg-slate-900/60 rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-800 border-dashed shadow-sm">
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
                 {loading
-                  ? "Generating recommendations..."
-                  : "Generate recommendations above to view personalized career paths and learning plans."}
+                  ? "Generating personalized recommendations..."
+                  : "Click 'Generate Recommendations' above to calculate your top career matches and step-by-step learning procedures."}
               </p>
             </div>
           )}
         </section>
 
+        {/* Favorites / Saved Careers */}
         {favorites.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-500" />
-              Saved Careers
+              <span>Saved Careers</span>
             </h2>
             <div className="flex flex-wrap gap-2">
               {favorites.map((title) => (
                 <Link
                   key={title}
                   href={`/career-path?title=${encodeURIComponent(title)}`}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 border border-amber-100 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 transition"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 px-4 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/70 transition btn-3d"
                 >
-                  {title}
+                  <span>{title}</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               ))}
@@ -487,33 +684,47 @@ export default function DashboardPage() {
           </section>
         )}
 
-        <section className="mb-10">
-          <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
-            <Compass className="w-5 h-5 text-emerald-600" />
-            Browse Careers by Category
+        {/* Browse All Careers by Category */}
+        <section className="mb-12">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+            <Compass className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <span>Browse Careers by Category</span>
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {Object.entries(categories).map(([cat, careers]) => (
-              <div key={cat} className="glass-panel bg-white/70 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div
+                key={cat}
+                className="glass-panel bg-white/70 dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden"
+              >
                 <button
                   type="button"
                   onClick={() => setExpandedCategory(expandedCategory === cat ? null : cat)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition"
+                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition"
                 >
-                  <span className="font-semibold text-slate-800">{cat} ({careers.length})</span>
-                  <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${expandedCategory === cat ? "rotate-90" : ""}`} />
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
+                    {cat} ({careers.length})
+                  </span>
+                  <ChevronRight
+                    className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
+                      expandedCategory === cat ? "rotate-90" : ""
+                    }`}
+                  />
                 </button>
-                
+
                 {expandedCategory === cat && (
-                  <div className="px-6 pb-6 pt-2 border-t border-slate-100/50 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                    {careers.map(c => (
-                      <Link 
-                        key={c.title} 
+                  <div className="px-6 pb-6 pt-2 border-t border-slate-100 dark:border-slate-800 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                    {careers.map((c) => (
+                      <Link
+                        key={c.title}
                         href={`/career-path?title=${encodeURIComponent(c.title)}`}
-                        className="block p-3 rounded-xl border border-slate-100 bg-white hover:border-primary-200 hover:shadow-sm transition group"
+                        className="block p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 hover:border-primary-300 dark:hover:border-primary-500 hover:shadow-md transition group"
                       >
-                        <h4 className="font-medium text-slate-800 text-sm mb-1 group-hover:text-primary-700">{c.title}</h4>
-                        <p className="text-xs text-slate-500 line-clamp-2">{c.description}</p>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                          {c.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                          {c.description}
+                        </p>
                       </Link>
                     ))}
                   </div>
@@ -523,9 +734,14 @@ export default function DashboardPage() {
           </div>
         </section>
 
-<div className="mt-10 text-center">
-          <Link href="/assessment" className="text-primary-600 hover:underline text-sm font-medium link-3d">
-            Edit profile
+        {/* Bottom Prominent Edit Profile Callout */}
+        <div className="mt-12 text-center pt-8 border-t border-slate-200/80 dark:border-slate-800">
+          <Link
+            href="/assessment"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 dark:hover:bg-primary-950/60 text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 border border-slate-200 dark:border-slate-700 font-semibold text-sm transition btn-3d"
+          >
+            <Pencil className="w-4 h-4" />
+            <span>Altering your details? Edit Full Profile</span>
           </Link>
         </div>
       </main>

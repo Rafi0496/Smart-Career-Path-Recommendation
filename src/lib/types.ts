@@ -33,6 +33,19 @@ export interface UserProfile {
   aspirations: AspirationsProfile;
 }
 
+export interface UserAccount {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  hasDashboard: boolean;
+  profile?: UserProfile;
+  recommendations?: CareerRecommendation[];
+  favorites?: string[];
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
 export interface CareerRecommendation {
   careerTitle: string;
   matchScore: number;
