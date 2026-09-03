@@ -19,7 +19,7 @@ import Navbar from "@/components/Navbar";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <Navbar />
 
       {/* Hero Section */}

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Lock, LogIn, UserPlus, ShieldAlert } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import type {
   UserProfile,
   AcademicProfile,
   InterestsProfile,
   AspirationsProfile,
+  UserAccount,
 } from "@/lib/types";
 import {
   EDUCATION_LEVELS,
@@ -213,6 +214,7 @@ function TagInputWithSuggestions({
 }
 
 export default function AssessmentPage() {
+  const [activeUser, setActiveUser] = useState<UserAccount | null>(null);
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -224,18 +226,16 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     const active = getActiveUser();
-    const existing = getStoredProfile();
+    setActiveUser(active);
 
     if (active) {
       setName(active.name || "");
       setEmail(active.email || "");
-    }
-    if (existing) {
-      if (existing.name && !name) setName(existing.name);
-      if (existing.email && !email) setEmail(existing.email);
-      if (existing.academics) setAcademics(existing.academics);
-      if (existing.interests) setInterests(existing.interests);
-      if (existing.aspirations) setAspirations(existing.aspirations);
+      if (active.profile) {
+        if (active.profile.academics) setAcademics(active.profile.academics);
+        if (active.profile.interests) setInterests(active.profile.interests);
+        if (active.profile.aspirations) setAspirations(active.profile.aspirations);
+      }
     }
     setLoaded(true);
   }, []);
@@ -243,12 +243,12 @@ export default function AssessmentPage() {
   const currentStepId = STEPS[step].id;
 
   const handleSubmit = async () => {
+    if (!activeUser) return;
     setSaving(true);
-    const active = getActiveUser();
     const profile: UserProfile = {
-      id: active?.id ?? crypto.randomUUID(),
-      name: name.trim() || active?.name || "Career Explorer",
-      email: email.trim() || active?.email || "",
+      id: activeUser.id,
+      name: name.trim() || activeUser.name,
+      email: email.trim() || activeUser.email,
       createdAt: new Date().toISOString(),
       academics,
       interests,
@@ -265,8 +265,60 @@ export default function AssessmentPage() {
     currentStepId === "interests" ||
     currentStepId === "aspirations";
 
+  if (!loaded) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // Requirement 2: User MUST Login or Register before doing the assessment!
+  // =========================================================================
+  if (!activeUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center p-4 py-16">
+          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-slate-900/90 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-fade-in-up">
+            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-950/80 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-5 shadow-inner">
+              <Lock className="w-8 h-8" />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 text-xs font-semibold mb-3 border border-amber-200/60 dark:border-amber-800">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Authentication Required</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+              Sign In to Start Your Assessment
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+              Assessment results, match calculations, and custom learning paths are secured to your verified account. Please sign in or register to take the assessment and generate your World Dashboard.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/login?redirect=/assessment"
+                className="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition btn-3d text-sm"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In to Begin</span>
+              </Link>
+              <Link
+                href="/register?redirect=/assessment"
+                className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500 px-6 py-3 rounded-xl font-semibold shadow-sm transition btn-3d text-sm"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create an Account</span>
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
       <Navbar />
 
       {/* Step Progress Bar */}
@@ -297,7 +349,7 @@ export default function AssessmentPage() {
       </div>
 
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 sm:py-12">
-        <div className="glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 sm:p-9 border border-slate-200/80 dark:border-slate-800 shadow-xl animate-page-enter">
+        <div className="glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 sm:p-9 border border-slate-200/80 dark:border-slate-800 shadow-xl animate-fade-in-up">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
             {STEPS[step].title}
           </h2>
@@ -319,15 +371,15 @@ export default function AssessmentPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Email Address (optional)
+                  Email Address
                 </label>
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                  disabled
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">Tied to your authenticated account</p>
               </div>
             </div>
           )}

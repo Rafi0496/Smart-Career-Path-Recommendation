@@ -10,10 +10,10 @@
 }
 
 .dark {
-  --foreground: #f8fafc;
-  --background: #090d16;
-  --card: #111827;
-  --border: #1f293d;
+  --foreground: #f1f5f9;
+  --background: #0b0f19;
+  --card: #131c31;
+  --border: #1e293b;
 }
 
 body {
@@ -24,19 +24,34 @@ body {
 
 /* Page Transition Animation */
 .page-enter-transition {
-  animation: pageEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
 }
 
 @keyframes pageEnter {
   0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   100% {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @layer utilities {
@@ -47,8 +62,8 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
   background: var(--border);
@@ -62,6 +77,13 @@ body {
   background: #64748b;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 /* 3D perspective and interactive elements */
 .perspective-1000 {
   perspective: 1000px;
@@ -73,53 +95,31 @@ body {
   backface-visibility: hidden;
 }
 
+/* Glass Panels with high contrast and refined dark mode styling */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .dark .glass-panel {
-  background: rgba(17, 24, 39, 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(19, 28, 49, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.25);
 }
 
-.dashboard-orb {
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.dark .dashboard-orb {
-  opacity: 0.28;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(10px, -10px) scale(1.02); }
-}
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-}
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-}
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
 .ring-progress {
   transform: rotate(-90deg); /* Start from top */
 }
 
-/* Subtle 3D lift on button hover */
+/* Micro animations for interactive elements */
 .btn-3d {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-3d:hover {
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -4px rgba(2, 132, 199, 0.35);
 }
 .btn-3d:active {
   transform: translateY(0.5px);
@@ -133,8 +133,26 @@ body {
 }
 
 .card-3d {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 .card-3d:hover {
   transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08);
+}
+.dark .card-3d:hover {
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.45);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+/* Subtle pulse animation */
+@keyframes microPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+.animate-micro-pulse {
+  animation: microPulse 2.5s infinite ease-in-out;
 }

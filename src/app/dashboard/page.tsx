@@ -16,14 +16,12 @@ import {
   Star,
   LogIn,
   UserPlus,
-  AlertCircle,
   FileEdit,
   ShieldCheck,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
   getActiveUser,
-  getStoredProfile,
   getStoredRecommendations,
   getStoredFavorites,
   saveRecommendations,
@@ -56,7 +54,7 @@ function CircularStat({
     <button
       type="button"
       onClick={onClick}
-      className="group relative flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-2xl p-3 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all card-3d"
+      className="group relative flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-2xl p-3 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-all card-3d"
     >
       <div className="relative w-28 h-28 transition-transform duration-300 group-hover:scale-105">
         <svg className="w-full h-full ring-progress" viewBox="0 0 100 100">
@@ -67,7 +65,7 @@ function CircularStat({
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-slate-200 dark:text-slate-700"
+            className="text-slate-200 dark:text-slate-700/60"
           />
           <circle
             cx="50"
@@ -83,12 +81,12 @@ function CircularStat({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:shadow-lg transition-shadow">
+          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:shadow-lg transition-shadow">
             <Icon className="w-6 h-6 text-slate-700 dark:text-slate-200" />
           </div>
         </div>
       </div>
-      <span className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+      <span className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
         {label}
       </span>
       <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{Math.round(pct)}% complete</span>
@@ -112,21 +110,20 @@ function DetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-page-enter"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in-up"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800"
+        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/70">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/80">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             {panel === "academics" && "Academic Profile"}
             {panel === "interests" && "Interests & Skills"}
             {panel === "aspirations" && "Career Aspirations"}
           </h3>
           <div className="flex items-center gap-2">
-            {/* Prominent Edit Profile CTA inside modal */}
             <Link
               href="/assessment"
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-sm shadow-primary-500/20 transition btn-3d"
@@ -349,7 +346,7 @@ export default function DashboardPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
       </div>
     );
@@ -357,14 +354,13 @@ export default function DashboardPage() {
 
   // =========================================================================
   // Case 1: USER IS NOT LOGGED IN
-  // Must NOT leak any hardcoded details!
   // =========================================================================
   if (!activeUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4 py-16">
-          <div className="relative text-center max-w-lg glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-page-enter">
+          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-slate-900/90 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-fade-in-up">
             <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-5 shadow-inner">
               <Compass className="w-8 h-8" />
             </div>
@@ -377,24 +373,18 @@ export default function DashboardPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href="/login"
+                href="/login?redirect=/dashboard"
                 className="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-primary-500/25 transition btn-3d text-sm"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Sign In</span>
               </Link>
               <Link
-                href="/register"
+                href="/register?redirect=/dashboard"
                 className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500 px-5 py-3 rounded-xl font-semibold shadow-sm transition btn-3d text-sm"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Create an Account</span>
-              </Link>
-            </div>
-            <div className="mt-8 pt-6 border-t border-slate-200/70 dark:border-slate-800 text-xs text-slate-500">
-              Want to take the assessment first?{" "}
-              <Link href="/assessment" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">
-                Start Assessment as Guest
               </Link>
             </div>
           </div>
@@ -404,17 +394,14 @@ export default function DashboardPage() {
   }
 
   // =========================================================================
-  // Case 2: LOGGED IN USER, BUT NO DASHBOARD CREATED YET (Requirement 8)
-  // Show acknowledgment: "Create a dashboard by entering details"
-  // Must NOT display default details!
+  // Case 2: LOGGED IN USER, BUT NO DASHBOARD CREATED YET
   // =========================================================================
   if (!profile || !activeUser.hasDashboard) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4 py-16">
-          <div className="relative text-center max-w-lg glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-page-enter">
-            {/* Acknowledgment Badge */}
+          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-slate-900/90 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-semibold mb-6 border border-amber-200/70 dark:border-amber-800">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Dashboard Status: Not Created Yet</span>
@@ -442,7 +429,7 @@ export default function DashboardPage() {
             </Link>
 
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-6">
-              Takes approximately 3 minutes • 100% free • Powered by AI Navigator V
+              Takes approximately 3 minutes • Powered by AI Navigator V
             </p>
           </div>
         </main>
@@ -451,9 +438,8 @@ export default function DashboardPage() {
   }
 
   // =========================================================================
-  // Case 3: LOGGED IN USER WITH DASHBOARD CREATED (Requirement 7 & 8)
-  // Show active user's authentic dashboard, prominent Edit Profile button,
-  // completeness gauges, recommendations, and category explorer.
+  // Case 3: LOGGED IN USER WITH DASHBOARD CREATED
+  // (Notice: glowing orbs removed completely for clean, crisp dark/light themes)
   // =========================================================================
   const academicScore =
     (profile.academics.educationLevel ? 1 : 0) * 25 +
@@ -472,21 +458,15 @@ export default function DashboardPage() {
   const aspirationMax = 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#090d16] dark:via-slate-900 dark:to-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <Navbar />
 
       {detailPanel && profile && (
         <DetailModal panel={detailPanel} profile={profile} onClose={() => setDetailPanel(null)} />
       )}
 
-      {/* Floating Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="dashboard-orb w-[500px] h-[500px] bg-primary-300 dark:bg-primary-900/30 absolute -top-40 -right-40 animate-float" />
-        <div className="dashboard-orb w-[400px] h-[400px] bg-emerald-300 dark:bg-emerald-900/30 absolute top-1/2 -left-32 animate-pulse-glow" />
-      </div>
-
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        {/* Dashboard Header with PROMINENT Edit Profile / Alter Details Button (Requirement 7) */}
+        {/* Dashboard Header with PROMINENT Edit Profile Button */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/80 dark:border-slate-800">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-2">
@@ -501,7 +481,6 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Prominent Edit Profile Button in Header */}
           <div className="flex items-center gap-3">
             <Link
               href="/assessment"
@@ -514,7 +493,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Prominent Acknowledgement Banner for Altering Details (Requirement 7) */}
+        {/* Prominent Acknowledgement Banner for Altering Details */}
         <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-primary-50/80 dark:bg-primary-950/40 border border-primary-200/80 dark:border-primary-800/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-300 shrink-0">
@@ -540,8 +519,7 @@ export default function DashboardPage() {
 
         {/* Profile Completeness & Career Engine Section */}
         <section className="mb-12 flex flex-col lg:flex-row gap-6">
-          {/* Analytics Header */}
-          <div className="flex-1 glass-panel bg-white/80 dark:bg-slate-900/80 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg">
+          <div className="flex-1 glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -580,8 +558,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Action / Suggestions Panel */}
-          <div className="w-full lg:w-1/3 glass-panel bg-white/80 dark:bg-slate-900/80 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg flex flex-col justify-center text-center">
+          <div className="w-full lg:w-1/3 glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg flex flex-col justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
               <Sparkles className="w-6 h-6" />
             </div>
@@ -631,7 +608,7 @@ export default function DashboardPage() {
                   href={`/career-path?title=${encodeURIComponent(rec.careerTitle)}`}
                   className="group block preserve-3d"
                 >
-                  <div className="glass-panel bg-white/85 dark:bg-slate-900/85 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500/50 card-3d">
+                  <div className="glass-panel bg-white/90 dark:bg-slate-900/90 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500/50 card-3d">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                         {rec.careerTitle}
@@ -652,7 +629,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="glass-panel bg-white/60 dark:bg-slate-900/60 rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-800 border-dashed shadow-sm">
+            <div className="glass-panel bg-white/70 dark:bg-slate-900/70 rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-800 border-dashed shadow-sm">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
                 {loading
                   ? "Generating personalized recommendations..."
@@ -694,7 +671,7 @@ export default function DashboardPage() {
             {Object.entries(categories).map(([cat, careers]) => (
               <div
                 key={cat}
-                className="glass-panel bg-white/70 dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden"
+                className="glass-panel bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden"
               >
                 <button
                   type="button"
