@@ -18,14 +18,11 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [savedUsers, setSavedUsers] = useState<UserAccount[]>([]);
-
   useEffect(() => {
     const active = getActiveUser();
     if (active) {
       router.push(redirectTarget);
     }
-    setSavedUsers(getAllUsers());
   }, [router, redirectTarget]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,13 +39,6 @@ function LoginForm() {
 
     window.dispatchEvent(new Event("auth-change"));
     router.push(redirectTarget);
-  };
-
-  const handleQuickLogin = (user: UserAccount) => {
-    setEmailOrName(user.email);
-    if (user.password) {
-      setPassword(user.password);
-    }
   };
 
   return (
@@ -123,29 +113,6 @@ function LoginForm() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Saved Accounts picker */}
-        {savedUsers.length > 0 && (
-          <div className="mt-6 pt-5 border-t border-slate-200/80 dark:border-slate-800">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-              Registered Accounts on this device:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {savedUsers.map((u) => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(u)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-primary-950/60 hover:text-primary-600 dark:hover:text-primary-400 border border-slate-200 dark:border-slate-700 transition"
-                  title={`Click to fill ${u.email}`}
-                >
-                  <CheckCircle2 className="w-3 h-3 text-primary-500" />
-                  <span>{u.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
           New here?{" "}

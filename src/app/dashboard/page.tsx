@@ -65,7 +65,7 @@ function CircularStat({
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-slate-200 dark:text-slate-700/60"
+            className="text-slate-200 dark:text-slate-700"
           />
           <circle
             cx="50"
@@ -86,11 +86,14 @@ function CircularStat({
           </div>
         </div>
       </div>
-      <span className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+      <span className="mt-3 text-sm font-bold text-slate-800 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
         {label}
       </span>
-      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{Math.round(pct)}% complete</span>
-      <span className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 max-w-[120px] truncate" title={detail}>
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{Math.round(pct)}% complete</span>
+      <span
+        className="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[130px] truncate border border-slate-300/60 dark:border-slate-700"
+        title={detail}
+      >
         {detail}
       </span>
     </button>
@@ -114,10 +117,10 @@ function DetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800"
+        className="bg-white dark:bg-[#131b2e] rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-700"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/80">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/90">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             {panel === "academics" && "Academic Profile"}
             {panel === "interests" && "Interests & Skills"}
@@ -146,50 +149,50 @@ function DetailModal({
           {panel === "academics" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Education Level
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.educationLevel || "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Stream / Field
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.streamOrField || "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Subjects
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.subjects.length ? profile.academics.subjects.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Key Strengths
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.strengths.length ? profile.academics.strengths.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Academic Performance
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.grades || "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Certifications
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.academics.certifications.length ? profile.academics.certifications.join(", ") : "—"}
                 </dd>
               </div>
@@ -199,34 +202,34 @@ function DetailModal({
           {panel === "interests" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Personal Interests
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.interests.interests.length ? profile.interests.interests.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Hobbies
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.interests.hobbies.length ? profile.interests.hobbies.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Current Skills
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.interests.skills.length ? profile.interests.skills.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Preferred Work Style
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.interests.preferredWorkStyle.length
                     ? profile.interests.preferredWorkStyle.join(", ")
                     : "—"}
@@ -238,53 +241,53 @@ function DetailModal({
           {panel === "aspirations" && (
             <dl className="space-y-4">
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Target Dream Roles
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.aspirations.dreamRoles.length ? profile.aspirations.dreamRoles.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Willing To Learn & Do
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.aspirations.willingToDo.length ? profile.aspirations.willingToDo.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Work Environment
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.aspirations.workEnvironment.length
                     ? profile.aspirations.workEnvironment.join(", ")
                     : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Key Priorities
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.aspirations.priorities.length ? profile.aspirations.priorities.join(", ") : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Target Timeline
                 </dt>
-                <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                <dd className="text-slate-900 dark:text-white font-medium">
                   {profile.aspirations.timeline || "—"}
                 </dd>
               </div>
               {profile.aspirations.additionalNotes && (
                 <div>
-                  <dt className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                  <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                     Notes
                   </dt>
-                  <dd className="text-slate-800 dark:text-slate-200 font-medium">
+                  <dd className="text-slate-900 dark:text-white font-medium">
                     {profile.aspirations.additionalNotes}
                   </dd>
                 </div>
@@ -360,7 +363,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4 py-16">
-          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-slate-900/90 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-fade-in-up">
+          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-[#131b2e] rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-fade-in-up">
             <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-5 shadow-inner">
               <Compass className="w-8 h-8" />
             </div>
@@ -401,7 +404,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4 py-16">
-          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-slate-900/90 rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-800 animate-fade-in-up">
+          <div className="relative text-center max-w-lg glass-panel bg-white/90 dark:bg-[#131b2e] rounded-3xl p-8 sm:p-10 shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-semibold mb-6 border border-amber-200/70 dark:border-amber-800">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Dashboard Status: Not Created Yet</span>
@@ -415,7 +418,7 @@ export default function DashboardPage() {
               Welcome, {activeUser.name}!
             </h1>
 
-            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base mb-8 leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-200 text-sm sm:text-base mb-8 leading-relaxed">
               You haven't created your Career Dashboard yet. Enter your academic background, genuine interests,
               and dream aspirations to unlock your personalized career paths and roadmaps.
             </p>
@@ -428,7 +431,7 @@ export default function DashboardPage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
 
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-6">
+            <p className="text-xs text-slate-400 dark:text-slate-400 mt-6">
               Takes approximately 3 minutes • Powered by AI Navigator V
             </p>
           </div>
@@ -439,7 +442,6 @@ export default function DashboardPage() {
 
   // =========================================================================
   // Case 3: LOGGED IN USER WITH DASHBOARD CREATED
-  // (Notice: glowing orbs removed completely for clean, crisp dark/light themes)
   // =========================================================================
   const academicScore =
     (profile.academics.educationLevel ? 1 : 0) * 25 +
@@ -466,7 +468,7 @@ export default function DashboardPage() {
       )}
 
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        {/* Dashboard Header with PROMINENT Edit Profile Button */}
+        {/* Dashboard Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/80 dark:border-slate-800">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-2">
@@ -476,7 +478,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {profile.name}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+            <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">
               Personalized career overview, profile metrics, and actionable recommendations.
             </p>
           </div>
@@ -493,24 +495,24 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Prominent Acknowledgement Banner for Altering Details */}
-        <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-primary-50/80 dark:bg-primary-950/40 border border-primary-200/80 dark:border-primary-800/60 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-300 shrink-0">
+        {/* High-Contrast Alter Details Banner */}
+        <div className="mb-8 p-5 rounded-2xl bg-slate-100/90 dark:bg-[#15203b] border border-slate-300/80 dark:border-slate-700 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-300 shrink-0">
               <FileEdit className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Need to Update or Alter Your Details?
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-200 mt-1 leading-relaxed">
                 Keep your academic scores, preferred work style, and dream roles fresh anytime to get the most accurate AI matches.
               </p>
             </div>
           </div>
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-700 hover:border-primary-300 text-xs sm:text-sm font-bold shadow-sm transition btn-3d shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-primary-500/25 transition btn-3d shrink-0"
           >
             <Pencil className="w-3.5 h-3.5" />
             <span>Alter Details Now</span>
@@ -519,13 +521,13 @@ export default function DashboardPage() {
 
         {/* Profile Completeness & Career Engine Section */}
         <section className="mb-12 flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg">
+          <div className="flex-1 glass-panel bg-white/90 dark:bg-[#131b2e] rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 <span>Profile Completeness</span>
               </h2>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-300">
                 Click any metric for details
               </span>
             </div>
@@ -558,14 +560,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="w-full lg:w-1/3 glass-panel bg-white/85 dark:bg-slate-900/85 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-lg flex flex-col justify-center text-center">
+          <div className="w-full lg:w-1/3 glass-panel bg-white/90 dark:bg-[#131b2e] rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-lg flex flex-col justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950/70 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
               <Sparkles className="w-6 h-6" />
             </div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Career Engine
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-5 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-200 mb-5 leading-relaxed">
               {recommendations && recommendations.length > 0
                 ? "Your profile has been analyzed. Update your details to generate fresh insights."
                 : "Match your profile against 50+ career paths and receive a structured procedure."}
@@ -608,7 +610,7 @@ export default function DashboardPage() {
                   href={`/career-path?title=${encodeURIComponent(rec.careerTitle)}`}
                   className="group block preserve-3d"
                 >
-                  <div className="glass-panel bg-white/90 dark:bg-slate-900/90 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500/50 card-3d">
+                  <div className="glass-panel bg-white/90 dark:bg-[#131b2e] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500 card-3d">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                         {rec.careerTitle}
@@ -617,7 +619,7 @@ export default function DashboardPage() {
                         {rec.matchScore}%
                       </span>
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-200 line-clamp-2 mb-4 leading-relaxed">
                       {rec.description}
                     </p>
                     <span className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 text-xs font-bold">
@@ -629,8 +631,8 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="glass-panel bg-white/70 dark:bg-slate-900/70 rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-800 border-dashed shadow-sm">
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <div className="glass-panel bg-white/70 dark:bg-[#131b2e] rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-700 border-dashed shadow-sm">
+              <p className="text-slate-500 dark:text-slate-300 text-sm">
                 {loading
                   ? "Generating personalized recommendations..."
                   : "Click 'Generate Recommendations' above to calculate your top career matches and step-by-step learning procedures."}
@@ -651,7 +653,7 @@ export default function DashboardPage() {
                 <Link
                   key={title}
                   href={`/career-path?title=${encodeURIComponent(title)}`}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 px-4 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/70 transition btn-3d"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 px-4 py-2 text-xs font-semibold text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-950/70 transition btn-3d"
                 >
                   <span>{title}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -671,14 +673,14 @@ export default function DashboardPage() {
             {Object.entries(categories).map(([cat, careers]) => (
               <div
                 key={cat}
-                className="glass-panel bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden"
+                className="glass-panel bg-white/80 dark:bg-[#131b2e] rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden"
               >
                 <button
                   type="button"
                   onClick={() => setExpandedCategory(expandedCategory === cat ? null : cat)}
                   className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition"
                 >
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm sm:text-base">
+                  <span className="font-bold text-slate-800 dark:text-white text-sm sm:text-base">
                     {cat} ({careers.length})
                   </span>
                   <ChevronRight
@@ -694,12 +696,12 @@ export default function DashboardPage() {
                       <Link
                         key={c.title}
                         href={`/career-path?title=${encodeURIComponent(c.title)}`}
-                        className="block p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 hover:border-primary-300 dark:hover:border-primary-500 hover:shadow-md transition group"
+                        className="block p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 hover:border-primary-300 dark:hover:border-primary-500 hover:shadow-md transition group"
                       >
-                        <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                        <h4 className="font-semibold text-slate-800 dark:text-white text-sm mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400">
                           {c.title}
                         </h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                        <p className="text-xs text-slate-500 dark:text-slate-300 line-clamp-2">
                           {c.description}
                         </p>
                       </Link>
@@ -715,7 +717,7 @@ export default function DashboardPage() {
         <div className="mt-12 text-center pt-8 border-t border-slate-200/80 dark:border-slate-800">
           <Link
             href="/assessment"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 dark:hover:bg-primary-950/60 text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 border border-slate-200 dark:border-slate-700 font-semibold text-sm transition btn-3d"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 dark:hover:bg-primary-950/60 text-slate-700 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 border border-slate-200 dark:border-slate-700 font-semibold text-sm transition btn-3d"
           >
             <Pencil className="w-4 h-4" />
             <span>Altering your details? Edit Full Profile</span>
