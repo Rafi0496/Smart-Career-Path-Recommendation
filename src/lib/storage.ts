@@ -149,6 +149,42 @@ export function loginUser(emailOrName: string, password?: string): { success: bo
   return { success: true, user: found };
 }
 
+export function verifyUserForRecovery(email: string, fullName: string): { success: boolean; user?: UserAccount; error?: string } {
+  const queryEmail = email.trim().toLowerCase();
+  const queryName = fullName.trim().toLowerCase();
+
+  if (!queryEmail || !queryName) {
+    return { success: false, error: "Please enter both your registered email and full name." };
+  }
+
+  const users = getAllUsers();
+  const found = users.find(
+    (u) => u.email.toLowerCase() === queryEmail && u.name.toLowerCase() === queryName
+  );
+
+  if (!found) {
+    return { success: false, error: "Authentication failed. No matching account found with that email and name." };
+  }
+
+  return { success: true, user: found };
+}
+
+export function updateUserPassword(userId: string, newPassword: string): { success: boolean; error?: string } {
+  if (!newPassword || newPassword.length < 4) {
+    return { success: false, error: "Password must be at least 4 characters long." };
+  }
+
+  const users = getAllUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return { success: false, error: "User account not found." };
+  }
+
+  user.password = newPassword.trim();
+  saveAllUsers(users);
+  return { success: true };
+}
+
 export function logoutUser(): void {
   if (typeof window === "undefined") return;
   setActiveUser(null);
