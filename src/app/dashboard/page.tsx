@@ -18,6 +18,9 @@ import {
   UserPlus,
   FileEdit,
   ShieldCheck,
+  Scale,
+  CheckCircle2,
+  BookOpen,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import {
@@ -25,6 +28,11 @@ import {
   getStoredRecommendations,
   getStoredFavorites,
   saveRecommendations,
+  getComparisonList,
+  toggleComparison,
+  clearComparison,
+  getAllCareerProgress,
+  getCareerProgressPercent,
 } from "@/lib/storage";
 import { getCategorizedCareers } from "@/lib/career-engine";
 import type { UserProfile, CareerRecommendation, UserAccount } from "@/lib/types";
@@ -310,6 +318,8 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<Record<string, { title: string; description: string }[]>>({});
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const [progressData, setProgressData] = useState<Record<string, number[]>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -325,7 +335,14 @@ export default function DashboardPage() {
       setFavorites([]);
     }
     setCategories(getCategorizedCareers());
+    setCompareList(getComparisonList());
+    setProgressData(getAllCareerProgress());
   }, []);
+
+  const handleToggleCompare = (title: string) => {
+    const next = toggleComparison(title);
+    setCompareList(next);
+  };
 
   const generateRecommendations = async () => {
     if (!profile) return;
@@ -610,22 +627,47 @@ export default function DashboardPage() {
                   href={`/career-path?title=${encodeURIComponent(rec.careerTitle)}`}
                   className="group block preserve-3d"
                 >
-                  <div className="glass-panel bg-white/90 dark:bg-[#131b2e] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500 card-3d">
+                  <div className="glass-panel bg-white/90 dark:bg-[#131b2e] rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-500 card-3d flex flex-col h-full">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                         {rec.careerTitle}
                       </h3>
-                      <span className="shrink-0 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 px-2.5 py-0.5 text-xs font-bold">
-                        {rec.matchScore}%
-                      </span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 px-2.5 py-0.5 text-xs font-bold">
+                          {rec.matchScore}%
+                        </span>
+                        {rec.skillOverlapPercent !== undefined && (
+                          <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                            {rec.skillOverlapPercent}% Overlap
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-200 line-clamp-2 mb-4 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-200 line-clamp-2 mb-4 leading-relaxed flex-1">
                       {rec.description}
                     </p>
-                    <span className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 text-xs font-bold">
-                      <span>View Learning Path</span>
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </span>
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleCompare(rec.careerTitle);
+                        }}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
+                          compareList.includes(rec.careerTitle)
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        <Scale className="w-3 h-3" />
+                        <span>{compareList.includes(rec.careerTitle) ? "Comparing" : "Compare"}</span>
+                      </button>
+                      <span className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 text-xs font-bold">
+                        <span>View Path</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -640,6 +682,46 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
+
+        {/* Feature 5: Active Learning Roadmaps & Progress */}
+        {Object.keys(progressData).length > 0 && (
+          <section className="mb-16">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <span>Active Learning Roadmaps & Progress</span>
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(progressData).map(([cTitle, completedSteps]) => {
+                const pct = Math.round((completedSteps.length / 4) * 100);
+                return (
+                  <Link
+                    key={cTitle}
+                    href={`/career-path?title=${encodeURIComponent(cTitle)}`}
+                    className="p-4 rounded-2xl bg-white dark:bg-[#131b2e] border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-emerald-400 transition card-3d block"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm truncate">
+                        {cTitle}
+                      </h4>
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {pct}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1.5">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-primary-600 transition-all duration-300"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {completedSteps.length} of 4 stages completed
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Favorites / Saved Careers */}
         {favorites.length > 0 && (
@@ -723,6 +805,44 @@ export default function DashboardPage() {
             <span>Altering your details? Edit Full Profile</span>
           </Link>
         </div>
+
+        {/* Sticky Career Comparison Bar */}
+        {compareList.length > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-xl w-[92%] glass-panel bg-white/95 dark:bg-slate-900/95 border border-primary-500/60 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-3 animate-fade-in-up">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-900/60 text-primary-600 dark:text-primary-300 flex items-center justify-center shrink-0">
+                <Scale className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">
+                  {compareList.length} Career{compareList.length > 1 ? "s" : ""} Selected for Comparison
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[200px] sm:max-w-xs">
+                  {compareList.join(", ")}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  clearComparison();
+                  setCompareList([]);
+                }}
+                className="text-xs text-slate-500 hover:text-rose-500 font-semibold px-2 py-1 transition"
+              >
+                Clear
+              </button>
+              <Link
+                href="/compare"
+                className="inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md transition btn-3d"
+              >
+                <span>Compare Now</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

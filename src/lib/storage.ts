@@ -321,4 +321,114 @@ export function clearAll(): void {
   localStorage.removeItem(STORAGE_KEYS.PROFILE);
   localStorage.removeItem(STORAGE_KEYS.RECOMMENDATIONS);
   localStorage.removeItem(STORAGE_KEYS.FAVORITES);
+  localStorage.removeItem("career_path_learning_progress");
+  localStorage.removeItem("career_path_compare_list");
+}
+
+// =========================================================================
+// Feature 4: Career Comparison List Storage
+// =========================================================================
+const COMPARE_KEY = "career_path_compare_list";
+
+export function getComparisonList(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(COMPARE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function toggleComparison(careerTitle: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const current = getComparisonList();
+    let updated: string[];
+    if (current.includes(careerTitle)) {
+      updated = current.filter((c) => c !== careerTitle);
+    } else {
+      if (current.length >= 3) {
+        // Limit to 3 careers max for comparison
+        updated = [...current.slice(1), careerTitle];
+      } else {
+        updated = [...current, careerTitle];
+      }
+    }
+    localStorage.setItem(COMPARE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch {
+    return [];
+  }
+}
+
+export function clearComparison(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(COMPARE_KEY);
+}
+
+// =========================================================================
+// Feature 5: Progress Tracking Storage
+// =========================================================================
+const PROGRESS_KEY = "career_path_learning_progress";
+
+export function getAllCareerProgress(): Record<string, number[]> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function getCompletedStepsForCareer(careerTitle: string): number[] {
+  const all = getAllCareerProgress();
+  return all[careerTitle] || [];
+}
+
+export function toggleStepProgress(careerTitle: string, stepOrder: number): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const all = getAllCareerProgress();
+    const current = all[careerTitle] || [];
+    let isNowCompleted = false;
+    let nextSteps: number[];
+
+    if (current.includes(stepOrder)) {
+      nextSteps = current.filter((s) => s !== stepOrder);
+      isNowCompleted = false;
+    } else {
+      nextSteps = [...current, stepOrder].sort((a, b) => a - b);
+      isNowCompleted = true;
+    }
+
+    all[careerTitle] = nextSteps;
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
+
+    // Also sync to API asynchronously if active user exists
+    const active = getActiveUser();
+    if (active) {
+      fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: active.id,
+          careerTitle,
+          stepOrder,
+          completed: isNowCompleted,
+        }),
+      }).catch((e) => console.warn("Background progress sync failed:", e));
+    }
+
+    return isNowCompleted;
+  } catch {
+    return false;
+  }
+}
+
+export function getCareerProgressPercent(careerTitle: string, totalSteps: number = 4): number {
+  const steps = getCompletedStepsForCareer(careerTitle);
+  if (!totalSteps || totalSteps <= 0) return 0;
+  return Math.min(100, Math.round((steps.length / totalSteps) * 100));
 }

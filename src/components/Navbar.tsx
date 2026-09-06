@@ -82,6 +82,16 @@ export default function Navbar() {
           >
             Assessment
           </Link>
+          <Link
+            href="/compare"
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+              pathname === "/compare"
+                ? "bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            Compare
+          </Link>
         </nav>
 
         {/* Right Actions: Theme Toggle + Auth Controls */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, CheckCircle2, Lock, LogIn, UserPlus, ShieldAlert } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Lock, LogIn, UserPlus, ShieldAlert, UploadCloud, FileText, Sparkles, AlertCircle, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import type {
   UserProfile,
@@ -223,6 +223,8 @@ export default function AssessmentPage() {
   const [aspirations, setAspirations] = useState<AspirationsProfile>(defaultAspirations);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeMessage, setResumeMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     const active = getActiveUser();
@@ -241,6 +243,85 @@ export default function AssessmentPage() {
   }, []);
 
   const currentStepId = STEPS[step].id;
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setResumeMessage({ type: "error", text: "Please upload a PDF format resume." });
+      return;
+    }
+
+    setUploadingResume(true);
+    setResumeMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/resume/parse", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to parse resume.");
+      }
+
+      if (data.profile) {
+        const p = data.profile;
+        if (p.name && (!name || name.toLowerCase() === "candidate" || name.toLowerCase() === "alex morgan")) {
+          setName(p.name);
+        }
+        if (p.academics) {
+          setAcademics((prev) => ({
+            ...prev,
+            educationLevel: p.academics.educationLevel || prev.educationLevel,
+            streamOrField: p.academics.streamOrField || prev.streamOrField,
+            subjects: Array.from(new Set([...prev.subjects, ...(p.academics.subjects || [])])),
+            strengths: Array.from(new Set([...prev.strengths, ...(p.academics.strengths || [])])),
+            certifications: Array.from(new Set([...prev.certifications, ...(p.academics.certifications || [])])),
+          }));
+        }
+        if (p.interests) {
+          setInterests((prev) => ({
+            ...prev,
+            interests: Array.from(new Set([...prev.interests, ...(p.interests.interests || [])])),
+            skills: Array.from(new Set([...prev.skills, ...(p.interests.skills || [])])),
+            hobbies: Array.from(new Set([...prev.hobbies, ...(p.interests.hobbies || [])])),
+            preferredWorkStyle: p.interests.preferredWorkStyle?.length ? p.interests.preferredWorkStyle : prev.preferredWorkStyle,
+          }));
+        }
+        if (p.aspirations) {
+          setAspirations((prev) => ({
+            ...prev,
+            dreamRoles: Array.from(new Set([...prev.dreamRoles, ...(p.aspirations.dreamRoles || [])])),
+            willingToDo: Array.from(new Set([...prev.willingToDo, ...(p.aspirations.willingToDo || [])])),
+            workEnvironment: p.aspirations.workEnvironment?.length ? p.aspirations.workEnvironment : prev.workEnvironment,
+            priorities: p.aspirations.priorities?.length ? p.aspirations.priorities : prev.priorities,
+            timeline: p.aspirations.timeline || prev.timeline,
+          }));
+        }
+
+        const skillCount = p.parsedDetails?.skillCount || p.interests?.skills?.length || 0;
+        setResumeMessage({
+          type: "success",
+          text: `Resume parsed successfully! Extracted ${skillCount} skills, ${p.academics?.streamOrField || "stream"}, and target roles. All 4 assessment stages pre-filled.`,
+        });
+      }
+    } catch (err: any) {
+      setResumeMessage({
+        type: "error",
+        text: err?.message || "Could not parse resume. You can still fill the fields manually.",
+      });
+    } finally {
+      setUploadingResume(false);
+      // Reset input value so same file can be re-uploaded if desired
+      e.target.value = "";
+    }
+  };
 
   const handleSubmit = async () => {
     if (!activeUser) return;
@@ -355,7 +436,68 @@ export default function AssessmentPage() {
           </h2>
 
           {currentStepId === "basic" && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Feature 1: Resume Parser Auto-Fill Banner */}
+              <div className="rounded-2xl border-2 border-dashed border-primary-300 dark:border-primary-700/60 bg-gradient-to-br from-primary-50/70 via-indigo-50/40 to-emerald-50/50 dark:from-primary-950/40 dark:via-slate-900/60 dark:to-slate-900/60 p-5 text-center relative overflow-hidden group hover:border-primary-500 transition-colors">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform">
+                    {uploadingResume ? (
+                      <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+                    ) : (
+                      <UploadCloud className="w-6 h-6" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-300 text-[11px] font-bold mb-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span>ML-Powered Fast Track</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Auto-Fill Assessment from Resume
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-sm mx-auto">
+                      Upload your PDF resume to automatically extract skills, education, experience, and aspirations using spaCy NER & NLP.
+                    </p>
+                  </div>
+
+                  <label className="cursor-pointer inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm transition btn-3d mt-1">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>{uploadingResume ? "Analyzing Resume..." : "Upload Resume (PDF)"}</span>
+                    <input
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      disabled={uploadingResume}
+                      onChange={handleResumeUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {resumeMessage && (
+                  <div
+                    className={`mt-4 p-3 rounded-xl text-xs font-medium flex items-start gap-2 text-left ${
+                      resumeMessage.type === "success"
+                        ? "bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200"
+                        : "bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200"
+                    }`}
+                  >
+                    {resumeMessage.type === "success" ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    )}
+                    <span>{resumeMessage.text}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative flex items-center justify-center my-2">
+                <div className="border-t border-slate-200 dark:border-slate-700 w-full" />
+                <span className="bg-white dark:bg-slate-900 px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
+                  Or complete step-by-step
+                </span>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                   Full Name or Nickname <span className="text-rose-500">*</span>

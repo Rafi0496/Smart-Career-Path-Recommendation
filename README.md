@@ -1,85 +1,173 @@
-# Smart Career Path Recommendation System
+# Smart Career Path Recommendation System & AI/ML Microservice
 
-An AI-powered mini project that helps **students** and **anyone confused about their career** by collecting their academics, interests, hobbies, and aspirations, then recommending personalized career paths with step-by-step learning plans.
+An AI-powered, production-grade career guidance platform that helps students and professionals discover tailored career trajectories. The platform pairs a modern **Next.js 14** web application with a dedicated **Python FastAPI ML microservice** acting as the AI/ML intelligence engine.
 
-## Features
+---
 
-- **Landing page** – Clear value proposition and entry points for assessment and dashboard
-- **Assessment** – Multi-step form that gathers:
-  - Basic info (name, optional email)
-  - **Academics**: education level, stream, subjects, strengths, grades, certifications
-  - **Interests & hobbies**: interests, hobbies, current skills, preferred work style
-  - **Aspirations**: dream roles, what you’re willing to do, work environment, priorities, timeline, notes
-  - *Note: Features dynamic auto-suggestions while typing for interests, hobbies, skills, and dream roles based on our extensive career database.*
-- **Dashboard** – A fully interactive and premium dashboard featuring:
-  - **Profile Completeness Analytics**: Persistent, clean visualizations of your Academic, Interest, and Aspiration scores.
-  - **Career Engine Panel**: An action-oriented panel that guides you to generate or refine your recommendations.
-  - **Categorized Career Browser**: A built-in accordion UI to browse all 130+ available career paths categorized by industry.
-- **AI recommendations** – Engine matches your profile against an extensive database of 130+ career paths and returns the top 5 with match percentages and reasons.
-- **Career path view** – For each recommendation: why it fits, skills to build, and a **learning path** (ordered steps with duration and resources).
-- **AI Assistant** – Floating chat button on every page. Ask questions about careers, how to use the site, or recommendations. Uses OpenAI when `OPENAI_API_KEY` is set; otherwise a built-in fallback answers from app content.
+## 🏗️ System Architecture
 
-## Tech stack
+```text
+                                  ┌───────────────────────────────┐
+                                  │       Client Browser          │
+                                  └───────────────┬───────────────┘
+                                                  │
+                                                  ▼
+                                  ┌───────────────────────────────┐
+                                  │   Next.js 14 Frontend & API   │
+                                  │   (TypeScript, Tailwind CSS)  │
+                                  └───────┬───────────────┬───────┘
+                                          │               │
+                 Proxy AI Workloads       │               │ Progress Sync
+            (HTTP / PYTHON_SERVICE_URL)   │               │ (PostgreSQL / Supabase)
+                                          ▼               ▼
+┌─────────────────────────────────────────────────────────┐   ┌───────────────────────────┐
+│              Python FastAPI ML Microservice             │   │    PostgreSQL Database    │
+│                                                         │   │    (learning_progress,    │
+│  • Resume Extractor (pdfplumber + spaCy NER)            │   │     user_profiles)        │
+│  • Hybrid Recommender (Sentence-Transformers + Cosine)  │   └───────────────────────────┘
+│  • Skill-Gap Quiz Engine (Structured Diagnostic LLM)    │
+│  • PDF Builder (Jinja2 + WeasyPrint Engine)             │
+│  • 140+ Career Embeddings Vector Cache (all-MiniLM-L6)  │
+└─────────────────────────────────────────────────────────┘
+```
 
-- **Next.js 14** (App Router), **TypeScript**, **Tailwind CSS**
+---
+
+## ⚡ Tech Stack
+
+### AI / Machine Learning & Microservice:
+- **FastAPI**: Asynchronous Python API microservice framework with high performance.
+- **sentence-transformers (`all-MiniLM-L6-v2`)**: Precomputes and caches 384-dimensional dense semantic vectors for 140+ industry career profiles.
+- **scikit-learn & numpy**: Cosine similarity computation, matrix normalization, and TF-IDF fallback vectorization.
+- **spaCy (`en_core_web_sm`)**: Named Entity Recognition (NER) pipeline for extracting candidate name, educational background, and tenure.
+- **pdfplumber**: Extracting structured text, credentials, and tabular data from PDF resumes.
+- **WeasyPrint**: Rendering print-accurate, publication-quality PDF career roadmaps from Jinja2 templates.
+- **OpenAI API (Optional)**: Dynamic contextual reasoning and grounded skill-gap quiz generation.
+
+### Web Application & Frontend:
+- **Next.js 14 (App Router)** & **React 18**
+- **TypeScript** & **Tailwind CSS**
 - **Lucide React** for icons
-- Data stored in **localStorage** (no backend required for the mini project)
-- Recommendation logic in `src/lib/career-engine.ts` 
+- **PostgreSQL / Supabase**: Schema provided in `scripts/schema.sql` for persistent progress tracking.
+- **Docker & Docker Compose**: Multi-container orchestration for local development and deployment.
 
-## Getting started
+---
+
+## ✨ Core Features
+
+### 1. 📄 ML Resume Parser (`POST /resume/parse`)
+- Upload any standard PDF resume on the assessment screen.
+- Employs `pdfplumber` for text parsing and spaCy NER combined with a 350+ skill taxonomy.
+- Automatically extracts: candidate name, contact, education level, stream of study, technical skills, tools, frameworks, and certifications.
+- Pre-fills all 4 stages of the assessment form instantly while remaining completely editable.
+
+### 2. 🧠 Hybrid Recommender Engine (`POST /recommend`)
+- Augments rule matching with deep semantic vector search (`all-MiniLM-L6-v2`).
+- Computes cosine similarity between the user's holistic profile narrative and 140+ career vectors.
+- Calculates an explicit feature score (skill overlap %, dream role bonus, academic alignment).
+- Combines them into a weighted **Hybrid Score** (`0.55 * semantic_score + 0.45 * feature_score`).
+- Returns normalized `skillOverlapPercent`, identifying matching skills vs. skills to develop, with grounded reasoning.
+
+### 3. 🎯 Interactive Skill-Gap Quiz (`POST /quiz/generate` & `/career-path/quiz`)
+- Tailored multiple-choice diagnostic tests generated for the specific skills you need to develop.
+- Instant score computation, performance tier classification, and identified skill gap highlights.
+- In-memory/disk caching prevents redundant LLM re-generation on repeat requests.
+
+### 4. ⚖️ Side-by-Side Career Comparison View (`/compare`)
+- Select up to 3 careers from the dashboard or dropdown to compare side-by-side.
+- Contrasts match scores, skill overlap percentages, salary brackets, estimated timelines, and learning milestones.
+- Features a dynamic **Comparative Skills Matrix** highlighting common vs. unique skill requirements.
+
+### 5. 📈 Persistent Learning Progress Tracking (`/api/progress`)
+- Checkboxes on each stage of the career roadmap to track your learning journey.
+- Real-time progress bar reflecting completion percentages.
+- Backed by PostgreSQL (`scripts/schema.sql`) with client-side persistence fallback.
+- Active roadmaps and completion progress bars are displayed directly on the user dashboard.
+
+### 6. 📥 Publication-Ready PDF Roadmap Export (`POST /export/pdf`)
+- Single-click "Download Roadmap PDF" button on any career roadmap.
+- Formats roadmap metadata, milestones, procedures, and resources via Jinja2 into a clean PDF via WeasyPrint.
+
+---
+
+## 🚀 Getting Started
+
+### Option A: Docker Compose (Recommended)
+
+Run the frontend, Python microservice, and PostgreSQL database together in one command:
 
 ```bash
+# Clone the repository
+git clone https://github.com/Rafi0496/Smart-Career-Path-Recommendation.git
+cd Smart-Career-Path-Recommendation
+
+# Start all three services
+docker compose up --build
+```
+
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **FastAPI Microservice Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **PostgreSQL**: `localhost:5432`
+
+---
+
+### Option B: Local Independent Setup
+
+#### 1. Start the Python AI/ML Microservice
+```bash
+cd python-service
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+# Launch FastAPI on port 8000
+python main.py
+```
+*Health check:* [http://localhost:8000/health](http://localhost:8000/health)
+
+#### 2. Start the Next.js Frontend
+```bash
+# In the project directory
 npm install
 npm run dev
 ```
-
 Open [http://localhost:3000](http://localhost:3000).
 
-1. **Start assessment** → Complete all 4 steps → Save.
-2. **Dashboard** → See your profile completeness stats → Click **Generate recommendations**.
-3. **Explore** → View your top 5 recommendations or scroll down to browse careers by category.
-4. **Learn** → Open any recommended career to see the full **learning path** with actionable steps and resources.
+---
 
-## Project structure
+## 📂 Project Structure
 
 ```text
-src/
-  app/
-    page.tsx           # Landing
-    assessment/        # Multi-step assessment form
-    dashboard/         # Premium dashboard (Stats, engine, category browser)
-    career-path/       # Single career learning path view
-    api/recommend/     # POST: returns recommendations for a profile
-    api/chat/          # POST: AI assistant (OpenAI or fallback)
-  components/
-    AIAssistant.tsx    # Floating chat UI
-  lib/
-    assistant-fallback.ts  # Fallback answers when no API key
-    types.ts           # UserProfile, CareerRecommendation, etc.
-    storage.ts         # localStorage helpers
-    career-engine.ts   # Core engine containing 130+ careers, matching logic, and categorization
-    suggestions.ts     # Data for the assessment form's auto-suggest feature
+├── Dockerfile                  # Next.js production container
+├── docker-compose.yml          # Multi-container orchestration (Web, ML, DB)
+├── scripts/
+│   ├── export_careers.js       # Exports 140+ careers to JSON
+│   └── schema.sql              # PostgreSQL / Supabase migration schema
+├── python-service/             # Python FastAPI ML Microservice
+│   ├── Dockerfile              # Container with WeasyPrint & Pango/Cairo libs
+│   ├── requirements.txt        # FastAPI, spaCy, sentence-transformers, scikit-learn
+│   ├── main.py                 # FastAPI application, CORS & Lifespan caching
+│   ├── data/
+│   │   └── careers.json        # 140+ careers database
+│   ├── routers/
+│   │   ├── recommend.py        # POST /recommend (Hybrid ML engine)
+│   │   ├── resume.py           # POST /resume/parse (spaCy + pdfplumber)
+│   │   ├── quiz.py             # POST /quiz/generate (Skill diagnostic)
+│   │   └── export.py           # POST /export/pdf (WeasyPrint PDF export)
+│   ├── services/
+│   │   ├── embeddings.py       # Sentence-transformers vector cache
+│   │   ├── matcher.py          # Hybrid recommender & LLM grounding
+│   │   ├── resume_extractor.py # PDF text extraction & NER skill matcher
+│   │   └── pdf_builder.py      # Jinja2 template & PDF renderer
+│   └── templates/
+│       └── roadmap.html        # Clean HTML styling for PDF generation
+└── src/                        # Next.js 14 Frontend Application
+    ├── app/
+    │   ├── api/                # Proxy routes (/recommend, /resume/parse, /quiz, /export/pdf)
+    │   ├── assessment/         # Multi-step assessment with Resume Auto-Fill
+    │   ├── career-path/        # Roadmap with checkboxes & PDF export
+    │   │   └── quiz/           # Interactive skill-gap diagnostic test
+    │   ├── compare/            # Side-by-side career comparison view
+    │   └── dashboard/          # Analytics, active progress & category browser
+    ├── components/             # Navbar, ThemeToggle, AIAssistant
+    └── lib/                    # storage.ts, career-engine.ts, types.ts
 ```
-
-## Career paths included
-
-The `CAREER_DATABASE` has been vastly expanded and organized. It now includes **over 130 detailed career paths** across major industries:
-
-- **Software & Development** (Full Stack, Backend, Mobile, DevOps, etc.)
-- **Artificial Intelligence & Data Science** (AI Engineer, Data Scientist, NLP, etc.)
-- **Cybersecurity** (Ethical Hacker, SOC Analyst, Security Engineer, etc.)
-- **Cloud Computing & Networking**
-- **UI/UX & Design**
-- **Business & Management**
-- **Finance & Accounting**
-- **Healthcare** (Doctor, Nurse, Psychologist, etc.)
-- **Engineering, Law, Content, Digital Marketing, and more!**
-
-Each path includes a description, required skills, timeline, salary range (where applicable), and a structured 4-step learning path with resources.
-
-## Optional next steps
-
-- Add **OpenAI/Claude API** for more natural-language recommendations and custom learning steps
-- Add **auth** (e.g. NextAuth) and **database** (e.g. Supabase, PostgreSQL) to persist profiles across devices
-- Add **progress tracking** (mark learning steps complete) and store in localStorage or DB
-- Add **export PDF** of the recommended path

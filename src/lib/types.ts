@@ -49,6 +49,16 @@ export interface UserAccount {
 export interface CareerRecommendation {
   careerTitle: string;
   matchScore: number;
+  /** Normalized percentage of required skills already possessed by user */
+  skillOverlapPercent?: number;
+  /** Semantic embedding similarity score from sentence-transformers (0-100) */
+  semanticScore?: number;
+  /** Rule-based feature matching score (0-100) */
+  featureScore?: number;
+  /** Specific overlapping skills identified in profile */
+  matchingSkills?: string[];
+  /** Skills candidate needs to develop */
+  skillsToDevelop?: string[];
   description: string;
   /** Short "in simple terms" one-liner for quick understanding */
   simpleSummary?: string;
@@ -57,6 +67,20 @@ export interface CareerRecommendation {
   learningPath: LearningStep[];
   estimatedTimeline: string;
   salaryRange?: string;
+}
+
+export interface QuizQuestion {
+  skill: string;
+  question: string;
+  options: string[];
+  correct_answer: number;
+  explanation: string;
+}
+
+export interface LearningProgressRecord {
+  careerTitle: string;
+  completedSteps: number[];
+  lastUpdated: string;
 }
 
 export interface LearningStep {

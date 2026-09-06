@@ -2533,9 +2533,23 @@ function matchScoreAndReasons(
 
 export function getRecommendations(profile: UserProfile): CareerRecommendation[] {
   const results: CareerRecommendation[] = [];
+  const userSkills = [
+    ...(profile.interests?.skills || []),
+    ...(profile.academics?.strengths || []),
+  ].map((s) => s.toLowerCase());
 
   for (const [title, data] of Object.entries(CAREER_DATABASE)) {
     const { score, reasons } = matchScoreAndReasons(profile, title);
+    const matchingSkills = data.skills.filter((reqSkill) =>
+      userSkills.some((us) => us.includes(reqSkill.toLowerCase()) || reqSkill.toLowerCase().includes(us))
+    );
+    const skillsToDevelop = data.skills.filter(
+      (reqSkill) => !matchingSkills.includes(reqSkill)
+    );
+    const skillOverlapPercent = data.skills.length > 0
+      ? Math.round((matchingSkills.length / data.skills.length) * 100)
+      : 0;
+
     results.push({
       careerTitle: title,
       matchScore: score,
@@ -2543,6 +2557,9 @@ export function getRecommendations(profile: UserProfile): CareerRecommendation[]
       simpleSummary: data.simpleSummary,
       whyRecommended: reasons,
       requiredSkills: data.skills,
+      matchingSkills,
+      skillsToDevelop,
+      skillOverlapPercent,
       learningPath: data.learningPath.map((step) => ({
         ...step,
         completed: false,
@@ -2605,6 +2622,9 @@ export function getCareerByTitle(careerTitle: string): CareerRecommendation | nu
     simpleSummary: data.simpleSummary,
     whyRecommended: ["You opened this career path."],
     requiredSkills: data.skills,
+    matchingSkills: [],
+    skillsToDevelop: data.skills,
+    skillOverlapPercent: 0,
     learningPath: data.learningPath.map((step) => ({ ...step, completed: false })),
     estimatedTimeline: data.timeline,
     salaryRange: data.salaryRange,
@@ -2649,3 +2669,5 @@ export function getCategorizedCareers(): Record<string, { title: string; descrip
   
   return categories;
 }
+
+export { CAREER_DATABASE };
