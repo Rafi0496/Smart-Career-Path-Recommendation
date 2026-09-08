@@ -29,6 +29,7 @@ import {
   getActiveUser,
 } from "@/lib/storage";
 import { getCareerByTitle } from "@/lib/career-engine";
+import { downloadCareerPdfInBrowser } from "@/lib/pdf-generator";
 import type { CareerRecommendation, LearningStep } from "@/lib/types";
 
 function StepBlock({
@@ -201,8 +202,9 @@ function CareerPathContent() {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to generate PDF roadmap");
+        // Fallback directly to client-side generation
+        downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
+        return;
       }
 
       const blob = await res.blob();
@@ -214,8 +216,14 @@ function CareerPathContent() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (e: any) {
-      alert("PDF download failed: " + (e?.message || "Please verify python-service is running."));
+    } catch {
+      // Direct client-side PDF export fallback
+      try {
+        const user = getActiveUser();
+        downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
+      } catch (err: any) {
+        console.error("Client PDF generation error:", err);
+      }
     } finally {
       setDownloadingPdf(false);
     }

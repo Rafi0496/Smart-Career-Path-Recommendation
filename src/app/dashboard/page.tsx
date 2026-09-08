@@ -117,191 +117,375 @@ function DetailModal({
   profile: UserProfile;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   if (!panel) return null;
 
+  const panelConfig = {
+    academics: {
+      title: "Academic Background",
+      subtitle: "Your formal education, stream, subjects & strengths",
+      icon: GraduationCap,
+      color: "text-primary-500",
+      bg: "bg-primary-500/10 dark:bg-primary-500/20",
+    },
+    interests: {
+      title: "Interests & Skills Profile",
+      subtitle: "Personal passions, hobbies, technical skills & work style",
+      icon: Heart,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10 dark:bg-emerald-500/20",
+    },
+    aspirations: {
+      title: "Career Aspirations & Goals",
+      subtitle: "Target dream roles, preferred environment, priorities & timeline",
+      icon: Target,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10 dark:bg-amber-500/20",
+    },
+  }[panel];
+
+  const IconComponent = panelConfig.icon;
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in-up"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      {/* Semi-transparent blur backdrop overlay - separate from dialog so dialog remains crisp and non-blurry */}
       <div
-        className="bg-white dark:bg-[#131b2e] rounded-3xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-700"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Crystal clear modal dialog card */}
+      <div
+        className="relative z-10 bg-white dark:bg-[#111927] rounded-3xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800 animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/90">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-            {panel === "academics" && "Academic Profile"}
-            {panel === "interests" && "Interests & Skills"}
-            {panel === "aspirations" && "Career Aspirations"}
-          </h3>
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90">
+          <div className="flex items-center gap-3.5">
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${panelConfig.bg} ${panelConfig.color} shadow-sm shrink-0`}>
+              <IconComponent className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                {panelConfig.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {panelConfig.subtitle}
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Link
               href="/assessment"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-sm shadow-primary-500/20 transition btn-3d"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-sm shadow-primary-500/20 transition btn-3d"
             >
               <Pencil className="w-3.5 h-3.5" />
-              <span>Edit Details</span>
+              <span className="hidden sm:inline">Edit Details</span>
             </Link>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition"
-              aria-label="Close"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition"
+              aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
           {panel === "academics" && (
-            <dl className="space-y-4">
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Education Level
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.educationLevel || "—"}
-                </dd>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                    Education Level
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-bold text-base">
+                    {profile.academics?.educationLevel || "Not specified"}
+                  </span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                    Stream / Major
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-bold text-base">
+                    {profile.academics?.streamOrField || "Not specified"}
+                  </span>
+                </div>
               </div>
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Stream / Field
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.streamOrField || "—"}
-                </dd>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2.5">
+                  Academic Performance / Grades
+                </span>
+                <span className="text-slate-800 dark:text-slate-100 font-medium">
+                  {profile.academics?.grades || "Not provided"}
+                </span>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Subjects
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.subjects.length ? profile.academics.subjects.join(", ") : "—"}
-                </dd>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                  Key Subjects
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.academics?.subjects && profile.academics.subjects.length > 0 ? (
+                    profile.academics.subjects.map((subj) => (
+                      <span
+                        key={subj}
+                        className="px-3 py-1 rounded-xl bg-primary-50 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 font-medium text-xs border border-primary-200/80 dark:border-primary-800/60"
+                      >
+                        {subj}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No subjects added</span>
+                  )}
+                </div>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Key Strengths
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.strengths.length ? profile.academics.strengths.join(", ") : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.academics?.strengths && profile.academics.strengths.length > 0 ? (
+                    profile.academics.strengths.map((str) => (
+                      <span
+                        key={str}
+                        className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-medium text-xs border border-emerald-200/80 dark:border-emerald-800/60"
+                      >
+                        {str}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No strengths added</span>
+                  )}
+                </div>
               </div>
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Academic Performance
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.grades || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Certifications
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.academics.certifications.length ? profile.academics.certifications.join(", ") : "—"}
-                </dd>
-              </div>
-            </dl>
+
+              {profile.academics?.certifications && profile.academics.certifications.length > 0 && (
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                    Certifications
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.academics.certifications.map((cert) => (
+                      <span
+                        key={cert}
+                        className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-medium text-xs border border-indigo-200/80 dark:border-indigo-800/60"
+                      >
+                        {cert}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {panel === "interests" && (
-            <dl className="space-y-4">
+            <div className="space-y-4">
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Personal Interests
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.interests.interests.length ? profile.interests.interests.join(", ") : "—"}
-                </dd>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                  Personal Interests & Passions
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests?.interests && profile.interests.interests.length > 0 ? (
+                    profile.interests.interests.map((item) => (
+                      <span
+                        key={item}
+                        className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-medium text-xs border border-emerald-200/80 dark:border-emerald-800/60"
+                      >
+                        {item}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No personal interests set</span>
+                  )}
+                </div>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Hobbies
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.interests.hobbies.length ? profile.interests.hobbies.join(", ") : "—"}
-                </dd>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
+                  Hobbies & Free-Time Activities
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests?.hobbies && profile.interests.hobbies.length > 0 ? (
+                    profile.interests.hobbies.map((hob) => (
+                      <span
+                        key={hob}
+                        className="px-3 py-1 rounded-xl bg-sky-50 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 font-medium text-xs border border-sky-200/80 dark:border-sky-800/60"
+                      >
+                        {hob}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No hobbies listed</span>
+                  )}
+                </div>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Current Skills
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.interests.skills.length ? profile.interests.skills.join(", ") : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests?.skills && profile.interests.skills.length > 0 ? (
+                    profile.interests.skills.map((sk) => (
+                      <span
+                        key={sk}
+                        className="px-3 py-1 rounded-xl bg-primary-50 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 font-medium text-xs border border-primary-200/80 dark:border-primary-800/60"
+                      >
+                        {sk}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No skills listed</span>
+                  )}
+                </div>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Preferred Work Style
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.interests.preferredWorkStyle.length
-                    ? profile.interests.preferredWorkStyle.join(", ")
-                    : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests?.preferredWorkStyle && profile.interests.preferredWorkStyle.length > 0 ? (
+                    profile.interests.preferredWorkStyle.map((ws) => (
+                      <span
+                        key={ws}
+                        className="px-3 py-1 rounded-xl bg-violet-50 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 font-medium text-xs border border-violet-200/80 dark:border-violet-800/60"
+                      >
+                        {ws}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No work style preference</span>
+                  )}
+                </div>
               </div>
-            </dl>
+            </div>
           )}
 
           {panel === "aspirations" && (
-            <dl className="space-y-4">
+            <div className="space-y-4">
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Target Dream Roles
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.aspirations.dreamRoles.length ? profile.aspirations.dreamRoles.join(", ") : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.aspirations?.dreamRoles && profile.aspirations.dreamRoles.length > 0 ? (
+                    profile.aspirations.dreamRoles.map((role) => (
+                      <span
+                        key={role}
+                        className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 font-bold text-xs border border-amber-200/80 dark:border-amber-800/60 flex items-center gap-1.5"
+                      >
+                        <Sparkles className="w-3 h-3 text-amber-500" />
+                        <span>{role}</span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No dream roles chosen</span>
+                  )}
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                    Target Timeline
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-bold text-sm">
+                    {profile.aspirations?.timeline || "Flexible"}
+                  </span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                    Environment
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-medium text-sm">
+                    {profile.aspirations?.workEnvironment?.length
+                      ? profile.aspirations.workEnvironment.join(", ")
+                      : "Any"}
+                  </span>
+                </div>
+              </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Willing To Learn & Do
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.aspirations.willingToDo.length ? profile.aspirations.willingToDo.join(", ") : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.aspirations?.willingToDo && profile.aspirations.willingToDo.length > 0 ? (
+                    profile.aspirations.willingToDo.map((item) => (
+                      <span
+                        key={item}
+                        className="px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-medium text-xs border border-blue-200/80 dark:border-blue-800/60"
+                      >
+                        {item}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">None specified</span>
+                  )}
+                </div>
               </div>
+
               <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Work Environment
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.aspirations.workEnvironment.length
-                    ? profile.aspirations.workEnvironment.join(", ")
-                    : "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                   Key Priorities
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.aspirations.priorities.length ? profile.aspirations.priorities.join(", ") : "—"}
-                </dd>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {profile.aspirations?.priorities && profile.aspirations.priorities.length > 0 ? (
+                    profile.aspirations.priorities.map((item) => (
+                      <span
+                        key={item}
+                        className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-medium text-xs border border-indigo-200/80 dark:border-indigo-800/60"
+                      >
+                        {item}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">None specified</span>
+                  )}
+                </div>
               </div>
-              <div>
-                <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Target Timeline
-                </dt>
-                <dd className="text-slate-900 dark:text-white font-medium">
-                  {profile.aspirations.timeline || "—"}
-                </dd>
-              </div>
-              {profile.aspirations.additionalNotes && (
-                <div>
-                  <dt className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Notes
-                  </dt>
-                  <dd className="text-slate-900 dark:text-white font-medium">
+
+              {profile.aspirations?.additionalNotes && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                    Additional Notes
+                  </span>
+                  <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
                     {profile.aspirations.additionalNotes}
-                  </dd>
+                  </p>
                 </div>
               )}
-            </dl>
+            </div>
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition"
+          >
+            Close Details
+          </button>
         </div>
       </div>
     </div>
@@ -461,19 +645,24 @@ export default function DashboardPage() {
   // Case 3: LOGGED IN USER WITH DASHBOARD CREATED
   // =========================================================================
   const academicScore =
-    (profile.academics.educationLevel ? 1 : 0) * 25 +
-    Math.min(25, profile.academics.subjects.length * 8) +
-    Math.min(25, profile.academics.strengths.length * 8) +
-    (profile.academics.grades ? 25 : 0);
+    (profile.academics?.educationLevel ? 1 : 0) * 25 +
+    Math.min(25, (profile.academics?.subjects?.length || 0) * 8) +
+    Math.min(25, (profile.academics?.strengths?.length || 0) * 8) +
+    (profile.academics?.grades ? 25 : 0);
   const academicMax = 100;
+
   const interestScore =
-    Math.min(34, profile.interests.interests.length * 10) +
-    Math.min(33, profile.interests.hobbies.length * 10) +
-    Math.min(33, profile.interests.skills.length * 10);
+    Math.min(34, (profile.interests?.interests?.length || 0) * 10) +
+    Math.min(33, (profile.interests?.hobbies?.length || 0) * 10) +
+    Math.min(33, (profile.interests?.skills?.length || 0) * 10);
+  const interestMax = 100;
+
   const aspirationScore =
-    Math.min(40, profile.aspirations.dreamRoles.length * 15) +
-    Math.min(30, profile.aspirations.willingToDo.length * 10) +
-    Math.min(30, profile.aspirations.priorities.length * 10);
+    Math.min(30, (profile.aspirations?.dreamRoles?.length || 0) * 15) +
+    Math.min(25, (profile.aspirations?.willingToDo?.length || 0) * 10) +
+    Math.min(15, (profile.aspirations?.workEnvironment?.length || 0) * 8) +
+    Math.min(15, (profile.aspirations?.priorities?.length || 0) * 8) +
+    (profile.aspirations?.timeline ? 15 : 0);
   const aspirationMax = 100;
 
   return (
@@ -555,23 +744,23 @@ export default function DashboardPage() {
                 percent={(academicScore / academicMax) * 100}
                 color="text-primary-500"
                 icon={GraduationCap}
-                detail={profile.academics.educationLevel || profile.academics.subjects[0] || "Not set"}
+                detail={profile.academics?.educationLevel || profile.academics?.subjects?.[0] || "Not set"}
                 onClick={() => setDetailPanel("academics")}
               />
               <CircularStat
                 label="Interests"
-                percent={interestScore}
+                percent={(interestScore / interestMax) * 100}
                 color="text-emerald-500"
                 icon={Heart}
-                detail={profile.interests.interests[0] || profile.interests.hobbies[0] || "Not set"}
+                detail={profile.interests?.interests?.[0] || profile.interests?.hobbies?.[0] || "Not set"}
                 onClick={() => setDetailPanel("interests")}
               />
               <CircularStat
                 label="Aspirations"
-                percent={aspirationScore / aspirationMax || 0}
+                percent={(aspirationScore / aspirationMax) * 100}
                 color="text-amber-500"
                 icon={Target}
-                detail={profile.aspirations.dreamRoles[0] || "Not set"}
+                detail={profile.aspirations?.dreamRoles?.[0] || "Not set"}
                 onClick={() => setDetailPanel("aspirations")}
               />
             </div>
