@@ -155,9 +155,9 @@ function DetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Semi-transparent blur backdrop overlay - separate from dialog so dialog remains crisp and non-blurry */}
+      {/* Dark overlay behind the modal — no blur so the modal and page stay crisp */}
       <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/60 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />

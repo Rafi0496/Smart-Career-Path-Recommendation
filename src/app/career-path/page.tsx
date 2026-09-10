@@ -187,43 +187,15 @@ function CareerPathContent() {
     setCompletedSteps(getCompletedStepsForCareer(rec.careerTitle));
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     if (!rec) return;
     setDownloadingPdf(true);
     try {
       const user = getActiveUser();
-      const res = await fetch("/api/export/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          career: rec,
-          user_name: user?.name || "Candidate",
-        }),
-      });
-
-      if (!res.ok) {
-        // Fallback directly to client-side generation
-        downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
-        return;
-      }
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${rec.careerTitle.replace(/[^a-zA-Z0-9_\-]+/g, "_")}_Roadmap.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch {
-      // Direct client-side PDF export fallback
-      try {
-        const user = getActiveUser();
-        downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
-      } catch (err: any) {
-        console.error("Client PDF generation error:", err);
-      }
+      downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      alert("Failed to generate PDF. Please try again.");
     } finally {
       setDownloadingPdf(false);
     }

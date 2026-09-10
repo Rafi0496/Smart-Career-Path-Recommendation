@@ -96,26 +96,26 @@ export default function AIAssistant() {
   const context = { userName, currentCareer };
 
   const suggestedQuestions = [
-    ...(currentCareer ? [`Explain more about ${currentCareer}`, "What should I do first in this path?"] : []),
-    "What careers do you recommend?",
-    "How do I get started?",
-    "How does the matching work?",
-    "What is the learning path?",
+    ...(currentCareer ? [`Tell me everything about ${currentCareer}`, `What skills do I need for ${currentCareer}?`] : []),
+    "What career is best for me?",
+    "Compare Data Science vs AI Engineering",
+    "What does a day in software development look like?",
+    "How much do tech professionals earn?",
   ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
 
   useEffect(() => {
     if (open && messages.length === 0) {
       let welcome = "";
       if (userName && userName.trim()) {
-        welcome = `Hello, ${userName.trim()}! I'm **V**, your AI career assistant. `;
+        welcome = `Hello, ${userName.trim()}! I'm **V**, your AI career navigator. `;
       } else {
-        welcome = "Hello! I'm **V**, your AI career assistant. ";
+        welcome = "Hello! I'm **V**, your AI career navigator. ";
       }
 
       if (currentCareer) {
-        welcome += `You're viewing **${currentCareer}**. Ask V anything about this path, required skills, or your learning roadmap!`;
+        welcome += `You're viewing **${currentCareer}**. Ask me anything — deep details about this role, required skills, salary expectations, career growth, interview tips, or any other question!`;
       } else {
-        welcome += "I can help with career paths, how to use this site, and explore your recommendations. What would you like to know?";
+        welcome += "I can answer **any question** — career advice, technical topics, skill comparisons, salary info, industry trends, or general knowledge. What would you like to explore?";
       }
       setMessages([{ role: "assistant", content: welcome }]);
     }
@@ -234,7 +234,7 @@ export default function AIAssistant() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div className="p-3 rounded-2xl bg-primary-50 dark:bg-[#16223d] border border-primary-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-100 flex items-center gap-2.5 shadow-sm">
                 <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-300 shrink-0" />
-                <span>Ask <strong className="font-bold text-slate-900 dark:text-white">V</strong> about career roadmaps, skill milestones, or site navigation.</span>
+                <span>Ask <strong className="font-bold text-slate-900 dark:text-white">V</strong> anything — careers, skills, salaries, tech topics, or general knowledge.</span>
               </div>
 
               {messages.map((msg, i) => (
