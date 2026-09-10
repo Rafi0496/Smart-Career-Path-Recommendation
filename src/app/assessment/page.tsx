@@ -456,7 +456,7 @@ export default function AssessmentPage() {
                       Auto-Fill Assessment from Resume
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-sm mx-auto">
-                      Upload your PDF resume to automatically extract skills, education, experience, and aspirations using spaCy NER & NLP.
+                      Upload your PDF resume to automatically extract skills, education, experience, and aspirations using AI & Intelligent NLP.
                     </p>
                   </div>
 
