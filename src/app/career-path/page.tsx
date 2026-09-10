@@ -192,7 +192,7 @@ function CareerPathContent() {
     setDownloadingPdf(true);
     try {
       const user = getActiveUser();
-      downloadCareerPdfInBrowser(rec, user?.name || "Candidate");
+      downloadCareerPdfInBrowser(rec, user, user?.profile);
     } catch (err) {
       console.error("PDF generation error:", err);
       alert("Failed to generate PDF. Please try again.");
@@ -205,7 +205,7 @@ function CareerPathContent() {
     if (!rec) return;
     try {
       const user = getActiveUser();
-      openCareerPdfInBrowser(rec, user?.name || "Candidate");
+      openCareerPdfInBrowser(rec, user, user?.profile);
     } catch (err) {
       console.error("PDF preview error:", err);
       alert("Failed to preview PDF. Please try downloading it instead.");

@@ -4,7 +4,7 @@ import { buildCareerPdfArrayBuffer } from "@/lib/pdf-generator";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { career, user_name } = body;
+    const { career, user_name, profile } = body;
 
     if (!career || !career.careerTitle) {
       return NextResponse.json(
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       const pyRes = await fetch(`${pythonServiceUrl}/export/pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ career, user_name }),
+        body: JSON.stringify({ career, user_name, profile }),
         signal: AbortSignal.timeout(3000), // Quick 3s timeout before falling back to built-in generator
       });
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
           status: 200,
           headers: {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename="${titleSlug}_Roadmap.pdf"`,
+            "Content-Disposition": `attachment; filename="${titleSlug}_Executive_Roadmap.pdf"`,
           },
         });
       }
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Built-in standalone PDF generator (100% reliable, zero external dependencies)
-    const fallbackBuffer = buildCareerPdfArrayBuffer(career, user_name || "Candidate");
+    const fallbackBuffer = buildCareerPdfArrayBuffer(career, user_name || "Candidate", profile);
 
     return new Response(fallbackBuffer, {
       status: 200,
