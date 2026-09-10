@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getFallbackResponse } from "@/lib/assistant-fallback";
 
-export const maxDuration = 30;
+export const maxDuration = 45;
 
 interface Message {
   role: "user" | "assistant";
@@ -13,79 +13,33 @@ interface AssistantContext {
   currentCareer?: string;
 }
 
-const SYSTEM_PROMPT = [
-  "You are 'V', a highly intelligent, knowledgeable, and enthusiastic AI career navigator for 'Smart Career Path'.",
-  "You are an EXPERT on all career paths, industries, technologies, skills, education, and professional development.",
-  "You MUST answer ANY question the user asks — whether it's about careers, technology, coding, science, history, general knowledge, or anything else.",
-  "When asked about a specific career or role, provide DEEP, DETAILED answers covering: day-to-day responsibilities, required skills (technical and soft), career progression, salary ranges, top companies, industry trends, certifications, interview tips, and learning resources.",
-  "When asked technical questions (e.g. 'What is machine learning?', 'How does React work?'), give thorough, educational explanations.",
-  "When asked comparison questions (e.g. 'Frontend vs Backend', 'Data Science vs AI'), provide balanced, detailed comparisons.",
-  "You are NOT limited to website navigation help. You are a full-featured AI assistant with broad knowledge.",
-  "Always respond in a friendly, professional, and encouraging tone. Use markdown formatting with **bold** for emphasis.",
-  "Keep responses thorough but well-structured. Use bullet points and sections for long answers.",
-  "If the user asks about something you don't know, admit it honestly but try to provide what you can.",
-].join(" ");
+const SYSTEM_PROMPT = `
+You are "V", an extraordinarily intelligent, inspiring, empathetic, and deeply knowledgeable AI Career Mentor & Polymath Guide for "Smart Career Path".
+
+YOUR CORE IDENTITY & MISSION:
+1. UNBOUNDED INTELLIGENCE: You possess deep, comprehensive knowledge across all fields: software engineering, data science, AI/ML, cloud, cybersecurity, product management, design, medicine, finance, business, humanities, science, and life skills.
+2. ANSWER ANY QUESTION: You must answer ANY type of question the user asks with clarity, depth, and mastery. You are NOT restricted to site navigation. Whether they ask about complex coding bugs, career roadmaps, salary negotiations, industry trends, science, philosophy, or overcoming imposter syndrome, give them a brilliant, high-value answer.
+3. RELENTLESS OPTIMISM & ENCOURAGEMENT: Radiate optimism, warmth, and genuine confidence in the user's potential. Every obstacle has a solution. Celebrate their curiosity, uplift their spirits, and inspire them to dream big and take action.
+4. PROBLEM SOLVING & DOUBT CLEARING: Directly diagnose the user's situation. Provide structured, step-by-step solutions with concrete examples, best practices, and actionable advice.
+5. PROACTIVE FOLLOW-UP: Never end with a dead-end answer. Always anticipate their next hurdle and offer 1 or 2 exciting, thoughtful follow-up questions or options (e.g., "Would you like to build a quick project to practice this, or explore how to put this on your resume?").
+6. FORMATTING: Use clean, beautiful markdown with **bold highlights**, bullet points, numbered steps, and code blocks where helpful to ensure effortless readability.
+`.trim();
 
 function buildSystemMessage(context?: AssistantContext): string {
   const parts = [SYSTEM_PROMPT];
-  if (context?.userName && context.userName !== "Anonymous") {
-    parts.push(`The user's name is ${context.userName}. Address them by name occasionally.`);
+  if (context?.userName && context.userName !== "Anonymous" && context.userName !== "Candidate") {
+    parts.push(`The user's name is ${context.userName}. Greet or address them warmly and personally by name when appropriate.`);
   }
   if (context?.currentCareer) {
     parts.push(
-      `The user is currently viewing the "${context.currentCareer}" career path page. ` +
-      `If they ask about "this career" or "this role", they mean ${context.currentCareer}. ` +
-      `Provide extremely detailed information about ${context.currentCareer} including responsibilities, skills, salary, growth, and learning path.`
+      `The user is currently exploring the "${context.currentCareer}" career path. ` +
+      `If they ask about "this career", "this roadmap", or role specifics, provide deep insights specifically tailored to ${context.currentCareer}.`
     );
   }
-  return parts.join(" ");
+  return parts.join("\n\n");
 }
 
-/** Attempt 1: Groq API (ultra-fast, Llama 3 models) */
-async function tryGroq(
-  systemMessage: string,
-  messages: Message[]
-): Promise<string | null> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: systemMessage },
-          ...messages.slice(-12).map((m) => ({ role: m.role, content: m.content })),
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-        top_p: 0.9,
-      }),
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("Groq API error:", res.status, err);
-      return null;
-    }
-
-    const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (e) {
-    console.error("Groq request failed:", e);
-    return null;
-  }
-}
-
-/** Attempt 2: Google Gemini API */
+/** Attempt 1: Google Gemini API (gemini-3.6-flash) - fast, ultra-smart */
 async function tryGemini(
   systemMessage: string,
   messages: Message[]
@@ -94,13 +48,18 @@ async function tryGemini(
   if (!apiKey) return null;
 
   try {
-    const geminiMessages = messages.slice(-12).map((m) => ({
+    const contents = messages.slice(-12).map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));
 
+    // Ensure the conversation starts with a user turn for Gemini API compliance
+    if (contents.length > 0 && contents[0].role === "model") {
+      contents.shift();
+    }
+
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,14 +67,14 @@ async function tryGemini(
           system_instruction: {
             parts: [{ text: systemMessage }],
           },
-          contents: geminiMessages,
+          contents: contents.length > 0 ? contents : [{ role: "user", parts: [{ text: "Hello!" }] }],
           generationConfig: {
-            temperature: 0.7,
-            topP: 0.9,
-            maxOutputTokens: 1500,
+            temperature: 0.75,
+            topP: 0.95,
+            maxOutputTokens: 2048,
           },
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(18000),
       }
     );
 
@@ -135,7 +94,56 @@ async function tryGemini(
   }
 }
 
-/** Attempt 3: OpenAI API (if user has key) */
+/** Attempt 2: Groq API with powerful models (openai/gpt-oss-120b, groq/compound, qwen/qwen3.8-27b) */
+async function tryGroq(
+  systemMessage: string,
+  messages: Message[]
+): Promise<string | null> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+
+  const candidateModels = ["openai/gpt-oss-120b", "groq/compound", "qwen/qwen3.8-27b"];
+
+  for (const model of candidateModels) {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: "system", content: systemMessage },
+            ...messages.slice(-12).map((m) => ({ role: m.role, content: m.content })),
+          ],
+          max_tokens: 2048,
+          temperature: 0.75,
+          top_p: 0.9,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!res.ok) {
+        console.warn(`Groq model ${model} failed with status:`, res.status);
+        continue;
+      }
+
+      const data = (await res.json()) as {
+        choices?: { message?: { content?: string } }[];
+      };
+      const text = data.choices?.[0]?.message?.content?.trim();
+      if (text) return text;
+    } catch (e) {
+      console.warn(`Groq request for ${model} encountered error:`, e);
+    }
+  }
+
+  return null;
+}
+
+/** Attempt 3: OpenAI API (if configured by user) */
 async function tryOpenAI(
   systemMessage: string,
   messages: Message[]
@@ -156,15 +164,13 @@ async function tryOpenAI(
           { role: "system", content: systemMessage },
           ...messages.slice(-12).map((m) => ({ role: m.role, content: m.content })),
         ],
-        max_tokens: 1500,
-        temperature: 0.7,
+        max_tokens: 2048,
+        temperature: 0.75,
       }),
       signal: AbortSignal.timeout(15000),
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("OpenAI API error:", res.status, err);
       return null;
     }
 
@@ -172,8 +178,7 @@ async function tryOpenAI(
       choices?: { message?: { content?: string } }[];
     };
     return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (e) {
-    console.error("OpenAI request failed:", e);
+  } catch {
     return null;
   }
 }
@@ -195,10 +200,10 @@ export async function POST(request: Request) {
 
     const systemMessage = buildSystemMessage(context);
 
-    // Try providers in order: Groq (fastest) → Gemini → OpenAI → built-in fallback
+    // Multi-tier AI execution: Gemini 3.6 Flash -> Groq (GPT 120B / Compound) -> OpenAI -> Offline Fallback
     const content =
-      (await tryGroq(systemMessage, messages)) ??
       (await tryGemini(systemMessage, messages)) ??
+      (await tryGroq(systemMessage, messages)) ??
       (await tryOpenAI(systemMessage, messages)) ??
       getFallbackResponse(userContent, context);
 

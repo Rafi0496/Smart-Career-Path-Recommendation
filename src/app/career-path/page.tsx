@@ -29,7 +29,7 @@ import {
   getActiveUser,
 } from "@/lib/storage";
 import { getCareerByTitle } from "@/lib/career-engine";
-import { downloadCareerPdfInBrowser } from "@/lib/pdf-generator";
+import { downloadCareerPdfInBrowser, openCareerPdfInBrowser } from "@/lib/pdf-generator";
 import type { CareerRecommendation, LearningStep } from "@/lib/types";
 
 function StepBlock({
@@ -201,6 +201,17 @@ function CareerPathContent() {
     }
   };
 
+  const handleOpenPdf = () => {
+    if (!rec) return;
+    try {
+      const user = getActiveUser();
+      openCareerPdfInBrowser(rec, user?.name || "Candidate");
+    } catch (err) {
+      console.error("PDF preview error:", err);
+      alert("Failed to preview PDF. Please try downloading it instead.");
+    }
+  };
+
   if (!title) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] flex flex-col">
@@ -289,9 +300,20 @@ function CareerPathContent() {
 
               <button
                 type="button"
+                onClick={handleOpenPdf}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold transition btn-3d"
+                title="Preview PDF directly in a new browser tab"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                <span>Preview PDF</span>
+              </button>
+
+              <button
+                type="button"
                 disabled={downloadingPdf}
                 onClick={handleDownloadPdf}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white px-3.5 py-1.5 text-xs font-semibold shadow-sm transition btn-3d"
+                title="Download full roadmap as PDF document"
               >
                 {downloadingPdf ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

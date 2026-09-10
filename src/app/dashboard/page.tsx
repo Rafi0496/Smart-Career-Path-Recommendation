@@ -11,7 +11,6 @@ import {
   ArrowRight,
   RefreshCw,
   ChevronRight,
-  X,
   Pencil,
   Star,
   LogIn,
@@ -37,34 +36,26 @@ import {
 import { getCategorizedCareers } from "@/lib/career-engine";
 import type { UserProfile, CareerRecommendation, UserAccount } from "@/lib/types";
 
-type DetailPanel = "academics" | "interests" | "aspirations" | null;
-
 function CircularStat({
   label,
   percent,
   color,
   icon: Icon,
   detail,
-  onClick,
 }: {
   label: string;
   percent: number;
   color: string;
   icon: React.ElementType;
   detail: string;
-  onClick?: () => void;
 }) {
   const pct = Math.min(100, Math.max(0, percent));
   const circumference = 2 * Math.PI * 42;
   const strokeDash = (pct / 100) * circumference;
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group relative flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-2xl p-3 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-all card-3d"
-    >
-      <div className="relative w-28 h-28 transition-transform duration-300 group-hover:scale-105">
+    <div className="relative flex flex-col items-center select-none cursor-default p-3">
+      <div className="relative w-28 h-28">
         <svg className="w-full h-full ring-progress" viewBox="0 0 100 100">
           <circle
             cx="50"
@@ -89,405 +80,23 @@ function CircularStat({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:shadow-lg transition-shadow">
+          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
             <Icon className="w-6 h-6 text-slate-700 dark:text-slate-200" />
           </div>
         </div>
       </div>
-      <span className="mt-3 text-sm font-bold text-slate-800 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+      <span className="mt-3 text-sm font-bold text-slate-800 dark:text-white">
         {label}
       </span>
-      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{Math.round(pct)}% complete</span>
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+        {Math.round(pct)}% complete
+      </span>
       <span
         className="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[130px] truncate border border-slate-300/60 dark:border-slate-700"
         title={detail}
       >
         {detail}
       </span>
-    </button>
-  );
-}
-
-function DetailModal({
-  panel,
-  profile,
-  onClose,
-}: {
-  panel: DetailPanel;
-  profile: UserProfile;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  if (!panel) return null;
-
-  const panelConfig = {
-    academics: {
-      title: "Academic Background",
-      subtitle: "Your formal education, stream, subjects & strengths",
-      icon: GraduationCap,
-      color: "text-primary-500",
-      bg: "bg-primary-500/10 dark:bg-primary-500/20",
-    },
-    interests: {
-      title: "Interests & Skills Profile",
-      subtitle: "Personal passions, hobbies, technical skills & work style",
-      icon: Heart,
-      color: "text-emerald-500",
-      bg: "bg-emerald-500/10 dark:bg-emerald-500/20",
-    },
-    aspirations: {
-      title: "Career Aspirations & Goals",
-      subtitle: "Target dream roles, preferred environment, priorities & timeline",
-      icon: Target,
-      color: "text-amber-500",
-      bg: "bg-amber-500/10 dark:bg-amber-500/20",
-    },
-  }[panel];
-
-  const IconComponent = panelConfig.icon;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Dark overlay behind the modal — no blur so the modal and page stay crisp */}
-      <div
-        className="fixed inset-0 bg-black/60 transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Crystal clear modal dialog card */}
-      <div
-        className="relative z-10 bg-white dark:bg-[#111927] rounded-3xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800 animate-fade-in-up"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90">
-          <div className="flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${panelConfig.bg} ${panelConfig.color} shadow-sm shrink-0`}>
-              <IconComponent className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                {panelConfig.title}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {panelConfig.subtitle}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/assessment"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white shadow-sm shadow-primary-500/20 transition btn-3d"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Edit Details</span>
-            </Link>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition"
-              aria-label="Close dialog"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
-          {panel === "academics" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                    Education Level
-                  </span>
-                  <span className="text-slate-900 dark:text-white font-bold text-base">
-                    {profile.academics?.educationLevel || "Not specified"}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                    Stream / Major
-                  </span>
-                  <span className="text-slate-900 dark:text-white font-bold text-base">
-                    {profile.academics?.streamOrField || "Not specified"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2.5">
-                  Academic Performance / Grades
-                </span>
-                <span className="text-slate-800 dark:text-slate-100 font-medium">
-                  {profile.academics?.grades || "Not provided"}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Key Subjects
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.academics?.subjects && profile.academics.subjects.length > 0 ? (
-                    profile.academics.subjects.map((subj) => (
-                      <span
-                        key={subj}
-                        className="px-3 py-1 rounded-xl bg-primary-50 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 font-medium text-xs border border-primary-200/80 dark:border-primary-800/60"
-                      >
-                        {subj}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No subjects added</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Key Strengths
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.academics?.strengths && profile.academics.strengths.length > 0 ? (
-                    profile.academics.strengths.map((str) => (
-                      <span
-                        key={str}
-                        className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-medium text-xs border border-emerald-200/80 dark:border-emerald-800/60"
-                      >
-                        {str}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No strengths added</span>
-                  )}
-                </div>
-              </div>
-
-              {profile.academics?.certifications && profile.academics.certifications.length > 0 && (
-                <div>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                    Certifications
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.academics.certifications.map((cert) => (
-                      <span
-                        key={cert}
-                        className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-medium text-xs border border-indigo-200/80 dark:border-indigo-800/60"
-                      >
-                        {cert}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {panel === "interests" && (
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Personal Interests & Passions
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests?.interests && profile.interests.interests.length > 0 ? (
-                    profile.interests.interests.map((item) => (
-                      <span
-                        key={item}
-                        className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 font-medium text-xs border border-emerald-200/80 dark:border-emerald-800/60"
-                      >
-                        {item}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No personal interests set</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Hobbies & Free-Time Activities
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests?.hobbies && profile.interests.hobbies.length > 0 ? (
-                    profile.interests.hobbies.map((hob) => (
-                      <span
-                        key={hob}
-                        className="px-3 py-1 rounded-xl bg-sky-50 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 font-medium text-xs border border-sky-200/80 dark:border-sky-800/60"
-                      >
-                        {hob}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No hobbies listed</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Current Skills
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests?.skills && profile.interests.skills.length > 0 ? (
-                    profile.interests.skills.map((sk) => (
-                      <span
-                        key={sk}
-                        className="px-3 py-1 rounded-xl bg-primary-50 dark:bg-primary-950/70 text-primary-700 dark:text-primary-300 font-medium text-xs border border-primary-200/80 dark:border-primary-800/60"
-                      >
-                        {sk}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No skills listed</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Preferred Work Style
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.interests?.preferredWorkStyle && profile.interests.preferredWorkStyle.length > 0 ? (
-                    profile.interests.preferredWorkStyle.map((ws) => (
-                      <span
-                        key={ws}
-                        className="px-3 py-1 rounded-xl bg-violet-50 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 font-medium text-xs border border-violet-200/80 dark:border-violet-800/60"
-                      >
-                        {ws}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No work style preference</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {panel === "aspirations" && (
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Target Dream Roles
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.aspirations?.dreamRoles && profile.aspirations.dreamRoles.length > 0 ? (
-                    profile.aspirations.dreamRoles.map((role) => (
-                      <span
-                        key={role}
-                        className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 font-bold text-xs border border-amber-200/80 dark:border-amber-800/60 flex items-center gap-1.5"
-                      >
-                        <Sparkles className="w-3 h-3 text-amber-500" />
-                        <span>{role}</span>
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">No dream roles chosen</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                    Target Timeline
-                  </span>
-                  <span className="text-slate-900 dark:text-white font-bold text-sm">
-                    {profile.aspirations?.timeline || "Flexible"}
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                    Environment
-                  </span>
-                  <span className="text-slate-900 dark:text-white font-medium text-sm">
-                    {profile.aspirations?.workEnvironment?.length
-                      ? profile.aspirations.workEnvironment.join(", ")
-                      : "Any"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Willing To Learn & Do
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.aspirations?.willingToDo && profile.aspirations.willingToDo.length > 0 ? (
-                    profile.aspirations.willingToDo.map((item) => (
-                      <span
-                        key={item}
-                        className="px-3 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-medium text-xs border border-blue-200/80 dark:border-blue-800/60"
-                      >
-                        {item}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">None specified</span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
-                  Key Priorities
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.aspirations?.priorities && profile.aspirations.priorities.length > 0 ? (
-                    profile.aspirations.priorities.map((item) => (
-                      <span
-                        key={item}
-                        className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-medium text-xs border border-indigo-200/80 dark:border-indigo-800/60"
-                      >
-                        {item}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">None specified</span>
-                  )}
-                </div>
-              </div>
-
-              {profile.aspirations?.additionalNotes && (
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
-                    Additional Notes
-                  </span>
-                  <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                    {profile.aspirations.additionalNotes}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/70 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition"
-          >
-            Close Details
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -497,7 +106,6 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [recommendations, setRecommendations] = useState<CareerRecommendation[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [detailPanel, setDetailPanel] = useState<DetailPanel>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [categories, setCategories] = useState<Record<string, { title: string; description: string }[]>>({});
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -669,10 +277,6 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-emerald-50/30 dark:from-[#0b0f19] dark:via-[#0f172a] dark:to-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <Navbar />
 
-      {detailPanel && profile && (
-        <DetailModal panel={detailPanel} profile={profile} onClose={() => setDetailPanel(null)} />
-      )}
-
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {/* Dashboard Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/80 dark:border-slate-800">
@@ -734,7 +338,7 @@ export default function DashboardPage() {
                 <span>Profile Completeness</span>
               </h2>
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-300">
-                Click any metric for details
+                Assessment Overview
               </span>
             </div>
 
@@ -745,7 +349,6 @@ export default function DashboardPage() {
                 color="text-primary-500"
                 icon={GraduationCap}
                 detail={profile.academics?.educationLevel || profile.academics?.subjects?.[0] || "Not set"}
-                onClick={() => setDetailPanel("academics")}
               />
               <CircularStat
                 label="Interests"
@@ -753,7 +356,6 @@ export default function DashboardPage() {
                 color="text-emerald-500"
                 icon={Heart}
                 detail={profile.interests?.interests?.[0] || profile.interests?.hobbies?.[0] || "Not set"}
-                onClick={() => setDetailPanel("interests")}
               />
               <CircularStat
                 label="Aspirations"
@@ -761,7 +363,6 @@ export default function DashboardPage() {
                 color="text-amber-500"
                 icon={Target}
                 detail={profile.aspirations?.dreamRoles?.[0] || "Not set"}
-                onClick={() => setDetailPanel("aspirations")}
               />
             </div>
           </div>

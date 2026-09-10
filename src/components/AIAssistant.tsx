@@ -96,26 +96,35 @@ export default function AIAssistant() {
   const context = { userName, currentCareer };
 
   const suggestedQuestions = [
-    ...(currentCareer ? [`Tell me everything about ${currentCareer}`, `What skills do I need for ${currentCareer}?`] : []),
-    "What career is best for me?",
-    "Compare Data Science vs AI Engineering",
-    "What does a day in software development look like?",
-    "How much do tech professionals earn?",
-  ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
+    ...(currentCareer
+      ? [
+          `Tell me everything about ${currentCareer}`,
+          `What is the fastest way to break into ${currentCareer}?`,
+          `What real-world projects should I build for ${currentCareer}?`,
+        ]
+      : []),
+    "What career matches my unique strengths best?",
+    "Explain AI Engineering vs Full-Stack Development",
+    "How do I overcome doubts and break into tech?",
+    "What are the highest-paying skills to learn right now?",
+    "Can you create a customized study roadmap for me?",
+  ]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 5);
 
   useEffect(() => {
     if (open && messages.length === 0) {
       let welcome = "";
       if (userName && userName.trim()) {
-        welcome = `Hello, ${userName.trim()}! I'm **V**, your AI career navigator. `;
+        welcome = `Hello, ${userName.trim()}! I'm **V**, your AI career navigator & mentor. `;
       } else {
-        welcome = "Hello! I'm **V**, your AI career navigator. ";
+        welcome = "Hello! I'm **V**, your AI career navigator & mentor. ";
       }
 
       if (currentCareer) {
-        welcome += `You're viewing **${currentCareer}**. Ask me anything — deep details about this role, required skills, salary expectations, career growth, interview tips, or any other question!`;
+        welcome += `You're currently exploring **${currentCareer}**! I'm ready to answer ANY question—from day-to-day responsibilities, interview strategies, and salary potential to technical concepts and overcoming any doubts. What would you like to know?`;
       } else {
-        welcome += "I can answer **any question** — career advice, technical topics, skill comparisons, salary info, industry trends, or general knowledge. What would you like to explore?";
+        welcome += "I'm equipped with next-gen intelligence to answer **any question** with optimism and depth—career pathways, technical concepts, project ideas, or interview prep. Ask me anything, and let's unlock your future!";
       }
       setMessages([{ role: "assistant", content: welcome }]);
     }
