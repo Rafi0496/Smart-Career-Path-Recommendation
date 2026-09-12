@@ -1,9 +1,9 @@
-// "V" - AI Career Mentor Controller
+// "Ask V" - Career Intelligence Controller
 
 let chatMessages = [
   {
     role: "assistant",
-    content: "Hello! I am **V**, your dedicated AI Career Mentor. Ask me any question regarding career pathways, in-demand technical skills, roadmap execution, or salary benchmarks."
+    content: "Hello! I am **V**. Ask me any question regarding career pathways, in-demand technical skills, roadmap execution, or salary benchmarks."
   }
 ];
 
@@ -131,7 +131,7 @@ async function sendAssistantMessage(customQuery = null) {
     } else {
       chatMessages.push({
         role: "assistant",
-        content: "I am **V**, your AI Career Mentor. Please ask any specific career, roadmap, or technical skill question."
+        content: "I am **V**. Please ask any specific career, roadmap, or technical skill question."
       });
       renderChatMessages();
     }

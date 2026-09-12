@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import Optional
+from urllib.parse import quote
 
 from app.config import settings
 from app.core.career_engine import career_engine
@@ -21,6 +22,12 @@ def get_current_user(request: Request) -> Optional[dict]:
                 return dict(row)
     return None
 
+def get_redirect_target(request: Request) -> str:
+    path = request.url.path
+    query = str(request.query_params)
+    target = f"{path}?{query}" if query else path
+    return quote(target)
+
 @pages_router.get("/", response_class=HTMLResponse)
 async def home_page(request: Request):
     user = get_current_user(request)
@@ -37,6 +44,8 @@ async def home_page(request: Request):
 @pages_router.get("/assessment", response_class=HTMLResponse)
 async def assessment_page(request: Request):
     user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     return templates.TemplateResponse(
         request=request,
         name="assessment.html",
@@ -49,6 +58,8 @@ async def assessment_page(request: Request):
 @pages_router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page(request: Request):
     user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     categorized = career_engine.get_categorized_careers()
     return templates.TemplateResponse(
         request=request,
@@ -63,6 +74,8 @@ async def dashboard_page(request: Request):
 @pages_router.get("/career-path", response_class=HTMLResponse)
 async def career_path_page(request: Request, title: Optional[str] = "Software Developer"):
     user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     career = career_engine.get_career_by_title(title)
     if not career:
         career = career_engine.get_career_by_title("Software Developer")
@@ -81,6 +94,8 @@ async def career_path_page(request: Request, title: Optional[str] = "Software De
 @pages_router.get("/career-path/quiz", response_class=HTMLResponse)
 async def quiz_page(request: Request, title: Optional[str] = "Software Developer"):
     user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     career = career_engine.get_career_by_title(title)
     if not career:
         career = career_engine.get_career_by_title("Software Developer")
@@ -99,6 +114,8 @@ async def quiz_page(request: Request, title: Optional[str] = "Software Developer
 @pages_router.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     all_titles = career_engine.get_all_titles()
     return templates.TemplateResponse(
         request=request,
@@ -113,6 +130,9 @@ async def compare_page(request: Request):
 @pages_router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     user = get_current_user(request)
+    if user:
+        redirect_to = request.query_params.get("redirect") or "/dashboard"
+        return RedirectResponse(url=redirect_to, status_code=302)
     return templates.TemplateResponse(
         request=request,
         name="login.html",
@@ -125,6 +145,9 @@ async def login_page(request: Request):
 @pages_router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
     user = get_current_user(request)
+    if user:
+        redirect_to = request.query_params.get("redirect") or "/dashboard"
+        return RedirectResponse(url=redirect_to, status_code=302)
     return templates.TemplateResponse(
         request=request,
         name="register.html",

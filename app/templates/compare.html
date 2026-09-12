@@ -7,145 +7,274 @@
   <!-- Header -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
-        <i data-lucide="scale" class="w-6 h-6 text-primary-600"></i>
-        <span>Side-by-Side Career Comparison</span>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-bold mb-2">
+        <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+        <span>Side-by-Side Career Analysis</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+        Career Comparison Matrix
       </h1>
       <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-        Select up to 3 career tracks to compare market compensation, timelines, and overlapping skills.
+        Compare market compensation, learning timelines, skill overlaps, and milestone roadmaps for up to 3 careers.
       </p>
     </div>
 
-    <!-- Career Selector Dropdown -->
+    <!-- Career Selector Dropdown & Actions -->
     <div class="flex items-center gap-2 w-full sm:w-auto">
-      <select id="career-select" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-primary-500">
+      <select id="career-select" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-primary-500 max-w-[220px] sm:max-w-xs truncate">
         <option value="">-- Add Career to Compare --</option>
         {% for title in all_titles %}
         <option value="{{ title }}">{{ title }}</option>
         {% endfor %}
       </select>
-      <button onclick="addSelectedCareer()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition btn-3d">
+      <button type="button" onclick="addSelectedCareer()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition btn-3d shrink-0">
         Add
       </button>
-      <button onclick="clearAll()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-500 transition" title="Clear all">
+      <button type="button" onclick="clearAllCareers()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-500 transition shrink-0" title="Clear all comparison items">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
       </button>
     </div>
   </div>
 
-  <!-- Comparison Grid Container -->
-  <div id="comparison-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+  <!-- Main Comparison Content Area -->
+  <div id="comparison-content" class="space-y-8"></div>
 </div>
 
 <script>
-let activeCompared = [];
+let activeCareersData = [];
 
 async function loadCompareData() {
-  activeCompared = Storage.getComparisonList();
-  if (activeCompared.length === 0) {
-    activeCompared = ["Full Stack Developer", "Data Scientist", "Cloud Architect"];
+  const container = document.getElementById('comparison-content');
+  const activeCompared = Storage.getComparisonList();
+
+  if (!activeCompared || activeCompared.length === 0) {
+    container.innerHTML = `
+      <div class="glass-panel rounded-3xl p-10 border border-slate-200/80 dark:border-slate-800 shadow-md text-center max-w-xl mx-auto space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto shadow-sm">
+          <i data-lucide="scale" class="w-7 h-7"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">No Careers in Comparison</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+          Select any career from the dropdown selector above or explore popular tracks below to compare compensation, roadmap depth, and core skills.
+        </p>
+        <div class="pt-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Quick Compare Suggestions:</span>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <button onclick="quickAdd('Full Stack Developer')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition">+ Full Stack Developer</button>
+            <button onclick="quickAdd('Data Scientist')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition">+ Data Scientist</button>
+            <button onclick="quickAdd('Cloud Architect')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition">+ Cloud Architect</button>
+            <button onclick="quickAdd('AI Engineer')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition">+ AI Engineer</button>
+          </div>
+        </div>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
   }
 
-  const container = document.getElementById('comparison-grid');
-  container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-sm">Loading comparison details...</div>';
+  container.innerHTML = '<div class="text-center py-16 text-slate-500 text-sm font-semibold"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-primary-600"></i>Loading comparison details...</div>';
+  if (window.lucide) window.lucide.createIcons();
 
   try {
-    const careerPromises = activeCompared.map(t =>
-      fetch(`/api/careers/${encodeURIComponent(t)}`)
-        .then(r => {
-          if (!r.ok) throw new Error("Not found");
-          return r.json();
-        })
-        .then(c => ({
-          title: c.title,
-          description: c.description,
-          timeline: c.timeline,
-          salaryRange: c.salaryRange,
-          skills: c.skills || [],
-          learningPath: c.learningPath || []
-        }))
+    const promises = activeCompared.map(title =>
+      fetch(`/api/careers/${encodeURIComponent(title)}`)
+        .then(r => r.ok ? r.json() : null)
         .catch(() => null)
     );
 
-    const careers = (await Promise.all(careerPromises)).filter(Boolean);
+    const results = await Promise.all(promises);
+    activeCareersData = results.filter(Boolean);
 
-    if (careers.length === 0) {
-      container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-sm">No careers selected. Use the selector above to add careers to compare.</div>';
+    if (activeCareersData.length === 0) {
+      Storage.clearComparison();
+      loadCompareData();
       return;
     }
 
-    container.innerHTML = careers.map(c => `
-      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
-        <div class="space-y-4">
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white leading-tight">
-              ${c.title}
-            </h3>
-            <button onclick="removeCareer('${c.title}')" class="text-slate-400 hover:text-rose-500 transition p-1" title="Remove">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
+    renderComparisonUI();
+  } catch (err) {
+    container.innerHTML = '<div class="text-center py-12 text-rose-500 text-sm">Error loading comparison data. Please try again.</div>';
+  }
+}
 
-          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
-            ${c.description}
-          </p>
+function renderComparisonUI() {
+  const container = document.getElementById('comparison-content');
+  const careers = activeCareersData;
+  const colCount = careers.length;
 
-          <div class="space-y-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div>
-              <span class="font-bold text-slate-400 block text-[10px] uppercase">Timeline</span>
-              <span class="font-semibold text-slate-800 dark:text-slate-200">${c.timeline}</span>
-            </div>
-            <div>
-              <span class="font-bold text-slate-400 block text-[10px] uppercase">Compensation</span>
-              <span class="font-semibold text-emerald-600 dark:text-emerald-400">${c.salaryRange}</span>
-            </div>
-            <div>
-              <span class="font-bold text-slate-400 block text-[10px] uppercase">Milestone Stages</span>
-              <span class="font-semibold text-slate-800 dark:text-slate-200">${c.learningPath.length} Structured Stages</span>
-            </div>
-          </div>
+  let gridColsClass = 'grid-cols-1 md:grid-cols-3';
+  if (colCount === 1) gridColsClass = 'grid-cols-1 max-w-lg mx-auto';
+  else if (colCount === 2) gridColsClass = 'grid-cols-1 md:grid-cols-2';
 
-          <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-            <span class="font-bold text-slate-400 block text-[10px] uppercase mb-2">Core Skills Matrix</span>
-            <div class="flex flex-wrap gap-1.5">
-              ${c.skills.slice(0, 6).map(s => `
-                <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200/80 dark:border-slate-700">
-                  ${s}
+  // 1. Career Cards Section
+  const cardsHtml = `
+    <div class="grid ${gridColsClass} gap-6">
+      ${careers.map(c => `
+        <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
+          <div class="space-y-4">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-950 px-2 py-0.5 rounded-md">
+                  Career Track
                 </span>
-              `).join('')}
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-tight mt-1">
+                  ${c.title}
+                </h3>
+              </div>
+              <button onclick="removeCompareCareer('${c.title}')" class="text-slate-400 hover:text-rose-500 transition p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30" title="Remove from comparison">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
             </div>
+
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+              ${c.description}
+            </p>
+
+            <div class="space-y-2.5 text-xs pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-400 uppercase text-[10px]">Est. Timeline</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200">${c.timeline}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-400 uppercase text-[10px]">Salary Range</span>
+                <span class="font-bold text-emerald-600 dark:text-emerald-400">${c.salaryRange}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-400 uppercase text-[10px]">Roadmap Depth</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200">${c.learningPath?.length || 0} Sequential Stages</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+              <span class="font-bold text-slate-400 block text-[10px] uppercase mb-2">Core Skills Matrix</span>
+              <div class="flex flex-wrap gap-1.5">
+                ${(c.skills || []).slice(0, 6).map(s => `
+                  <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200/80 dark:border-slate-700">
+                    ${s}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6 mt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <a href="/career-path?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
+              View Detailed Roadmap
+            </a>
+            <a href="/career-path/quiz?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs py-2 rounded-xl transition btn-3d">
+              Take Diagnostic Test
+            </a>
           </div>
         </div>
+      `).join('')}
+    </div>
+  `;
 
-        <div class="pt-6 mt-4 border-t border-slate-100 dark:border-slate-800">
-          <a href="/career-path?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
-            View Roadmap & Blueprint
-          </a>
+  // 2. Comparative Matrix Table Section (if 2+ careers)
+  let matrixHtml = '';
+  if (colCount >= 2) {
+    matrixHtml = `
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-md">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-primary-600"></i>
+          <span>Feature & Metric Breakdown</span>
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[11px]">
+                <th class="py-3 px-4">Metric</th>
+                ${careers.map(c => `<th class="py-3 px-4 text-slate-900 dark:text-white font-bold">${c.title}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tr>
+                <td class="py-3 px-4 font-bold text-slate-500 dark:text-slate-400">Salary Range</td>
+                ${careers.map(c => `<td class="py-3 px-4 font-bold text-emerald-600 dark:text-emerald-400">${c.salaryRange}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="py-3 px-4 font-bold text-slate-500 dark:text-slate-400">Timeline</td>
+                ${careers.map(c => `<td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">${c.timeline}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="py-3 px-4 font-bold text-slate-500 dark:text-slate-400">Roadmap Milestones</td>
+                ${careers.map(c => `<td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">${c.learningPath?.length || 0} Stages</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="py-3 px-4 font-bold text-slate-500 dark:text-slate-400">Top Required Skills</td>
+                ${careers.map(c => `
+                  <td class="py-3 px-4">
+                    <div class="flex flex-wrap gap-1">
+                      ${(c.skills || []).slice(0, 4).map(s => `
+                        <span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-700 dark:text-slate-300">${s}</span>
+                      `).join('')}
+                    </div>
+                  </td>
+                `).join('')}
+              </tr>
+              <tr>
+                <td class="py-3 px-4 font-bold text-slate-500 dark:text-slate-400">Actions</td>
+                ${careers.map(c => `
+                  <td class="py-3 px-4">
+                    <a href="/career-path?title=${encodeURIComponent(c.title)}" class="text-primary-600 dark:text-primary-400 font-bold hover:underline">
+                      Explore Roadmap →
+                    </a>
+                  </td>
+                `).join('')}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    `).join('');
-
-    if (window.lucide) window.lucide.createIcons();
-  } catch (err) {
-    container.innerHTML = '<div class="col-span-full text-center py-12 text-rose-500 text-sm">Failed to load career data.</div>';
+    `;
   }
+
+  container.innerHTML = cardsHtml + matrixHtml;
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function addSelectedCareer() {
   const sel = document.getElementById('career-select');
   const val = sel.value;
-  if (!val) return;
-  Storage.toggleComparison(val);
+  if (!val) {
+    showToast("Please select a career from the dropdown", "info");
+    return;
+  }
+
+  const result = Storage.addComparison(val);
+  if (result.success) {
+    showToast(`Added "${val}" to comparison`, "success");
+    sel.value = "";
+    loadCompareData();
+  } else if (result.reason === "already_exists") {
+    showToast(`"${val}" is already in comparison`, "info");
+  } else if (result.reason === "limit_reached") {
+    showToast("Maximum 3 careers allowed for comparison. Remove one first.", "error");
+  }
+}
+
+function quickAdd(title) {
+  const result = Storage.addComparison(title);
+  if (result.success) {
+    showToast(`Added "${title}" to comparison`, "success");
+    loadCompareData();
+  } else if (result.reason === "already_exists") {
+    showToast(`"${title}" is already in comparison`, "info");
+  } else if (result.reason === "limit_reached") {
+    showToast("Maximum 3 careers allowed for comparison. Remove one first.", "error");
+  }
+}
+
+function removeCompareCareer(title) {
+  Storage.removeComparison(title);
+  showToast(`Removed "${title}" from comparison`, "info");
   loadCompareData();
 }
 
-function removeCareer(title) {
-  Storage.toggleComparison(title);
-  loadCompareData();
-}
-
-function clearAll() {
+function clearAllCareers() {
   Storage.clearComparison();
+  showToast("Comparison list cleared", "info");
   loadCompareData();
 }
 

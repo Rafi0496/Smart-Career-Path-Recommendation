@@ -57,7 +57,7 @@ async def get_recommendations(profile: Dict[str, Any]):
         "recommendations": recommendations
     }
 
-# 2. AI Mentor Chatbot ("V") Endpoint
+# 2. Ask V ("V") Chat Endpoint
 @api_router.post("/chat")
 async def chat_with_mentor(req: ChatRequest):
     if not req.messages:
@@ -68,19 +68,27 @@ async def chat_with_mentor(req: ChatRequest):
 
 # 3. Resume Parser Endpoint
 @api_router.post("/resume/parse")
-async def parse_resume(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".pdf"):
+async def parse_resume(
+    file: Optional[UploadFile] = File(None),
+    resume: Optional[UploadFile] = File(None)
+):
+    upload = file or resume
+    if not upload or not upload.filename:
+        raise HTTPException(status_code=400, detail="No PDF resume file provided")
+    
+    if not upload.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Uploaded file must be a PDF")
     
-    contents = await file.read()
+    contents = await upload.read()
     if len(contents) == 0:
         raise HTTPException(status_code=400, detail="Uploaded PDF is empty")
 
-    profile = parse_resume_to_profile(contents, filename=file.filename)
+    profile = parse_resume_to_profile(contents, filename=upload.filename)
     return {
         "success": True,
-        "filename": file.filename,
-        "profile": profile
+        "filename": upload.filename,
+        "profile": profile,
+        "skillsFound": profile.get("interests", {}).get("skills", [])
     }
 
 # 4. Diagnostic Quiz Generator Endpoint

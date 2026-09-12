@@ -48,7 +48,7 @@ const Storage = {
     localStorage.removeItem('career_path_user');
     window.dispatchEvent(new CustomEvent('auth-change', { detail: null }));
     fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-      window.location.href = '/';
+      window.location.href = '/login';
     });
   },
 
@@ -104,6 +104,26 @@ const Storage = {
     } catch {
       return [];
     }
+  },
+  addComparison(title) {
+    let list = this.getComparisonList();
+    if (list.includes(title)) {
+      return { success: false, reason: "already_exists", list };
+    }
+    if (list.length >= 3) {
+      return { success: false, reason: "limit_reached", list };
+    }
+    list.push(title);
+    localStorage.setItem('career_path_comparison', JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent('compare-change', { detail: list }));
+    return { success: true, list };
+  },
+  removeComparison(title) {
+    let list = this.getComparisonList();
+    list = list.filter(t => t !== title);
+    localStorage.setItem('career_path_comparison', JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent('compare-change', { detail: list }));
+    return list;
   },
   toggleComparison(title) {
     let list = this.getComparisonList();
@@ -208,7 +228,7 @@ function syncNavbarAuth() {
   } else {
     authContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <a href="/login" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
+        <a href="/login" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
           <i data-lucide="log-in" class="w-4 h-4"></i>
           <span>Login</span>
         </a>
@@ -222,8 +242,23 @@ function syncNavbarAuth() {
   if (window.lucide) window.lucide.createIcons();
 }
 
+// 6. Client Route Guard
+function enforceClientAuth() {
+  const protectedPrefixes = ['/assessment', '/dashboard', '/career-path', '/compare'];
+  const path = window.location.pathname;
+  const isProtected = protectedPrefixes.some(p => path === p || path.startsWith(p + '/') || path.startsWith(p + '?'));
+  if (isProtected) {
+    const user = Storage.getUser();
+    if (!user) {
+      const redirectUrl = '/login?redirect=' + encodeURIComponent(path + window.location.search);
+      window.location.href = redirectUrl;
+    }
+  }
+}
+
 window.addEventListener('auth-change', syncNavbarAuth);
 document.addEventListener('DOMContentLoaded', () => {
+  enforceClientAuth();
   syncNavbarAuth();
   if (window.lucide) window.lucide.createIcons();
 });

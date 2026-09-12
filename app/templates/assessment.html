@@ -231,8 +231,10 @@ async function handleResumeUpload(e) {
   const btnLabel = document.getElementById('upload-btn-label');
   btnLabel.textContent = "Parsing Resume...";
   status.textContent = `Analyzing ${file.name}...`;
+  status.className = "text-xs text-primary-600 dark:text-primary-400 font-semibold";
 
   const formData = new FormData();
+  formData.append('file', file);
   formData.append('resume', file);
 
   try {
@@ -241,28 +243,38 @@ async function handleResumeUpload(e) {
       body: formData
     });
     const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "Could not parse PDF resume");
+    }
+
     if (data.profile) {
       const p = data.profile;
-      if (p.name) document.getElementById('name').value = p.name;
+      if (p.name && p.name !== "Candidate") document.getElementById('name').value = p.name;
       if (p.academics?.educationLevel) document.getElementById('educationLevel').value = p.academics.educationLevel;
       if (p.academics?.streamOrField) document.getElementById('streamOrField').value = p.academics.streamOrField;
-      if (p.academics?.subjects) document.getElementById('subjects').value = p.academics.subjects.join(', ');
-      if (p.academics?.strengths) document.getElementById('strengths').value = p.academics.strengths.join(', ');
-      if (p.academics?.certifications) document.getElementById('certifications').value = p.academics.certifications.join(', ');
-      if (p.interests?.skills) document.getElementById('skills').value = p.interests.skills.join(', ');
-      if (p.interests?.interests) document.getElementById('interests').value = p.interests.interests.join(', ');
-      if (p.aspirations?.dreamRoles) document.getElementById('dreamRoles').value = p.aspirations.dreamRoles.join(', ');
+      if (p.academics?.subjects && p.academics.subjects.length > 0) document.getElementById('subjects').value = p.academics.subjects.join(', ');
+      if (p.academics?.strengths && p.academics.strengths.length > 0) document.getElementById('strengths').value = p.academics.strengths.join(', ');
+      if (p.academics?.certifications && p.academics.certifications.length > 0) document.getElementById('certifications').value = p.academics.certifications.join(', ');
+      if (p.interests?.skills && p.interests.skills.length > 0) document.getElementById('skills').value = p.interests.skills.join(', ');
+      if (p.interests?.interests && p.interests.interests.length > 0) document.getElementById('interests').value = p.interests.interests.join(', ');
+      if (p.aspirations?.dreamRoles && p.aspirations.dreamRoles.length > 0) document.getElementById('dreamRoles').value = p.aspirations.dreamRoles.join(', ');
 
-      status.textContent = `Successfully extracted: ${data.skillsFound?.length || 0} skills identified!`;
+      const skillsCount = data.skillsFound?.length || p.interests?.skills?.length || 0;
+      status.textContent = `Extracted successfully: ${skillsCount} skills identified!`;
       status.className = "text-xs text-emerald-600 dark:text-emerald-400 font-bold";
-      showToast("Resume parsed & form pre-filled!", "success");
+      showToast(`Resume parsed! Found ${skillsCount} verified skills.`, "success");
     } else {
-      status.textContent = "Could not extract full text, please fill manually.";
+      status.textContent = "Could not parse text. Please fill manually.";
+      status.className = "text-xs text-amber-600 dark:text-amber-400 font-semibold";
     }
   } catch (err) {
-    status.textContent = "Upload failed. Please fill details manually.";
+    status.textContent = err.message || "Upload failed. Please fill details manually.";
+    status.className = "text-xs text-rose-500 font-semibold";
+    showToast(err.message || "Resume upload failed", "error");
   } finally {
     btnLabel.textContent = "Choose PDF Resume";
+    // Reset file input so user can re-upload if desired
+    e.target.value = '';
   }
 }
 

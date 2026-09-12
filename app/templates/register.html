@@ -10,7 +10,13 @@
         <i data-lucide="user-plus" class="w-6 h-6"></i>
       </div>
       <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">Create Your Account</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Unlock your personalized career dashboard and milestone progress tracking.</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Unlock your personalized career dashboard, sequential roadmaps, and assessments.</p>
+    </div>
+
+    <!-- Alert for redirected users -->
+    <div id="redirect-notice" class="hidden mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
+      <i data-lucide="lock" class="w-4 h-4 shrink-0"></i>
+      <span>Please create an account or sign in to continue.</span>
     </div>
 
     <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
@@ -35,13 +41,25 @@
 
       <div class="text-center pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
         Already have an account?
-        <a href="/login" class="text-primary-600 font-bold hover:underline ml-1">Sign In</a>
+        <a id="login-link" href="/login" class="text-primary-600 font-bold hover:underline ml-1">Sign In</a>
       </div>
     </form>
   </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect');
+  if (redirect) {
+    const notice = document.getElementById('redirect-notice');
+    if (notice) notice.classList.remove('hidden');
+    const loginLink = document.getElementById('login-link');
+    if (loginLink) loginLink.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+  }
+  if (window.lucide) window.lucide.createIcons();
+});
+
 async function handleRegister(e) {
   e.preventDefault();
   const name = document.getElementById('reg-name').value.trim();
@@ -59,7 +77,10 @@ async function handleRegister(e) {
 
     if (data.user) Storage.setUser(data.user);
     showToast("Account created successfully!", "success");
-    window.location.href = "/assessment";
+
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get('redirect') || '/assessment';
+    window.location.href = redirectUrl;
   } catch (err) {
     showToast(err.message, "error");
   }
