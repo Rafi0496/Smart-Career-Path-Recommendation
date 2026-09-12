@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Compare Careers | Smart Career Path (Python Edition){% endblock %}
+{% block title %}Compare Careers | Smart Career Path{% endblock %}
 
 {% block content %}
 <div class="py-6 space-y-8 fade-in-up">
@@ -18,7 +18,7 @@
 
     <!-- Career Selector Dropdown -->
     <div class="flex items-center gap-2 w-full sm:w-auto">
-      <select id="career-select" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+      <select id="career-select" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-primary-500">
         <option value="">-- Add Career to Compare --</option>
         {% for title in all_titles %}
         <option value="{{ title }}">{{ title }}</option>
@@ -43,7 +43,7 @@ let activeCompared = [];
 async function loadCompareData() {
   activeCompared = Storage.getComparisonList();
   if (activeCompared.length === 0) {
-    activeCompared = ["Software Developer", "Data Analyst", "Cybersecurity Analyst"];
+    activeCompared = ["Full Stack Developer", "Data Scientist", "Cloud Architect"];
   }
 
   const container = document.getElementById('comparison-grid');
@@ -58,87 +58,84 @@ async function loadCompareData() {
         })
         .then(c => ({
           title: c.title,
-          timeline: c.timeline || "6–12 months",
-          salary: c.salaryRange || "Competitive",
-          description: c.description || "Rewarding industry path.",
-          skills: c.requiredSkills || []
+          description: c.description,
+          timeline: c.timeline,
+          salaryRange: c.salaryRange,
+          skills: c.skills || [],
+          learningPath: c.learningPath || []
         }))
-        .catch(() => ({
-          title: t,
-          timeline: "6–12 months",
-          salary: "Competitive",
-          description: "Career track details.",
-          skills: []
-        }))
+        .catch(() => null)
     );
 
-    const data = await Promise.all(careerPromises);
-    renderGrid(data);
-  } catch (e) {
-    container.innerHTML = '<div class="col-span-full text-center py-12 text-rose-500">Failed to load comparison data.</div>';
-  }
-}
+    const careers = (await Promise.all(careerPromises)).filter(Boolean);
 
-function renderGrid(careers) {
-  const container = document.getElementById('comparison-grid');
-  if (careers.length === 0) {
-    container.innerHTML = `
-      <div class="col-span-full text-center py-16 glass-panel rounded-3xl border border-slate-200 dark:border-slate-800">
-        <p class="text-sm font-bold text-slate-600 dark:text-slate-300">No careers selected for comparison.</p>
-        <p class="text-xs text-slate-400 mt-1">Select careers from the dropdown above to contrast side-by-side.</p>
-      </div>
-    `;
-    return;
-  }
+    if (careers.length === 0) {
+      container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-sm">No careers selected. Use the selector above to add careers to compare.</div>';
+      return;
+    }
 
-  container.innerHTML = careers.map(c => `
-    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
-      <div>
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-bold uppercase tracking-wider text-primary-600 bg-primary-50 dark:bg-primary-950 px-2.5 py-1 rounded-md">Career Profile</span>
-          <button onclick="removeCareer('${c.title}')" class="text-slate-400 hover:text-rose-500 transition" title="Remove">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
+    container.innerHTML = careers.map(c => `
+      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+              ${c.title}
+            </h3>
+            <button onclick="removeCareer('${c.title}')" class="text-slate-400 hover:text-rose-500 transition p-1" title="Remove">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+            ${c.description}
+          </p>
+
+          <div class="space-y-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div>
+              <span class="font-bold text-slate-400 block text-[10px] uppercase">Timeline</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">${c.timeline}</span>
+            </div>
+            <div>
+              <span class="font-bold text-slate-400 block text-[10px] uppercase">Compensation</span>
+              <span class="font-semibold text-emerald-600 dark:text-emerald-400">${c.salaryRange}</span>
+            </div>
+            <div>
+              <span class="font-bold text-slate-400 block text-[10px] uppercase">Milestone Stages</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-200">${c.learningPath.length} Structured Stages</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <span class="font-bold text-slate-400 block text-[10px] uppercase mb-2">Core Skills Matrix</span>
+            <div class="flex flex-wrap gap-1.5">
+              ${c.skills.slice(0, 6).map(s => `
+                <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200/80 dark:border-slate-700">
+                  ${s}
+                </span>
+              `).join('')}
+            </div>
+          </div>
         </div>
 
-        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mb-2">${c.title}</h3>
-        <p class="text-xs text-slate-600 dark:text-slate-300 mb-6 leading-relaxed line-clamp-3">${c.description}</p>
-
-        <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
-          <div>
-            <span class="block text-slate-400 uppercase font-bold text-[10px]">Estimated Ramp-Up</span>
-            <span class="font-bold text-slate-800 dark:text-white">${c.timeline}</span>
-          </div>
-          <div>
-            <span class="block text-slate-400 uppercase font-bold text-[10px]">Market Compensation</span>
-            <span class="font-bold text-emerald-600 dark:text-emerald-400">${c.salary}</span>
-          </div>
+        <div class="pt-6 mt-4 border-t border-slate-100 dark:border-slate-800">
+          <a href="/career-path?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
+            View Roadmap & Blueprint
+          </a>
         </div>
       </div>
+    `).join('');
 
-      <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-        <a href="/career-path?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
-          View Execution Roadmap
-        </a>
-      </div>
-    </div>
-  `).join('');
-
-  if (window.lucide) window.lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    container.innerHTML = '<div class="col-span-full text-center py-12 text-rose-500 text-sm">Failed to load career data.</div>';
+  }
 }
 
 function addSelectedCareer() {
-  const select = document.getElementById('career-select');
-  const title = select.value;
-  if (!title) return;
-
-  const current = Storage.getComparisonList();
-  if (current.length >= 3) {
-    showToast("You can compare up to 3 careers at once.", "info");
-    return;
-  }
-  Storage.toggleComparison(title);
-  select.value = "";
+  const sel = document.getElementById('career-select');
+  const val = sel.value;
+  if (!val) return;
+  Storage.toggleComparison(val);
   loadCompareData();
 }
 
@@ -148,7 +145,7 @@ function removeCareer(title) {
 }
 
 function clearAll() {
-  localStorage.removeItem('career_path_comparison');
+  Storage.clearComparison();
   loadCompareData();
 }
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Register | Smart Career Path (Python Edition){% endblock %}
+{% block title %}Register | Smart Career Path{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto py-12 fade-in-up">
@@ -57,6 +57,7 @@ async function handleRegister(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Registration failed");
 
+    if (data.user) Storage.setUser(data.user);
     showToast("Account created successfully!", "success");
     window.location.href = "/assessment";
   } catch (err) {

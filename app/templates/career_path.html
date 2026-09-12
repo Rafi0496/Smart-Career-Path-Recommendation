@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ career.title }} Roadmap | Smart Career Path (Python Edition){% endblock %}
+{% block title %}{{ career.title }} Roadmap | Smart Career Path{% endblock %}
 
 {% block content %}
 <div class="py-6 space-y-8 fade-in-up" data-career-title="{{ career.title }}">
@@ -12,9 +12,9 @@
     </a>
 
     <div class="flex items-center gap-2.5 w-full sm:w-auto">
-      <button type="button" onclick="downloadPdfBlueprint()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition btn-3d">
-        <i data-lucide="download" class="w-4 h-4"></i>
-        <span>Download 4-Page PDF Blueprint</span>
+      <button type="button" id="pdf-download-btn" onclick="downloadPdfBlueprint()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition btn-3d">
+        <i data-lucide="download" class="w-4 h-4" id="pdf-btn-icon"></i>
+        <span id="pdf-btn-text">Download 4-Page PDF Blueprint</span>
       </button>
       <a href="/career-path/quiz?title={{ career.title | urlencode }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
         <i data-lucide="help-circle" class="w-4 h-4"></i>
@@ -98,58 +98,89 @@
 
           <!-- Mark Complete Checkbox Button -->
           <button type="button" onclick="toggleStep({{ step.order }})" id="step-btn-{{ step.order }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:border-emerald-500 transition btn-3d">
-            <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
             <span id="step-btn-label-{{ step.order }}">Mark Complete</span>
           </button>
         </div>
 
-        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-          {{ step.description }}
-        </p>
+        <div class="space-y-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs sm:text-sm">
+          <!-- What to do -->
+          <div>
+            <span class="block text-[11px] font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider mb-1">
+              What to do:
+            </span>
+            <p class="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+              {{ step.description }}
+            </p>
+          </div>
 
-        <!-- Procedures -->
-        {% if step.procedure %}
-        <div class="mb-4 bg-slate-50/70 dark:bg-slate-800/60 rounded-xl p-3.5 border border-slate-200/60 dark:border-slate-700/60">
-          <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Step-by-Step Procedure:</h4>
-          <ul class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-            {% for proc in step.procedure %}
-            <li class="flex items-start gap-2">
-              <span class="text-primary-500 font-bold">•</span>
-              <span>{{ proc }}</span>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% endif %}
+          <!-- How to do it (procedure) -->
+          {% if step.procedure %}
+          <div>
+            <span class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1.5">
+              Step-by-step procedure:
+            </span>
+            <ul class="space-y-1 text-slate-600 dark:text-slate-300 pl-4 list-disc">
+              {% for p in step.procedure %}
+              <li>{{ p }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
 
-        <!-- Resources -->
-        {% if step.resources %}
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <span class="font-bold text-slate-500">Vetted Resources:</span>
-          {% for res in step.resources %}
-          <span class="px-2.5 py-0.5 rounded-md bg-slate-200/70 dark:bg-slate-700 border border-slate-300/50 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-200">
-            {{ res }}
-          </span>
-          {% endfor %}
+          <!-- Resources -->
+          {% if step.resources %}
+          <div>
+            <span class="block text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1.5">
+              Curated learning resources:
+            </span>
+            <div class="flex flex-wrap gap-2">
+              {% for r in step.resources %}
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 font-medium">
+                {{ r }}
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Required Skills Matrix -->
+  <section class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
+      <span>Core Required Competencies</span>
+    </h2>
+    <div class="flex flex-wrap gap-2">
+      {% for skill in career.skills %}
+      <span class="px-3 py-1.5 rounded-xl bg-primary-50 dark:bg-primary-950/60 border border-primary-200 dark:border-primary-900/60 text-primary-700 dark:text-primary-300 text-xs font-bold">
+        {{ skill }}
+      </span>
       {% endfor %}
     </div>
   </section>
 </div>
 
 <script>
-const careerTitle = "{{ career.title }}";
-const totalSteps = {{ career.learningPath | length }};
+const careerData = {{ career | tojson }};
+const careerTitle = careerData.title || "{{ career.title }}";
+const totalSteps = careerData.learningPath ? careerData.learningPath.length : 4;
 
 function refreshProgressUI() {
   const completed = Storage.getStepProgress(careerTitle);
   const pct = totalSteps > 0 ? Math.round((completed.length / totalSteps) * 100) : 0;
 
-  document.getElementById('roadmap-progress-bar').style.width = `${pct}%`;
-  document.getElementById('progress-percent-label').textContent = `${pct}% Complete`;
-  document.getElementById('progress-steps-count').textContent = `${completed.length} / ${totalSteps} completed`;
+  const bar = document.getElementById('roadmap-progress-bar');
+  const pctLabel = document.getElementById('progress-percent-label');
+  const countLabel = document.getElementById('progress-steps-count');
+
+  if (bar) bar.style.width = `${pct}%`;
+  if (pctLabel) pctLabel.textContent = `${pct}% Complete`;
+  if (countLabel) countLabel.textContent = `${completed.length} / ${totalSteps} completed`;
 
   for (let i = 1; i <= totalSteps; i++) {
     const isDone = completed.includes(i);
@@ -159,18 +190,20 @@ function refreshProgressUI() {
     const btn = document.getElementById(`step-btn-${i}`);
     const label = document.getElementById(`step-btn-label-${i}`);
 
-    if (isDone) {
-      card.classList.add('border-emerald-400', 'dark:border-emerald-800', 'bg-emerald-50/10');
-      badge.className = 'w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-md';
-      title.classList.add('line-through', 'opacity-75');
-      btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm transition btn-3d';
-      label.textContent = 'Completed';
-    } else {
-      card.classList.remove('border-emerald-400', 'dark:border-emerald-800', 'bg-emerald-50/10');
-      badge.className = 'w-8 h-8 rounded-xl bg-primary-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-primary-500/20';
-      title.classList.remove('line-through', 'opacity-75');
-      btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:border-emerald-500 transition btn-3d';
-      label.textContent = 'Mark Complete';
+    if (card && badge && title && btn && label) {
+      if (isDone) {
+        card.classList.add('border-emerald-400', 'dark:border-emerald-800', 'bg-emerald-50/10');
+        badge.className = 'w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-md';
+        title.classList.add('line-through', 'opacity-75');
+        btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm transition btn-3d';
+        label.textContent = 'Completed';
+      } else {
+        card.classList.remove('border-emerald-400', 'dark:border-emerald-800', 'bg-emerald-50/10');
+        badge.className = 'w-8 h-8 rounded-xl bg-primary-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-primary-500/20';
+        title.classList.remove('line-through', 'opacity-75');
+        btn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:border-emerald-500 transition btn-3d';
+        label.textContent = 'Mark Complete';
+      }
     }
   }
 }
@@ -181,28 +214,33 @@ function toggleStep(order) {
 }
 
 async function downloadPdfBlueprint() {
+  const btn = document.getElementById('pdf-download-btn');
+  const btnText = document.getElementById('pdf-btn-text');
+  
+  if (btnText) btnText.textContent = "Compiling PDF...";
   showToast("Compiling 4-Page Executive Blueprint PDF...", "info");
 
-  const careerObj = {
-    careerTitle: careerTitle,
-    description: "{{ career.description }}",
-    estimatedTimeline: "{{ career.timeline }}",
-    salaryRange: "{{ career.salaryRange }}",
-    requiredSkills: {{ career.skills | tojson }},
-    learningPath: {{ career.learningPath | tojson }}
+  const payload = {
+    career: {
+      careerTitle: careerData.title,
+      description: careerData.description,
+      estimatedTimeline: careerData.timeline,
+      salaryRange: careerData.salaryRange,
+      requiredSkills: careerData.skills || [],
+      learningPath: careerData.learningPath || []
+    },
+    user_name: Storage.getProfile()?.name || "Candidate"
   };
 
   try {
     const res = await fetch('/api/export/pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        career: careerObj,
-        user_name: Storage.getProfile()?.name || "Candidate"
-      })
+      body: JSON.stringify(payload)
     });
 
-    if (!res.ok) throw new Error('PDF export failed');
+    if (!res.ok) throw new Error('PDF generation failed');
+
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -211,9 +249,12 @@ async function downloadPdfBlueprint() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showToast("PDF Downloaded successfully!", "success");
+    window.URL.revokeObjectURL(url);
+    showToast("PDF Blueprint downloaded successfully!", "success");
   } catch (err) {
-    showToast("Error generating PDF", "error");
+    showToast("Error generating PDF blueprint", "error");
+  } finally {
+    if (btnText) btnText.textContent = "Download 4-Page PDF Blueprint";
   }
 }
 

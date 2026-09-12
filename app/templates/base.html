@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Smart Career Path | AI Career Intelligence{% endblock %}</title>
+  <title>{% block title %}Smart Career Path | AI Career Intelligence Platform{% endblock %}</title>
   
   <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -65,20 +65,20 @@
       {% if user %}data-user-name="{{ user.name }}"{% endif %}>
 
   <!-- Sticky Top Navigation -->
-  <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md">
+  <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/75 dark:bg-slate-900/80 backdrop-blur-md transition-colors duration-300">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      
       <!-- Brand Logo -->
-      <a href="/" class="flex items-center gap-2.5 group transition-transform hover:scale-[1.02]">
+      <a href="/" class="flex items-center gap-2.5 group transition-transform duration-200 hover:scale-[1.02]">
         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-emerald-500 text-white shadow-md shadow-primary-500/25">
           <i data-lucide="compass" class="w-5 h-5 transition-transform duration-500 group-hover:rotate-45"></i>
         </div>
-        <div class="flex flex-col">
-          <span class="font-bold text-lg text-slate-900 dark:text-slate-100 tracking-tight leading-none">Smart Career Path</span>
-          <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">Career Intelligence</span>
-        </div>
+        <span class="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">
+          Smart Career Path
+        </span>
       </a>
 
-      <!-- Center Links -->
+      <!-- Center Navigation Links -->
       <nav class="hidden md:flex items-center gap-1.5">
         <a href="/" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'home' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Home</a>
         <a href="/dashboard" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'dashboard' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Dashboard</a>
@@ -86,7 +86,7 @@
         <a href="/compare" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'compare' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Compare</a>
       </nav>
 
-      <!-- Right Controls -->
+      <!-- Right Controls: Theme Toggle + Auth -->
       <div class="flex items-center gap-3">
         <!-- Theme Toggle Button -->
         <button type="button" onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:border-primary-400 transition btn-3d" title="Toggle dark/light mode">
@@ -94,31 +94,36 @@
           <i data-lucide="sun" class="w-4 h-4 block dark:hidden text-amber-500"></i>
         </button>
 
-        <!-- Auth Controls -->
-        {% if user %}
-          <div class="flex items-center gap-2">
-            <a href="/dashboard" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
-              <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary-500 to-emerald-600 text-white flex items-center justify-center text-xs font-semibold">
-                {{ user.name[0] | upper }}
-              </div>
-              <span class="hidden sm:inline font-semibold">{{ user.name }}</span>
-            </a>
-            <button onclick="fetch('/api/auth/logout', {method: 'POST'}).then(() => window.location.href='/')" class="p-2 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition btn-3d" title="Log out">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
-            </button>
-          </div>
-        {% else %}
-          <div class="flex items-center gap-2">
-            <a href="/login" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
-              <i data-lucide="log-in" class="w-4 h-4"></i>
-              <span>Login</span>
-            </a>
-            <a href="/register" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/25 transition btn-3d">
-              <i data-lucide="user-plus" class="w-4 h-4"></i>
-              <span>Register</span>
-            </a>
-          </div>
-        {% endif %}
+        <!-- Dynamic Auth Container (Handled by JS & Cookies) -->
+        <div id="navbar-auth-container">
+          {% if user %}
+            <div class="flex items-center gap-2">
+              <a href="/dashboard" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold">
+                  {{ user.name[0] | upper }}
+                </div>
+                <span class="hidden sm:inline font-semibold">{{ user.name }}</span>
+                <span class="hidden lg:inline text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-950 px-1.5 py-0.5 rounded-md">
+                  Profile
+                </span>
+              </a>
+              <button onclick="Storage.logout()" class="p-2 rounded-xl border border-rose-200/80 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs sm:text-sm font-medium transition btn-3d" title="Log out">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+              </button>
+            </div>
+          {% else %}
+            <div class="flex items-center gap-2">
+              <a href="/login" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span>Login</span>
+              </a>
+              <a href="/register" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/25 transition btn-3d">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>Register</span>
+              </a>
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </header>
@@ -137,21 +142,21 @@
         <span>• AI Career Intelligence Platform</span>
       </div>
       <div class="flex items-center gap-4">
-        <a href="/dashboard" class="hover:text-primary-600 dark:hover:text-primary-400">Dashboard</a>
-        <a href="/assessment" class="hover:text-primary-600 dark:hover:text-primary-400">Assessment</a>
-        <a href="/compare" class="hover:text-primary-600 dark:hover:text-primary-400">Compare</a>
+        <a href="/dashboard" class="hover:text-primary-600 dark:hover:text-primary-400 transition">Dashboard</a>
+        <a href="/assessment" class="hover:text-primary-600 dark:hover:text-primary-400 transition">Assessment</a>
+        <a href="/compare" class="hover:text-primary-600 dark:hover:text-primary-400 transition">Compare</a>
       </div>
     </div>
   </footer>
 
-  <!-- Floating AI Career Advisor Widget (Minimalist Design) -->
+  <!-- Floating AI Career Advisor Widget -->
   <div class="fixed bottom-6 right-6 z-50">
     <!-- Chat Drawer -->
     <div id="ai-assistant-drawer" class="hidden flex-col w-[360px] sm:w-[420px] h-[520px] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden mb-3 fade-in-up">
       <!-- Minimalist Header -->
       <div class="px-4 py-3 bg-slate-900 dark:bg-slate-950 text-white flex items-center justify-between border-b border-slate-800">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center font-bold text-xs text-white">
+          <div class="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center font-bold text-xs text-white shadow-md">
             AI
           </div>
           <div>
@@ -184,8 +189,8 @@
       </form>
     </div>
 
-    <!-- Floating Toggle Button (Minimalist) -->
-    <button type="button" onclick="toggleAssistant()" class="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-full shadow-lg hover:bg-slate-800 dark:hover:bg-slate-100 transition-all font-semibold text-xs sm:text-sm border border-slate-700/50 dark:border-slate-200">
+    <!-- Floating Toggle Button -->
+    <button type="button" onclick="toggleAssistant()" class="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-full shadow-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all font-semibold text-xs sm:text-sm border border-slate-700/50 dark:border-slate-200 btn-3d">
       <i data-lucide="message-square" class="w-4 h-4 text-primary-400 dark:text-primary-600"></i>
       <span>AI Career Advisor</span>
     </button>

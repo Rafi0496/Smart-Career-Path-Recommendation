@@ -1,81 +1,134 @@
-/* Glassmorphism & Custom 3D Design Tokens */
+/* Smart Career Path - Unified Design System Styles */
+
 :root {
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --primary-glow: rgba(14, 165, 233, 0.15);
+  --emerald-glow: rgba(16, 185, 129, 0.15);
 }
 
-body {
-  font-family: var(--font-sans);
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* Custom Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Custom scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
+
 .dark ::-webkit-scrollbar-thumb {
   background: #334155;
 }
 
-/* Glass Panels */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.dark .glass-panel {
-  background: rgba(19, 27, 46, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-/* 3D Button Effects */
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Interactive 3D & Micro-Animations */
 .btn-3d {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .btn-3d:hover {
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -4px rgba(2, 132, 199, 0.35);
 }
+
 .btn-3d:active {
   transform: translateY(0.5px);
 }
 
-/* Card Hover Animations */
 .card-3d {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
+
 .card-3d:hover {
-  transform: translateY(-2.5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08);
 }
+
 .dark .card-3d:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.6);
+  border-color: rgba(56, 189, 248, 0.45);
 }
 
-/* Ring progress gauge */
-.ring-progress circle {
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Page fade-in */
+/* Fade-in Animation */
 .fade-in-up {
   animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 @keyframes fadeInUp {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Ring Progress */
+.ring-progress {
+  transform: rotate(-90deg);
+}
+
+/* Global Click Wave Ripple */
+.global-click-ripple {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.5) 0%, rgba(16, 185, 129, 0.25) 60%, transparent 100%);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleEffect 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 9999;
+}
+
+@keyframes rippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
+  }
+}
+
+/* Hide scrollbar for clean chip lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
