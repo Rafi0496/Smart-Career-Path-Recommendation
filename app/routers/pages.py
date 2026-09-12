@@ -133,3 +133,9 @@ async def register_page(request: Request):
             "user": user
         }
     )
+
+@pages_router.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    from fastapi.responses import Response
+    return Response(status_code=204)
+

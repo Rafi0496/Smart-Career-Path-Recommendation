@@ -3,9 +3,9 @@ import hashlib
 import json
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-from app.config import BASE_DIR
+from app.config import settings
 
-DB_PATH = BASE_DIR / "career_path.db"
+DB_PATH = settings.DATABASE_PATH
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
@@ -16,65 +16,69 @@ def get_connection():
     return conn
 
 def init_db():
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        
-        # Users table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-        """)
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Users table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
 
-        # User profile table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS profiles (
-                user_id INTEGER PRIMARY KEY,
-                data_json TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+            # User profile table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS profiles (
+                    user_id INTEGER PRIMARY KEY,
+                    data_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-        # Recommendations table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS recommendations (
-                user_id INTEGER PRIMARY KEY,
-                data_json TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+            # Recommendations table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS recommendations (
+                    user_id INTEGER PRIMARY KEY,
+                    data_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-        # Favorites table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS favorites (
-                user_id INTEGER NOT NULL,
-                career_title TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                PRIMARY KEY (user_id, career_title),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+            # Favorites table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS favorites (
+                    user_id INTEGER NOT NULL,
+                    career_title TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (user_id, career_title),
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-        # Learning progress table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS progress (
-                user_id INTEGER NOT NULL,
-                career_title TEXT NOT NULL,
-                step_order INTEGER NOT NULL,
-                completed INTEGER NOT NULL DEFAULT 1,
-                updated_at TEXT NOT NULL,
-                PRIMARY KEY (user_id, career_title, step_order),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+            # Learning progress table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS progress (
+                    user_id INTEGER NOT NULL,
+                    career_title TEXT NOT NULL,
+                    step_order INTEGER NOT NULL,
+                    completed INTEGER NOT NULL DEFAULT 1,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (user_id, career_title, step_order),
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-        conn.commit()
+            conn.commit()
+    except Exception as e:
+        print(f"[Database Warning] Could not initialize database at {DB_PATH}: {e}")
+
 
 # ================= USER AUTHENTICATION =================
 

@@ -32,11 +32,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static folder
-settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
-(settings.STATIC_DIR / "css").mkdir(exist_ok=True)
-(settings.STATIC_DIR / "js").mkdir(exist_ok=True)
-settings.TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+# Mount static folder safely (handles read-only filesystems in serverless)
+try:
+    settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
+    (settings.STATIC_DIR / "css").mkdir(exist_ok=True)
+    (settings.STATIC_DIR / "js").mkdir(exist_ok=True)
+    settings.TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
 
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
