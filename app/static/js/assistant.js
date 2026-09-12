@@ -1,14 +1,15 @@
-// AI Career Advisor Controller
+// "V" - AI Career Mentor Controller
 
 let chatMessages = [
   {
     role: "assistant",
-    content: "Welcome to the **AI Career Advisor**. Ask any question regarding career pathways, in-demand technical skills, resume optimization, or salary benchmarks."
+    content: "Hello! I am **V**, your dedicated AI Career Mentor. Ask me any question regarding career pathways, in-demand technical skills, roadmap execution, or salary benchmarks."
   }
 ];
 
 function toggleAssistant() {
   const drawer = document.getElementById("ai-assistant-drawer");
+  if (!drawer) return;
   const isHidden = drawer.classList.contains("hidden");
   if (isHidden) {
     drawer.classList.remove("hidden");
@@ -84,7 +85,7 @@ async function sendAssistantMessage(customQuery = null) {
   chatMessages.push({ role: "user", content: query });
   renderChatMessages();
 
-  // Show minimalist typing indicator
+  // Show typing indicator
   const container = document.getElementById("assistant-messages");
   const typingId = "assistant-typing-indicator";
   const typingEl = document.createElement("div");
@@ -94,7 +95,7 @@ async function sendAssistantMessage(customQuery = null) {
     <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse"></span>
     <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" style="animation-delay: 0.2s"></span>
     <span class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" style="animation-delay: 0.4s"></span>
-    <span class="ml-1 text-[11px] font-medium text-slate-500">Thinking...</span>
+    <span class="ml-1 text-[11px] font-medium text-slate-500">V is thinking...</span>
   `;
   container.appendChild(typingEl);
   scrollChatToBottom();
@@ -130,7 +131,7 @@ async function sendAssistantMessage(customQuery = null) {
     } else {
       chatMessages.push({
         role: "assistant",
-        content: "Career Advisor service is available. Please ask any specific career or skill question."
+        content: "I am **V**, your AI Career Mentor. Please ask any specific career, roadmap, or technical skill question."
       });
       renderChatMessages();
     }
@@ -140,7 +141,7 @@ async function sendAssistantMessage(customQuery = null) {
 
     chatMessages.push({
       role: "assistant",
-      content: "Career Advisor service is currently offline. You can still explore the 140+ curated career tracks on the platform."
+      content: "I am **V**. My live neural gateway is currently reconnecting, but you can explore the 140+ curated career blueprints across the platform."
     });
   } finally {
     const el = document.getElementById(typingId);

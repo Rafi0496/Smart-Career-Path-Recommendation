@@ -1,152 +1,193 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | Smart Career Path{% endblock %}
+{% block title %}Career Dashboard | Smart Career Path{% endblock %}
 
 {% block content %}
 <div class="py-6 space-y-10 fade-in-up">
-  <!-- Top Welcome Banner -->
-  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md">
+
+  <!-- ========================================================================= -->
+  <!-- STATE A: GATED STATE (When user is NOT logged in or has NO profile)       -->
+  <!-- ========================================================================= -->
+  <div id="dashboard-gated-state" class="hidden glass-panel rounded-3xl p-8 sm:p-12 border border-slate-200/80 dark:border-slate-800 shadow-xl text-center max-w-xl mx-auto space-y-5">
+    <div class="w-16 h-16 rounded-3xl bg-primary-100 dark:bg-primary-950/80 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto shadow-md">
+      <i data-lucide="lock" class="w-8 h-8"></i>
+    </div>
+    
     <div>
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-bold mb-2">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-        <span>AI Career Intelligence Center</span>
-      </div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="dash-greeting">
-        Welcome to your Career Dashboard
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="gated-title">
+        Sign In Required to Access Dashboard
       </h1>
-      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-        Synthesizing your academic background, passions, and aspirations against 140+ career tracks.
+      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-2" id="gated-desc">
+        Your Career Dashboard contains confidential career alignment vectors, skill gap diagnostics, and active roadmap tracking. Please sign in or complete your profile assessment to access your dashboard.
       </p>
     </div>
 
-    <div class="flex items-center gap-3">
-      <a href="/assessment" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-primary-500/25 transition btn-3d">
-        <i data-lucide="pencil" class="w-4 h-4"></i>
-        <span>Update Assessment</span>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2" id="gated-actions">
+      <a href="/login" class="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-primary-500/25 transition btn-3d">
+        <i data-lucide="log-in" class="w-4 h-4"></i>
+        <span>Sign In</span>
       </a>
-      <a href="/compare" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl hover:border-primary-400 transition btn-3d">
-        <i data-lucide="scale" class="w-4 h-4"></i>
-        <span>Compare Careers</span>
+      <a href="/register" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-emerald-500/25 transition btn-3d">
+        <i data-lucide="user-plus" class="w-4 h-4"></i>
+        <span>Register Account</span>
+      </a>
+      <a href="/assessment" class="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-6 py-2.5 rounded-xl font-bold text-xs hover:border-primary-400 transition btn-3d">
+        <i data-lucide="sparkles" class="w-4 h-4 text-primary-500"></i>
+        <span>Take Assessment</span>
       </a>
     </div>
   </div>
 
-  <!-- Profile Completeness Metrics (3 Gauges) -->
-  <section class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6 flex items-center gap-2">
-      <i data-lucide="target" class="w-4 h-4 text-primary-600"></i>
-      <span>Profile Synthesis Completeness</span>
-    </h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-      <!-- Academics -->
-      <div class="relative flex flex-col items-center select-none p-3">
-        <div class="relative w-28 h-28">
-          <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
-            <circle id="gauge-academics" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="180" stroke-linecap="round" class="text-primary-600 transition-all duration-700" />
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
-              <i data-lucide="graduation-cap" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
-            </div>
-          </div>
-        </div>
-        <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Academics</span>
-        <span id="percent-academics" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% complete</span>
-        <span id="detail-academics" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
-          Not configured
-        </span>
-      </div>
-
-      <!-- Interests & Skills -->
-      <div class="relative flex flex-col items-center select-none p-3">
-        <div class="relative w-28 h-28">
-          <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
-            <circle id="gauge-interests" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="180" stroke-linecap="round" class="text-emerald-500 transition-all duration-700" />
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
-              <i data-lucide="heart" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
-            </div>
-          </div>
-        </div>
-        <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Interests & Skills</span>
-        <span id="percent-interests" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% complete</span>
-        <span id="detail-interests" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
-          Not configured
-        </span>
-      </div>
-
-      <!-- Aspirations -->
-      <div class="relative flex flex-col items-center select-none p-3">
-        <div class="relative w-28 h-28">
-          <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
-            <circle id="gauge-aspirations" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="180" stroke-linecap="round" class="text-amber-500 transition-all duration-700" />
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
-              <i data-lucide="target" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
-            </div>
-          </div>
-        </div>
-        <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Dream Aspirations</span>
-        <span id="percent-aspirations" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% complete</span>
-        <span id="detail-aspirations" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
-          Not configured
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Active Learning Progress Section (Hidden if none) -->
-  <section id="active-progress-section" class="hidden">
-    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-      <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
-      <span>Active Learning Roadmaps & Progress</span>
-    </h2>
-    <div id="active-progress-container" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
-  </section>
-
-  <!-- Saved Careers / Favorites (Hidden if none) -->
-  <section id="favorites-section" class="hidden">
-    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-      <i data-lucide="star" class="w-5 h-5 text-amber-500"></i>
-      <span>Saved Careers</span>
-    </h2>
-    <div id="favorites-container" class="flex flex-wrap gap-2"></div>
-  </section>
-
-  <!-- Top Career Recommendations -->
-  <section>
-    <div class="flex items-center justify-between mb-6">
+  <!-- ========================================================================= -->
+  <!-- STATE B: AUTHENTICATED DASHBOARD (Shown ONLY when data is entered)        -->
+  <!-- ========================================================================= -->
+  <div id="dashboard-authenticated-state" class="hidden space-y-10">
+    <!-- Top Welcome Banner -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md">
       <div>
-        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <i data-lucide="compass" class="w-5 h-5 text-primary-600"></i>
-          <span>Your Top Recommended Careers</span>
-        </h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Ranked by hybrid semantic vector match and skill overlap.</p>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-bold mb-2">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>AI Career Intelligence Center</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="dash-greeting">
+          Welcome to your Career Dashboard
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Synthesizing your verified academic foundations, passions, and aspirations against 140+ career tracks.
+        </p>
       </div>
-      <button onclick="refreshRecommendations()" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
-        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-        <span>Recalculate</span>
-      </button>
+
+      <div class="flex items-center gap-3">
+        <a href="/assessment" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-primary-500/25 transition btn-3d">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+          <span>Update Assessment</span>
+        </a>
+        <a href="/compare" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl hover:border-primary-400 transition btn-3d">
+          <i data-lucide="scale" class="w-4 h-4"></i>
+          <span>Compare Careers</span>
+        </a>
+      </div>
     </div>
 
-    <!-- Recommendations Grid -->
-    <div id="recommendations-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </section>
+    <!-- Genuine Profile Completeness Metrics (Calculated STRICTLY from user input) -->
+    <section class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6 flex items-center gap-2">
+        <i data-lucide="target" class="w-4 h-4 text-primary-600"></i>
+        <span>Verified Profile Synthesis Completeness</span>
+      </h2>
 
-  <!-- Categorized Career Explorer (All 140+ Tracks with Accordion) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <!-- Academics -->
+        <div class="relative flex flex-col items-center select-none p-3">
+          <div class="relative w-28 h-28">
+            <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
+              <circle id="gauge-academics" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" class="text-primary-600 transition-all duration-700" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
+              </div>
+            </div>
+          </div>
+          <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Academics</span>
+          <span id="percent-academics" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% configured</span>
+          <span id="detail-academics" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
+            Pending Input
+          </span>
+        </div>
+
+        <!-- Interests & Skills -->
+        <div class="relative flex flex-col items-center select-none p-3">
+          <div class="relative w-28 h-28">
+            <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
+              <circle id="gauge-interests" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" class="text-emerald-500 transition-all duration-700" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                <i data-lucide="heart" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
+              </div>
+            </div>
+          </div>
+          <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Interests & Skills</span>
+          <span id="percent-interests" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% configured</span>
+          <span id="detail-interests" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
+            Pending Input
+          </span>
+        </div>
+
+        <!-- Aspirations -->
+        <div class="relative flex flex-col items-center select-none p-3">
+          <div class="relative w-28 h-28">
+            <svg class="w-full h-full ring-progress" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" class="text-slate-200 dark:text-slate-700" />
+              <circle id="gauge-aspirations" cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89" stroke-linecap="round" class="text-amber-500 transition-all duration-700" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                <i data-lucide="target" class="w-6 h-6 text-slate-700 dark:text-slate-200"></i>
+              </div>
+            </div>
+          </div>
+          <span class="mt-3 text-sm font-bold text-slate-800 dark:text-white">Dream Aspirations</span>
+          <span id="percent-aspirations" class="text-xs font-medium text-slate-600 dark:text-slate-300">0% configured</span>
+          <span id="detail-aspirations" class="text-xs font-semibold text-slate-700 dark:text-slate-100 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-md mt-1.5 max-w-[140px] truncate border border-slate-300/60 dark:border-slate-700">
+            Pending Input
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Learning Progress Section (Only shown when stages are completed) -->
+    <section id="active-progress-section" class="hidden">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
+        <span>Active Learning Roadmaps & Progress</span>
+      </h2>
+      <div id="active-progress-container" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+
+    <!-- Saved Careers / Favorites (Only shown when bookmarked) -->
+    <section id="favorites-section" class="hidden">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <i data-lucide="star" class="w-5 h-5 text-amber-500"></i>
+        <span>Saved Careers</span>
+      </h2>
+      <div id="favorites-container" class="flex flex-wrap gap-2"></div>
+    </section>
+
+    <!-- Top Personalized Career Recommendations -->
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="compass" class="w-5 h-5 text-primary-600"></i>
+            <span>Your Top Recommended Careers</span>
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Ranked by hybrid semantic vector match and verified skill overlap.</p>
+        </div>
+        <button onclick="refreshRecommendations()" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Recalculate Matches</span>
+        </button>
+      </div>
+
+      <!-- Recommendations Grid -->
+      <div id="recommendations-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PUBLIC CATEGORY EXPLORER (Available across all modes)                     -->
+  <!-- ========================================================================= -->
   <section class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
     <div class="mb-6">
       <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
         <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i>
         <span>Browse Careers by Industry Category</span>
       </h2>
-      <p class="text-xs text-slate-500 dark:text-slate-400">Browse structured sequential roadmaps across 21 industry sectors.</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Browse 140+ structured sequential roadmaps across 21 industry sectors.</p>
     </div>
 
     <div class="space-y-3">
@@ -175,14 +216,6 @@
     </div>
   </section>
 
-  <!-- Bottom Assessment Callout -->
-  <div class="text-center pt-6 border-t border-slate-200/80 dark:border-slate-800">
-    <a href="/assessment" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 dark:hover:bg-primary-950/60 text-slate-700 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 border border-slate-200 dark:border-slate-700 font-semibold text-sm transition btn-3d">
-      <i data-lucide="pencil" class="w-4 h-4"></i>
-      <span>Altering your details? Edit Full Profile Assessment</span>
-    </a>
-  </div>
-
   <!-- Sticky Comparison Floating Bar -->
   <div id="sticky-comparison-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-xl w-[92%] glass-panel bg-white/95 dark:bg-slate-900/95 border border-primary-500/60 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-3 animate-fade-in-up">
     <div class="flex items-center gap-2.5">
@@ -209,63 +242,11 @@
 </div>
 
 <script>
-// Starter recommendations for immediate dashboard exploration
-const DEFAULT_STARTER_RECS = [
-  {
-    careerTitle: "Full Stack Developer",
-    matchScore: 95,
-    skillOverlapPercent: 88,
-    estimatedTimeline: "6–12 months",
-    salaryRange: "$75k–$130k",
-    description: "Architect, build, and deploy complete modern web applications spanning responsive frontend interfaces, high-throughput APIs, and databases."
-  },
-  {
-    careerTitle: "AI Engineer",
-    matchScore: 92,
-    skillOverlapPercent: 84,
-    estimatedTimeline: "8–14 months",
-    salaryRange: "$90k–$160k",
-    description: "Design, fine-tune, and deploy state-of-the-art machine learning models, neural architectures, and intelligent agent workflows."
-  },
-  {
-    careerTitle: "Cloud Architect",
-    matchScore: 89,
-    skillOverlapPercent: 78,
-    estimatedTimeline: "6–12 months",
-    salaryRange: "$95k–$155k",
-    description: "Lead enterprise cloud infrastructure strategy, containerization orchestration, serverless microservices, and multi-region resilience."
-  },
-  {
-    careerTitle: "UX/UI Designer",
-    matchScore: 86,
-    skillOverlapPercent: 80,
-    estimatedTimeline: "4–8 months",
-    salaryRange: "$65k–$115k",
-    description: "Craft intuitive user journeys, wireframes, design systems, and delightful interactive web & mobile software interfaces."
-  },
-  {
-    careerTitle: "Cybersecurity Analyst",
-    matchScore: 84,
-    skillOverlapPercent: 75,
-    estimatedTimeline: "6–10 months",
-    salaryRange: "$70k–$125k",
-    description: "Safeguard cloud networks, identify system vulnerabilities, conduct incident response, and enforce zero-trust defense architectures."
-  },
-  {
-    careerTitle: "Data Scientist",
-    matchScore: 82,
-    skillOverlapPercent: 72,
-    estimatedTimeline: "6–12 months",
-    salaryRange: "$80k–$140k",
-    description: "Extract actionable predictive insights from complex datasets using statistical modeling, Python data pipelines, and visual analytics."
-  }
-];
-
 function updateGauge(circleId, percent) {
   const circle = document.getElementById(circleId);
   if (!circle) return;
   const circumference = 263.89;
-  const offset = circumference - (percent / 100) * circumference;
+  const offset = circumference - (Math.max(0, Math.min(100, percent)) / 100) * circumference;
   circle.style.strokeDashoffset = offset;
 }
 
@@ -273,10 +254,24 @@ function renderRecommendationsUI(recs) {
   const container = document.getElementById('recommendations-container');
   if (!container) return;
 
-  const data = (recs && recs.length > 0) ? recs : DEFAULT_STARTER_RECS;
+  if (!recs || recs.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12 glass-panel rounded-3xl border border-slate-200 dark:border-slate-800">
+        <i data-lucide="sparkles" class="w-8 h-8 text-primary-600 mx-auto mb-3"></i>
+        <p class="text-slate-800 dark:text-white font-bold mb-1">No recommendations generated yet</p>
+        <p class="text-xs text-slate-500 mb-4">Complete your assessment to generate matches.</p>
+        <a href="/assessment" class="inline-flex items-center gap-2 bg-primary-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition btn-3d">
+          Start Assessment
+        </a>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
   const favs = Storage.getFavorites();
 
-  container.innerHTML = data.map((r) => {
+  container.innerHTML = recs.map((r) => {
     const title = r.careerTitle;
     const score = r.matchScore || 85;
     const overlap = r.skillOverlapPercent || 0;
@@ -444,12 +439,12 @@ window.addEventListener('compare-change', syncComparisonBar);
 async function refreshRecommendations() {
   const p = Storage.getProfile();
   if (!p) {
-    showToast("Starting Assessment to generate custom matches...", "info");
-    setTimeout(() => window.location.href = '/assessment', 1000);
+    showToast("Please complete the assessment first.", "info");
+    setTimeout(() => window.location.href = '/assessment', 800);
     return;
   }
 
-  showToast("Recalculating career recommendations...", "info");
+  showToast("Calculating verified recommendations...", "info");
   try {
     const res = await fetch('/api/recommend', {
       method: 'POST',
@@ -460,47 +455,75 @@ async function refreshRecommendations() {
     if (data.recommendations && data.recommendations.length > 0) {
       Storage.saveRecommendations(data.recommendations);
       renderRecommendationsUI(data.recommendations);
-      showToast("Updated recommendations!", "success");
+      showToast("Updated career recommendations!", "success");
     }
   } catch (e) {
-    showToast("Could not update recommendations", "error");
+    showToast("Could not calculate recommendations", "error");
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const p = Storage.getProfile();
-  if (p) {
-    if (p.name) document.getElementById('dash-greeting').textContent = `Welcome back, ${p.name}!`;
+  const user = Storage.getUser();
+  const profile = Storage.getProfile();
+  const gatedState = document.getElementById('dashboard-gated-state');
+  const authState = document.getElementById('dashboard-authenticated-state');
 
-    // Calculate completeness
-    let acadPct = 0;
-    if (p.academics?.streamOrField) acadPct += 40;
-    if (p.academics?.subjects?.length) acadPct += 30;
-    if (p.academics?.strengths?.length) acadPct += 30;
-    updateGauge('gauge-academics', Math.max(acadPct, 30));
-    document.getElementById('percent-academics').textContent = `${Math.round(acadPct)}% complete`;
-    document.getElementById('detail-academics').textContent = p.academics?.streamOrField || "Configured";
+  // STRICT ACCESS GATING:
+  // If user is neither logged in nor has filled out their profile assessment, gate access strictly.
+  const hasAccess = Boolean((user && user.name) || (profile && profile.name));
 
-    let intPct = 0;
-    if (p.interests?.skills?.length) intPct += 60;
-    if (p.interests?.interests?.length) intPct += 40;
-    updateGauge('gauge-interests', Math.max(intPct, 40));
-    document.getElementById('percent-interests').textContent = `${Math.round(intPct)}% complete`;
-    document.getElementById('detail-interests').textContent = `${p.interests?.skills?.length || 0} skills added`;
+  if (!hasAccess) {
+    // Show Gated State - NO statistics, NO gauges, NO mock data
+    gatedState.classList.remove('hidden');
+    authState.classList.add('hidden');
+  } else {
+    // Show Real Authenticated Dashboard
+    gatedState.classList.add('hidden');
+    authState.classList.remove('hidden');
 
-    let aspPct = 0;
-    if (p.aspirations?.dreamRoles?.length) aspPct += 50;
-    if (p.aspirations?.priorities?.length) aspPct += 50;
-    updateGauge('gauge-aspirations', Math.max(aspPct, 50));
-    document.getElementById('percent-aspirations').textContent = `${Math.round(aspPct)}% complete`;
-    document.getElementById('detail-aspirations').textContent = p.aspirations?.dreamRoles?.[0] || "Configured";
+    const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Candidate");
+    document.getElementById('dash-greeting').textContent = `Welcome back, ${displayName}!`;
+
+    if (profile) {
+      // Calculate REAL completeness
+      let acadPct = 0;
+      if (profile.academics?.educationLevel) acadPct += 30;
+      if (profile.academics?.streamOrField) acadPct += 40;
+      if (profile.academics?.subjects?.length) acadPct += 30;
+      updateGauge('gauge-academics', acadPct);
+      document.getElementById('percent-academics').textContent = `${acadPct}% configured`;
+      document.getElementById('detail-academics').textContent = profile.academics?.streamOrField || "Active";
+
+      let intPct = 0;
+      if (profile.interests?.skills?.length) intPct += 60;
+      if (profile.interests?.interests?.length) intPct += 40;
+      updateGauge('gauge-interests', intPct);
+      document.getElementById('percent-interests').textContent = `${intPct}% configured`;
+      document.getElementById('detail-interests').textContent = `${profile.interests?.skills?.length || 0} skills verified`;
+
+      let aspPct = 0;
+      if (profile.aspirations?.dreamRoles?.length) aspPct += 50;
+      if (profile.aspirations?.priorities?.length) aspPct += 50;
+      updateGauge('gauge-aspirations', aspPct);
+      document.getElementById('percent-aspirations').textContent = `${aspPct}% configured`;
+      document.getElementById('detail-aspirations').textContent = profile.aspirations?.dreamRoles?.[0] || "Active";
+    }
+
+    const storedRecs = Storage.getRecommendations();
+    if (storedRecs && storedRecs.length > 0) {
+      renderRecommendationsUI(storedRecs);
+    } else if (profile) {
+      refreshRecommendations();
+    } else {
+      renderRecommendationsUI([]);
+    }
+
+    renderProgressUI();
+    renderFavoritesUI();
+    syncComparisonBar();
   }
 
-  const storedRecs = Storage.getRecommendations();
-  renderRecommendationsUI(storedRecs);
-  renderProgressUI();
-  renderFavoritesUI();
-  syncComparisonBar();
+  if (window.lucide) window.lucide.createIcons();
 });
 </script>
 {% endblock %}
