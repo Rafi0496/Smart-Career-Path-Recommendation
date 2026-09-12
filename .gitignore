@@ -35,4 +35,6 @@ venv/
 ENV/
 *.pkl
 *.sqlite3
+*.db
+career_path.db
 .pytest_cache/

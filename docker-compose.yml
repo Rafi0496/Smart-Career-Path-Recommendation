@@ -1,68 +1,20 @@
 version: "3.9"
 
 services:
-  # Next.js 14 Frontend & Proxy API Gateway
-  web:
+  # Python Full-Stack AI Career Recommendation System & Intelligence Platform
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: career-path-web
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PYTHON_SERVICE_URL=http://python-service:8000
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/career_path
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    depends_on:
-      db:
-        condition: service_healthy
-      python-service:
-        condition: service_started
-    networks:
-      - career-network
-    restart: unless-stopped
-
-  # Python FastAPI AI/ML Microservice
-  python-service:
-    build:
-      context: ./python-service
-      dockerfile: Dockerfile
-    container_name: career-path-ml-brain
+    container_name: career-path-python-app
     ports:
       - "8000:8000"
+      - "3000:8000"
     environment:
       - PORT=8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    networks:
-      - career-network
-    restart: unless-stopped
-
-  # PostgreSQL Database for Persistence & Learning Progress Tracking
-  db:
-    image: postgres:16-alpine
-    container_name: career-path-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=career_path
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - career-network
+      - ./career_path.db:/app/career_path.db
     restart: unless-stopped
-
-networks:
-  career-network:
-    driver: bridge
-
-volumes:
-  postgres_data:

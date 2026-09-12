@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Language detection overrides for GitHub Linguist
+# Enforces Python as the primary language (>90%)
+*.py linguist-detectable=true
+app/templates/** linguist-detectable=false
+app/static/** linguist-detectable=false
+python-service/templates/** linguist-detectable=false
+python-service/data/** linguist-vendored=true
+app/data/** linguist-vendored=true
+scripts/** linguist-vendored=true
+*.db linguist-generated=true
+*.json linguist-generated=true

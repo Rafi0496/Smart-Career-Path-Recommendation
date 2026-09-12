@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Career Path | AI Career Intelligence Platform (Python Edition){% endblock %}
+
+{% block content %}
+<div class="pt-8 pb-16 md:pt-16 md:pb-24">
+  <!-- Hero Section -->
+  <section class="text-center max-w-3xl mx-auto">
+    <div class="inline-flex items-center gap-2 rounded-full bg-primary-100 dark:bg-primary-950/80 border border-primary-200/60 dark:border-primary-800 text-primary-700 dark:text-primary-300 px-4 py-1.5 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
+      <i data-lucide="sparkles" class="w-4 h-4 text-primary-600 dark:text-primary-400"></i>
+      <span>AI-Powered Career Intelligence Platform (Python Edition)</span>
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 leading-tight">
+      Find your true path.{" "}
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-sky-500 to-emerald-500">
+        Build your future.
+      </span>
+    </h1>
+
+    <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+      For ambitious students and professionals rethinking their trajectory. We synthesize your
+      academic foundations, genuine passions, and long-term aspirations into a sequential, actionable
+      roadmap backed by 140+ industry career vectors.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a href="/assessment" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-primary-500/25 transition btn-3d">
+        <span>Start Assessment</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+      <a href="/dashboard" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 px-8 py-3.5 rounded-xl font-bold border border-slate-200 dark:border-slate-700 hover:border-primary-400 hover:bg-primary-50/50 dark:hover:bg-slate-800 shadow-sm transition btn-3d">
+        <span>Explore Dashboard</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 3 Pillar Feature Cards Grid -->
+  <section class="mt-20 grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+    <div class="glass-panel bg-white/80 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 shadow-sm card-3d">
+      <div class="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-950/60 flex items-center justify-center mb-4 text-primary-600 dark:text-primary-400">
+        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-2">3-Pillar Profile</h3>
+      <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+        Your academic background, personal passions, and career dreams combined into a unified
+        digital World Profile with instant PDF resume extraction.
+      </p>
+    </div>
+
+    <div class="glass-panel bg-white/80 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 shadow-sm card-3d">
+      <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center mb-4 text-emerald-600 dark:text-emerald-400">
+        <i data-lucide="compass" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-2">Ranked Recommendations</h3>
+      <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+        Transparent match percentages, skill breakdown, timeline estimations, and exact reasons
+        why each path fits you across {{ total_careers }} curated industry roles.
+      </p>
+    </div>
+
+    <div class="glass-panel bg-white/80 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200/70 dark:border-slate-800 shadow-sm card-3d sm:col-span-2 md:col-span-1">
+      <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center mb-4 text-amber-600 dark:text-amber-400">
+        <i data-lucide="book-open" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-bold text-slate-900 dark:text-white text-lg mb-2">Sequential Roadmaps</h3>
+      <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+        Numbered, sequential procedures: what to do, how to do it step-by-step, vetted
+        learning resources, and downloadable 4-page Executive Blueprint PDFs.
+      </p>
+    </div>
+  </section>
+
+  <!-- Key Metrics / Impact Statistics -->
+  <section class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="glass-panel rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 text-center">
+      <div class="text-3xl font-extrabold text-primary-600 dark:text-primary-400 mb-1">{{ total_careers }}+</div>
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Curated Career Paths</div>
+    </div>
+    <div class="glass-panel rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 text-center">
+      <div class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-1">3-Way</div>
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Profile Synthesis</div>
+    </div>
+    <div class="glass-panel rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 text-center">
+      <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">100%</div>
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actionable Milestones</div>
+    </div>
+    <div class="glass-panel rounded-2xl p-5 border border-slate-200/70 dark:border-slate-800 text-center">
+      <div class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mb-1">24/7</div>
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Guidance by AI "V"</div>
+    </div>
+  </section>
+
+  <!-- 3-Step Execution Workflow -->
+  <section class="mt-16 glass-panel bg-gradient-to-r from-primary-500/10 via-emerald-500/10 to-indigo-500/10 rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800">
+    <h3 class="text-center text-xl font-bold text-slate-900 dark:text-white mb-8">How The Platform Works in 3 Steps</h3>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="flex flex-col items-center text-center">
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-600 text-white font-bold text-sm mb-3 shadow-md shadow-primary-500/30">1</span>
+        <h4 class="font-bold text-slate-900 dark:text-white mb-1">Enter Your Profile</h4>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Complete the 4-step wizard or upload your PDF resume for instant AI auto-fill.</p>
+      </div>
+      <div class="flex flex-col items-center text-center">
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white font-bold text-sm mb-3 shadow-md shadow-emerald-500/30">2</span>
+        <h4 class="font-bold text-slate-900 dark:text-white mb-1">Explore Top Career Matches</h4>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">The hybrid engine computes match scores, identifying verified skills vs. skills to develop.</p>
+      </div>
+      <div class="flex flex-col items-center text-center">
+        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-sm mb-3 shadow-md shadow-indigo-500/30">3</span>
+        <h4 class="font-bold text-slate-900 dark:text-white mb-1">Execute Roadmaps & Diagnostic Tests</h4>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Track stage completion with checkboxes, test readiness via quizzes, and export Executive PDFs.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

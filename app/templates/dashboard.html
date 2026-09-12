@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Smart Career Path (Python Edition){% endblock %}
+
+{% block content %}
+<div class="py-6 space-y-10 fade-in-up">
+  <!-- Top Welcome Banner -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md">
+    <div>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-bold mb-2">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>AI Career Intelligence Center</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="dash-greeting">
+        Welcome to your Career Dashboard
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Synthesizing your academic background, passions, and aspirations against 140+ career tracks.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/assessment" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-primary-500/25 transition btn-3d">
+        <i data-lucide="pencil" class="w-4 h-4"></i>
+        <span>Update Assessment</span>
+      </a>
+      <a href="/compare" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl hover:border-primary-400 transition btn-3d">
+        <i data-lucide="scale" class="w-4 h-4"></i>
+        <span>Compare Careers</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Profile Completeness Metrics -->
+  <section class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6 flex items-center gap-2">
+      <i data-lucide="target" class="w-4 h-4 text-primary-600"></i>
+      <span>Profile Synthesis Completeness</span>
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+      <!-- Academics -->
+      <div class="flex flex-col items-center">
+        <div class="w-24 h-24 relative flex items-center justify-center">
+          <svg class="w-full h-full ring-progress -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-200 dark:text-slate-700" />
+            <circle id="gauge-academics" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="60" class="text-primary-600" />
+          </svg>
+          <i data-lucide="graduation-cap" class="w-6 h-6 text-slate-700 dark:text-slate-200 absolute"></i>
+        </div>
+        <span class="font-bold text-sm text-slate-800 dark:text-white mt-3">Academics</span>
+        <span id="detail-academics" class="text-xs text-slate-500">Configured</span>
+      </div>
+
+      <!-- Interests -->
+      <div class="flex flex-col items-center">
+        <div class="w-24 h-24 relative flex items-center justify-center">
+          <svg class="w-full h-full ring-progress -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-200 dark:text-slate-700" />
+            <circle id="gauge-interests" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="40" class="text-emerald-500" />
+          </svg>
+          <i data-lucide="heart" class="w-6 h-6 text-slate-700 dark:text-slate-200 absolute"></i>
+        </div>
+        <span class="font-bold text-sm text-slate-800 dark:text-white mt-3">Interests & Skills</span>
+        <span id="detail-interests" class="text-xs text-slate-500">Configured</span>
+      </div>
+
+      <!-- Aspirations -->
+      <div class="flex flex-col items-center">
+        <div class="w-24 h-24 relative flex items-center justify-center">
+          <svg class="w-full h-full ring-progress -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-200 dark:text-slate-700" />
+            <circle id="gauge-aspirations" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="50" class="text-amber-500" />
+          </svg>
+          <i data-lucide="target" class="w-6 h-6 text-slate-700 dark:text-slate-200 absolute"></i>
+        </div>
+        <span class="font-bold text-sm text-slate-800 dark:text-white mt-3">Dream Aspirations</span>
+        <span id="detail-aspirations" class="text-xs text-slate-500">Configured</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Top Career Recommendations -->
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="compass" class="w-5 h-5 text-primary-600"></i>
+          <span>Your Top Recommended Careers</span>
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Ranked by hybrid semantic vector match and skill overlap.</p>
+      </div>
+      <button onclick="refreshRecommendations()" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        <span>Recalculate</span>
+      </button>
+    </div>
+
+    <!-- Recommendations Container -->
+    <div id="recommendations-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full text-center py-12 glass-panel rounded-3xl border border-slate-200 dark:border-slate-800">
+        <i data-lucide="sparkles" class="w-8 h-8 text-primary-600 mx-auto mb-3 animate-pulse"></i>
+        <p class="text-slate-700 dark:text-slate-300 font-bold mb-2">Generating personalized recommendations...</p>
+        <p class="text-xs text-slate-500">Or click below to complete your profile.</p>
+        <a href="/assessment" class="inline-flex items-center gap-2 mt-4 bg-primary-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl btn-3d">
+          Start Assessment
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categorized Career Explorer (All 140+ Tracks) -->
+  <section class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+    <div class="mb-6">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i>
+        <span>Explore All 140+ Career Tracks by Industry</span>
+      </h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Browse structured roadmaps across 21 industry sectors.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for cat_name, careers in categorized_careers.items() %}
+      <div class="border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-4 bg-white/50 dark:bg-slate-800/50 hover:border-primary-400 transition card-3d">
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white mb-2 flex items-center justify-between">
+          <span>{{ cat_name }}</span>
+          <span class="text-xs font-normal text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{{ careers | length }}</span>
+        </h3>
+        <ul class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+          {% for c in careers[:4] %}
+          <li>
+            <a href="/career-path?title={{ c.title | urlencode }}" class="hover:text-primary-600 dark:hover:text-primary-400 flex items-center gap-1.5">
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span class="truncate">{{ c.title }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<script>
+function renderRecommendationsUI(recs) {
+  const container = document.getElementById('recommendations-container');
+  if (!recs || recs.length === 0) return;
+
+  container.innerHTML = recs.map((r) => {
+    const title = r.careerTitle;
+    const score = r.matchScore || 85;
+    const overlap = r.skillOverlapPercent || 0;
+    const timeline = r.estimatedTimeline || "6–12 months";
+    const salary = r.salaryRange || "$60k–$100k";
+    const isFav = Storage.getFavorites().includes(title);
+
+    return `
+      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
+        <div>
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <span class="px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-400 font-bold text-xs">
+              ${score}% Match
+            </span>
+            <button onclick="toggleFav('${title}', this)" class="text-slate-400 hover:text-amber-500 transition" title="Save Favorite">
+              <i data-lucide="star" class="w-5 h-5 ${isFav ? 'text-amber-500 fill-amber-500' : ''}"></i>
+            </button>
+          </div>
+
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1 leading-snug">
+            <a href="/career-path?title=${encodeURIComponent(title)}" class="hover:text-primary-600 dark:hover:text-primary-400 transition">
+              ${title}
+            </a>
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 leading-relaxed">
+            ${r.description}
+          </p>
+
+          <!-- Badges -->
+          <div class="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 mb-5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>${timeline}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>${salary}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-primary-500"></i>
+              <span>${overlap}% Skill Alignment</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+          <a href="/career-path?title=${encodeURIComponent(title)}" class="flex-1 text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
+            View Roadmap
+          </a>
+          <button onclick="toggleCompare('${title}')" class="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-400 text-slate-700 dark:text-slate-300 text-xs font-semibold transition btn-3d" title="Add to comparison">
+            <i data-lucide="scale" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function toggleFav(title, btn) {
+  const list = Storage.toggleFavorite(title);
+  const icon = btn.querySelector('i') || btn.querySelector('svg');
+  const isFav = list.includes(title);
+  if (icon) {
+    icon.classList.toggle('text-amber-500', isFav);
+    icon.classList.toggle('fill-amber-500', isFav);
+  }
+  showToast(isFav ? `Added "${title}" to favorites` : `Removed "${title}" from favorites`);
+}
+
+function toggleCompare(title) {
+  const list = Storage.toggleComparison(title);
+  showToast(list.includes(title) ? `Added "${title}" to comparison` : `Removed "${title}" from comparison`);
+}
+
+async function refreshRecommendations() {
+  const p = Storage.getProfile();
+  if (!p) {
+    window.location.href = '/assessment';
+    return;
+  }
+
+  showToast("Recalculating career matches...", "info");
+  try {
+    const res = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(p)
+    });
+    const data = await res.json();
+    if (data.recommendations) {
+      Storage.saveRecommendations(data.recommendations);
+      renderRecommendationsUI(data.recommendations);
+      showToast("Updated recommendations!", "success");
+    }
+  } catch (e) {
+    showToast("Error updating recommendations", "error");
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const p = Storage.getProfile();
+  if (p) {
+    if (p.name) document.getElementById('dash-greeting').textContent = `Welcome back, ${p.name}!`;
+    if (p.academics?.streamOrField) document.getElementById('detail-academics').textContent = p.academics.streamOrField;
+    if (p.interests?.skills?.length) document.getElementById('detail-interests').textContent = `${p.interests.skills.length} skills added`;
+    if (p.aspirations?.dreamRoles?.length) document.getElementById('detail-aspirations').textContent = p.aspirations.dreamRoles[0];
+  }
+
+  const storedRecs = Storage.getRecommendations();
+  if (storedRecs && storedRecs.length > 0) {
+    renderRecommendationsUI(storedRecs);
+  } else if (p) {
+    refreshRecommendations();
+  }
+});
+</script>
+{% endblock %}

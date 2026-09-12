@@ -1,173 +1,184 @@
-# Smart Career Path Recommendation System & AI/ML Microservice
+# 🧭 Smart Career Path Recommendation System & AI Intelligence Platform (Python Edition)
 
-An AI-powered, production-grade career guidance platform that helps students and professionals discover tailored career trajectories. The platform pairs a modern **Next.js 14** web application with a dedicated **Python FastAPI ML microservice** acting as the AI/ML intelligence engine.
+An AI-powered career intelligence and guidance platform built **predominantly in Python** (>90% of the codebase). The platform synthesizes candidate academic backgrounds, genuine passions, and career aspirations into sequential, actionable roadmaps backed by a curated database of **140+ industry career tracks**, live AI mentorship, diagnostic skill quizzes, and publication-ready 4-page Executive Career Blueprint PDF generation.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture (100% Python Core)
 
 ```text
                                   ┌───────────────────────────────┐
                                   │       Client Browser          │
+                                  │   (HTML5 + Tailwind CSS + JS) │
                                   └───────────────┬───────────────┘
                                                   │
                                                   ▼
-                                  ┌───────────────────────────────┐
-                                  │   Next.js 14 Frontend & API   │
-                                  │   (TypeScript, Tailwind CSS)  │
-                                  └───────┬───────────────┬───────┘
-                                          │               │
-                 Proxy AI Workloads       │               │ Progress Sync
-            (HTTP / PYTHON_SERVICE_URL)   │               │ (PostgreSQL / Supabase)
-                                          ▼               ▼
-┌─────────────────────────────────────────────────────────┐   ┌───────────────────────────┐
-│              Python FastAPI ML Microservice             │   │    PostgreSQL Database    │
-│                                                         │   │    (learning_progress,    │
-│  • Resume Extractor (pdfplumber + spaCy NER)            │   │     user_profiles)        │
-│  • Hybrid Recommender (Sentence-Transformers + Cosine)  │   └───────────────────────────┘
-│  • Skill-Gap Quiz Engine (Structured Diagnostic LLM)    │
-│  • PDF Builder (Jinja2 + WeasyPrint Engine)             │
-│  • 140+ Career Embeddings Vector Cache (all-MiniLM-L6)  │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                           FastAPI Full-Stack Python Core Application                            │
+│                                                                                                 │
+│  • run.py                      -> Single-command application entrypoint                         │
+│  • app/main.py                 -> FastAPI application, lifespan, CORS & static mounting        │
+│  • app/routers/pages.py        -> Dynamic Jinja2 server-rendered views (/, /dashboard, etc.)    │
+│  • app/routers/api.py          -> REST API gateways (/api/recommend, /api/chat, /api/pdf, etc.) │
+│                                                                                                 │
+│  Core Python Engines (app/core/):                                                               │
+│  ├── career_engine.py          -> 140+ Career taxonomy, tokenization & hybrid scoring engine    │
+│  ├── resume_parser.py          -> Pure Python PDF text extractor (pypdf + zlib) & skill matcher │
+│  ├── pdf_builder.py            -> 4-Page Executive Career Blueprint PDF generator (ReportLab)   │
+│  ├── ai_mentor.py              -> Multi-tier 24/7 AI Mentor "V" (Gemini 3.6 Flash & Groq 120B)  │
+│  ├── quiz_engine.py            -> Dynamic skill-gap diagnostic test generator                   │
+│  └── database.py               -> SQLite persistence for accounts, profiles, and milestones     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## ⚡ Tech Stack
 
-### AI / Machine Learning & Microservice:
-- **FastAPI**: Asynchronous Python API microservice framework with high performance.
-- **sentence-transformers (`all-MiniLM-L6-v2`)**: Precomputes and caches 384-dimensional dense semantic vectors for 140+ industry career profiles.
-- **scikit-learn & numpy**: Cosine similarity computation, matrix normalization, and TF-IDF fallback vectorization.
-- **spaCy (`en_core_web_sm`)**: Named Entity Recognition (NER) pipeline for extracting candidate name, educational background, and tenure.
-- **pdfplumber**: Extracting structured text, credentials, and tabular data from PDF resumes.
-- **WeasyPrint**: Rendering print-accurate, publication-quality PDF career roadmaps from Jinja2 templates.
-- **OpenAI API (Optional)**: Dynamic contextual reasoning and grounded skill-gap quiz generation.
-
-### Web Application & Frontend:
-- **Next.js 14 (App Router)** & **React 18**
-- **TypeScript** & **Tailwind CSS**
-- **Lucide React** for icons
-- **PostgreSQL / Supabase**: Schema provided in `scripts/schema.sql` for persistent progress tracking.
-- **Docker & Docker Compose**: Multi-container orchestration for local development and deployment.
+- **Core Programming Language**: **Python 3.10+ / 3.14** *(~90% of the entire codebase)*
+- **Web Framework**: [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/) (Asynchronous, type-safe REST API and web routing)
+- **Templating & Presentation**: [Jinja2](https://palletsprojects.com/p/jinja/) with [Tailwind CSS](https://tailwindcss.com/) (Glassmorphism, dark/light theme tokens, 3D button animations)
+- **PDF Generation Engine**: [ReportLab](https://www.reportlab.com/) (Generates professional, 4-page print-accurate Executive Career Blueprint PDFs in pure Python)
+- **PDF Extraction Engine**: [pypdf](https://pypdf.readthedocs.io/) + Python in-memory `zlib` stream decompressor
+- **AI / LLM Multi-Tier Pipeline**:
+  - **Google Gemini 3.6 Flash** (High-context career reasoning)
+  - **Groq Llama 3 / OSS-120B / Compound** (Ultra-fast real-time chat inference)
+  - **Heuristic Offline Fallback** (Deterministic career advisor when offline)
+- **Database & Persistence**: [SQLite](https://www.sqlite.org/) (Built-in, zero-configuration local database storing users, profiles, and milestone progress)
 
 ---
 
-## ✨ Core Features
+## ✨ Core Features & Capabilities
 
-### 1. 📄 ML Resume Parser (`POST /resume/parse`)
+### 1. 📄 Pure Python Resume Parser (`POST /api/resume/parse`)
 - Upload any standard PDF resume on the assessment screen.
-- Employs `pdfplumber` for text parsing and spaCy NER combined with a 350+ skill taxonomy.
-- Automatically extracts: candidate name, contact, education level, stream of study, technical skills, tools, frameworks, and certifications.
+- Employs `pypdf` with a pure Python in-memory `zlib` FlateDecode decompressor fallback and a 350+ industry skill dictionary.
+- Automatically parses: Full Name, Degree, Academic Stream, Technical Skills, Frameworks, and Tools.
 - Pre-fills all 4 stages of the assessment form instantly while remaining completely editable.
 
-### 2. 🧠 Hybrid Recommender Engine (`POST /recommend`)
-- Augments rule matching with deep semantic vector search (`all-MiniLM-L6-v2`).
-- Computes cosine similarity between the user's holistic profile narrative and 140+ career vectors.
-- Calculates an explicit feature score (skill overlap %, dream role bonus, academic alignment).
-- Combines them into a weighted **Hybrid Score** (`0.55 * semantic_score + 0.45 * feature_score`).
-- Returns normalized `skillOverlapPercent`, identifying matching skills vs. skills to develop, with grounded reasoning.
+### 2. 🧠 Hybrid Career Recommendation Engine (`POST /api/recommend`)
+- Combines keyword extraction, semantic matching, and feature overlap scoring.
+- Evaluates academic stream alignment, technical skill overlap percentage, dream role synergy, and preferred work environments.
+- Ranks top matches from a curated database of **140+ career tracks spanning 21 industry sectors**.
+- Provides a clear breakdown of matching skills vs. skills to develop, estimated salary brackets, and ramp-up timelines.
 
-### 3. 🎯 Interactive Skill-Gap Quiz (`POST /quiz/generate` & `/career-path/quiz`)
-- Tailored multiple-choice diagnostic tests generated for the specific skills you need to develop.
-- Instant score computation, performance tier classification, and identified skill gap highlights.
-- In-memory/disk caching prevents redundant LLM re-generation on repeat requests.
+### 3. 🤖 Dedicated 24/7 AI Career Mentor "V" (`POST /api/chat`)
+- An embedded floating AI companion available on every page.
+- Powered by Google Gemini 3.6 Flash and Groq ultra-fast inference with conversation context.
+- Answers questions on salary negotiations, interview preparation, career transitions, and course recommendations.
+- Includes a rich domain-specific offline fallback engine.
 
-### 4. ⚖️ Side-by-Side Career Comparison View (`/compare`)
-- Select up to 3 careers from the dashboard or dropdown to compare side-by-side.
-- Contrasts match scores, skill overlap percentages, salary brackets, estimated timelines, and learning milestones.
-- Features a dynamic **Comparative Skills Matrix** highlighting common vs. unique skill requirements.
+### 4. 📄 4-Page Executive Career Blueprint PDF Generator (`POST /api/export/pdf`)
+- Single-click export from any career roadmap in pure Python using `reportlab`:
+  - **Page 1**: Executive Cover, Candidate Profile Snapshot, Key Metrics & Table of Contents.
+  - **Page 2**: Role Overview, Prioritized Skills Matrix, Compensation Tiers by Level, and Certifications.
+  - **Page 3**: Sequential Learning Roadmap with numbered milestones, durations, procedures, and learning resources.
+  - **Page 4**: Long-Term Career Trajectory, Tactical 30-60-90 Day Action Plan, and Ecosystem Resources.
 
-### 5. 📈 Persistent Learning Progress Tracking (`/api/progress`)
-- Checkboxes on each stage of the career roadmap to track your learning journey.
-- Real-time progress bar reflecting completion percentages.
-- Backed by PostgreSQL (`scripts/schema.sql`) with client-side persistence fallback.
-- Active roadmaps and completion progress bars are displayed directly on the user dashboard.
+### 5. 🎯 Interactive Skill-Gap Diagnostic Quiz (`POST /api/quiz/generate` & `/career-path/quiz`)
+- Dynamically generates multiple-choice technical diagnostic tests focused on the exact skills identified in your gap analysis.
+- Features instant answer verification, detailed technical explanations, and score tier classification.
 
-### 6. 📥 Publication-Ready PDF Roadmap Export (`POST /export/pdf`)
-- Single-click "Download Roadmap PDF" button on any career roadmap.
-- Formats roadmap metadata, milestones, procedures, and resources via Jinja2 into a clean PDF via WeasyPrint.
+### 6. ⚖️ Side-by-Side Career Comparison Matrix (`/compare`)
+- Select up to 3 careers to compare side-by-side.
+- Contrasts match scores, timelines, salary potential, and skill overlap in a unified matrix.
 
----
-
-## 🚀 Getting Started
-
-### Option A: Docker Compose (Recommended)
-
-Run the frontend, Python microservice, and PostgreSQL database together in one command:
-
-```bash
-# Clone the repository
-git clone https://github.com/Rafi0496/Smart-Career-Path-Recommendation.git
-cd Smart-Career-Path-Recommendation
-
-# Start all three services
-docker compose up --build
-```
-
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **FastAPI Microservice Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **PostgreSQL**: `localhost:5432`
+### 7. 📈 Learning Progress Tracker & World Profile Dashboard (`/dashboard`)
+- Interactive checkboxes on every milestone of your career roadmap.
+- Animated circular completion gauges for Academics, Interests, and Aspirations.
+- Persistent user profile sessions with Login, Registration, and Password Recovery.
 
 ---
 
-### Option B: Local Independent Setup
+## 🚀 Quick Start Guide
 
-#### 1. Start the Python AI/ML Microservice
-```bash
-cd python-service
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-
-# Launch FastAPI on port 8000
-python main.py
-```
-*Health check:* [http://localhost:8000/health](http://localhost:8000/health)
-
-#### 2. Start the Next.js Frontend
-```bash
-# In the project directory
-npm install
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000).
+### 1. Prerequisites
+- **Python 3.10+** (Python 3.11, 3.12, 3.13, or 3.14)
+- **pip** (Python package manager)
 
 ---
 
-## 📂 Project Structure
+### 2. Installation & Setup
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Rafi0496/Smart-Career-Path-Recommendation.git
+   cd Smart-Career-Path-Recommendation/Mini-Project-main
+   ```
+
+2. **Install Python Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure Environment Keys (Optional)**:
+   Create a `.env.local` or `.env` file:
+   ```ini
+   # Groq API Key (Recommended for live AI Assistant "V")
+   GROQ_API_KEY=gsk_...
+
+   # Google Gemini API Key (Alternative AI provider)
+   GEMINI_API_KEY=...
+   ```
+   > **Note:** The application includes full standalone fallbacks! If no API keys are provided, all recommendation, quiz, resume parsing, and chat features remain functional.
+
+---
+
+### 3. Launch the Application
+
+Run the single-command Python entrypoint:
+
+```bash
+python run.py
+```
+
+- **Web Application**: [http://localhost:8000](http://localhost:8000)
+- **Interactive Swagger API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## 📂 Codebase Structure (Python-First)
 
 ```text
-├── Dockerfile                  # Next.js production container
-├── docker-compose.yml          # Multi-container orchestration (Web, ML, DB)
-├── scripts/
-│   ├── export_careers.js       # Exports 140+ careers to JSON
-│   └── schema.sql              # PostgreSQL / Supabase migration schema
-├── python-service/             # Python FastAPI ML Microservice
-│   ├── Dockerfile              # Container with WeasyPrint & Pango/Cairo libs
-│   ├── requirements.txt        # FastAPI, spaCy, sentence-transformers, scikit-learn
-│   ├── main.py                 # FastAPI application, CORS & Lifespan caching
-│   ├── data/
-│   │   └── careers.json        # 140+ careers database
-│   ├── routers/
-│   │   ├── recommend.py        # POST /recommend (Hybrid ML engine)
-│   │   ├── resume.py           # POST /resume/parse (spaCy + pdfplumber)
-│   │   ├── quiz.py             # POST /quiz/generate (Skill diagnostic)
-│   │   └── export.py           # POST /export/pdf (WeasyPrint PDF export)
-│   ├── services/
-│   │   ├── embeddings.py       # Sentence-transformers vector cache
-│   │   ├── matcher.py          # Hybrid recommender & LLM grounding
-│   │   ├── resume_extractor.py # PDF text extraction & NER skill matcher
-│   │   └── pdf_builder.py      # Jinja2 template & PDF renderer
-│   └── templates/
-│       └── roadmap.html        # Clean HTML styling for PDF generation
-└── src/                        # Next.js 14 Frontend Application
-    ├── app/
-    │   ├── api/                # Proxy routes (/recommend, /resume/parse, /quiz, /export/pdf)
-    │   ├── assessment/         # Multi-step assessment with Resume Auto-Fill
-    │   ├── career-path/        # Roadmap with checkboxes & PDF export
-    │   │   └── quiz/           # Interactive skill-gap diagnostic test
-    │   ├── compare/            # Side-by-side career comparison view
-    │   └── dashboard/          # Analytics, active progress & category browser
-    ├── components/             # Navbar, ThemeToggle, AIAssistant
-    └── lib/                    # storage.ts, career-engine.ts, types.ts
+Mini-Project-main/
+├── run.py                       # Single-command Python entrypoint (`python run.py`)
+├── requirements.txt             # Python dependencies (FastAPI, Uvicorn, ReportLab, etc.)
+├── .env.example                 # Environment configuration template
+├── app/                         # Core Full-Stack Python Package (~90% Python)
+│   ├── __init__.py
+│   ├── main.py                  # FastAPI app initialization, CORS & static mounting
+│   ├── config.py                # Environment and path settings
+│   ├── core/                    # Core Python Algorithms & Intelligence Engines
+│   │   ├── __init__.py
+│   │   ├── career_engine.py     # 140+ Career taxonomy & hybrid scoring algorithm
+│   │   ├── resume_parser.py     # Pure Python PDF text extractor & skill taxonomy
+│   │   ├── pdf_builder.py       # 4-Page Executive Career Blueprint PDF engine (ReportLab)
+│   │   ├── ai_mentor.py         # Multi-tier live AI mentor "V" (Gemini / Groq / Fallback)
+│   │   ├── quiz_engine.py       # Diagnostic skill-gap quiz generator
+│   │   └── database.py          # SQLite persistence for auth, profiles, and milestones
+│   ├── routers/                 # FastAPI Route Handlers
+│   │   ├── __init__.py
+│   │   ├── pages.py             # Server-rendered HTML routes (/, /dashboard, /assessment, etc.)
+│   │   └── api.py               # REST API endpoints (/api/recommend, /api/chat, /api/pdf, etc.)
+│   ├── templates/               # Jinja2 HTML Templates (Exact UI Design)
+│   │   ├── base.html            # Global layout with Navbar, theme toggle & AI mentor
+│   │   ├── index.html           # Landing page
+│   │   ├── assessment.html      # 4-stage assessment with resume drag & drop
+│   │   ├── dashboard.html       # Analytics, active progress & category explorer
+│   │   ├── career_path.html     # Sequential roadmap with milestone checkboxes
+│   │   ├── quiz.html            # Interactive skill-gap diagnostic test
+│   │   ├── compare.html         # Side-by-side career comparison matrix
+│   │   ├── login.html           # User login with password recovery
+│   │   └── register.html        # User account creation
+│   └── static/                  # Static Assets
+│       ├── css/styles.css       # Glassmorphism tokens & animations
+│       └── js/
+│           ├── app.js           # Client state, theme toggle & storage helpers
+│           └── assistant.js     # Floating AI Mentor "V" controller
 ```
+
+---
+
+## 📜 License
+
+This project is open source and available under the [MIT License](LICENSE).

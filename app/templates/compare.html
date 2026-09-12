@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Careers | Smart Career Path (Python Edition){% endblock %}
+
+{% block content %}
+<div class="py-6 space-y-8 fade-in-up">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+        <i data-lucide="scale" class="w-6 h-6 text-primary-600"></i>
+        <span>Side-by-Side Career Comparison</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Select up to 3 career tracks to compare market compensation, timelines, and overlapping skills.
+      </p>
+    </div>
+
+    <!-- Career Selector Dropdown -->
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+      <select id="career-select" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none">
+        <option value="">-- Add Career to Compare --</option>
+        {% for title in all_titles %}
+        <option value="{{ title }}">{{ title }}</option>
+        {% endfor %}
+      </select>
+      <button onclick="addSelectedCareer()" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition btn-3d">
+        Add
+      </button>
+      <button onclick="clearAll()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-500 transition" title="Clear all">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Comparison Grid Container -->
+  <div id="comparison-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+</div>
+
+<script>
+let activeCompared = [];
+
+async function loadCompareData() {
+  activeCompared = Storage.getComparisonList();
+  if (activeCompared.length === 0) {
+    activeCompared = ["Software Developer", "Data Analyst", "Cybersecurity Analyst"];
+  }
+
+  const container = document.getElementById('comparison-grid');
+  container.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-sm">Loading comparison details...</div>';
+
+  try {
+    const careerPromises = activeCompared.map(t =>
+      fetch(`/api/careers/${encodeURIComponent(t)}`)
+        .then(r => {
+          if (!r.ok) throw new Error("Not found");
+          return r.json();
+        })
+        .then(c => ({
+          title: c.title,
+          timeline: c.timeline || "6–12 months",
+          salary: c.salaryRange || "Competitive",
+          description: c.description || "Rewarding industry path.",
+          skills: c.requiredSkills || []
+        }))
+        .catch(() => ({
+          title: t,
+          timeline: "6–12 months",
+          salary: "Competitive",
+          description: "Career track details.",
+          skills: []
+        }))
+    );
+
+    const data = await Promise.all(careerPromises);
+    renderGrid(data);
+  } catch (e) {
+    container.innerHTML = '<div class="col-span-full text-center py-12 text-rose-500">Failed to load comparison data.</div>';
+  }
+}
+
+function renderGrid(careers) {
+  const container = document.getElementById('comparison-grid');
+  if (careers.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-16 glass-panel rounded-3xl border border-slate-200 dark:border-slate-800">
+        <p class="text-sm font-bold text-slate-600 dark:text-slate-300">No careers selected for comparison.</p>
+        <p class="text-xs text-slate-400 mt-1">Select careers from the dropdown above to contrast side-by-side.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = careers.map(c => `
+    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between card-3d">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-primary-600 bg-primary-50 dark:bg-primary-950 px-2.5 py-1 rounded-md">Career Profile</span>
+          <button onclick="removeCareer('${c.title}')" class="text-slate-400 hover:text-rose-500 transition" title="Remove">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mb-2">${c.title}</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mb-6 leading-relaxed line-clamp-3">${c.description}</p>
+
+        <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div>
+            <span class="block text-slate-400 uppercase font-bold text-[10px]">Estimated Ramp-Up</span>
+            <span class="font-bold text-slate-800 dark:text-white">${c.timeline}</span>
+          </div>
+          <div>
+            <span class="block text-slate-400 uppercase font-bold text-[10px]">Market Compensation</span>
+            <span class="font-bold text-emerald-600 dark:text-emerald-400">${c.salary}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+        <a href="/career-path?title=${encodeURIComponent(c.title)}" class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-primary-500/20 transition btn-3d">
+          View Execution Roadmap
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function addSelectedCareer() {
+  const select = document.getElementById('career-select');
+  const title = select.value;
+  if (!title) return;
+
+  const current = Storage.getComparisonList();
+  if (current.length >= 3) {
+    showToast("You can compare up to 3 careers at once.", "info");
+    return;
+  }
+  Storage.toggleComparison(title);
+  select.value = "";
+  loadCompareData();
+}
+
+function removeCareer(title) {
+  Storage.toggleComparison(title);
+  loadCompareData();
+}
+
+function clearAll() {
+  localStorage.removeItem('career_path_comparison');
+  loadCompareData();
+}
+
+document.addEventListener('DOMContentLoaded', loadCompareData);
+</script>
+{% endblock %}

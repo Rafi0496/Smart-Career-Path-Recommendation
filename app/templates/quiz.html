@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Gap Quiz | {{ career.title }} (Python Edition){% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-6 space-y-6 fade-in-up">
+  <!-- Back Link -->
+  <a href="/career-path?title={{ career.title | urlencode }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    <span>Back to {{ career.title }} Roadmap</span>
+  </a>
+
+  <!-- Header -->
+  <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm text-center">
+    <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="award" class="w-6 h-6"></i>
+    </div>
+    <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">
+      Skill Diagnostic Quiz: {{ career.title }}
+    </h1>
+    <p class="text-xs text-slate-500 dark:text-slate-400">
+      Test your comprehension of core technical concepts and best practices required for this track.
+    </p>
+  </div>
+
+  <!-- Quiz Box -->
+  <div id="quiz-container" class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-md">
+    <div id="quiz-loading" class="text-center py-10">
+      <i data-lucide="sparkles" class="w-8 h-8 text-primary-600 mx-auto mb-3 animate-pulse"></i>
+      <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Generating diagnostic questions...</p>
+    </div>
+
+    <!-- Active Question View -->
+    <div id="quiz-question-view" class="hidden space-y-6">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800 pb-3">
+        <span id="quiz-progress-text">Question 1 of 4</span>
+        <span id="quiz-skill-tag" class="px-2.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300">Skill</span>
+      </div>
+
+      <h3 id="quiz-question-title" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed"></h3>
+
+      <!-- Options Container -->
+      <div id="quiz-options-list" class="space-y-3"></div>
+
+      <!-- Explanation Box -->
+      <div id="quiz-explanation-box" class="hidden rounded-2xl p-4 text-xs leading-relaxed bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
+
+      <!-- Navigation -->
+      <div class="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+        <button type="button" id="quiz-next-btn" onclick="nextQuestion()" class="hidden px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-md transition btn-3d">
+          Next Question
+        </button>
+      </div>
+    </div>
+
+    <!-- Results View -->
+    <div id="quiz-results-view" class="hidden text-center py-8 space-y-4">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Diagnostic Complete!</h2>
+      <div class="text-4xl font-extrabold text-primary-600" id="quiz-final-score">100%</div>
+      <p id="quiz-tier-feedback" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto"></p>
+
+      <div class="pt-6 flex flex-wrap justify-center gap-3">
+        <button onclick="initQuiz()" class="px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
+          Retake Quiz
+        </button>
+        <a href="/career-path?title={{ career.title | urlencode }}" class="px-6 py-2.5 bg-primary-600 text-white text-xs font-bold rounded-xl shadow-md transition btn-3d">
+          Continue Roadmap
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const careerTitle = "{{ career.title }}";
+let questions = [];
+let currentIdx = 0;
+let userAnswers = {};
+let hasAnsweredCurrent = false;
+
+async function initQuiz() {
+  currentIdx = 0;
+  userAnswers = {};
+  document.getElementById('quiz-loading').classList.remove('hidden');
+  document.getElementById('quiz-question-view').classList.add('hidden');
+  document.getElementById('quiz-results-view').classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/quiz/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        career_id: careerTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        career_title: careerTitle,
+        skills_to_develop: {{ career.skills | tojson }}
+      })
+    });
+    const data = await res.json();
+    questions = data.questions || [];
+    document.getElementById('quiz-loading').classList.add('hidden');
+    document.getElementById('quiz-question-view').classList.remove('hidden');
+    renderCurrentQuestion();
+  } catch (err) {
+    document.getElementById('quiz-loading').innerHTML = `<p class="text-rose-600 font-bold">Failed to load quiz. Please try again.</p>`;
+  }
+}
+
+function renderCurrentQuestion() {
+  hasAnsweredCurrent = false;
+  const q = questions[currentIdx];
+  document.getElementById('quiz-progress-text').textContent = `Question ${currentIdx + 1} of ${questions.length}`;
+  document.getElementById('quiz-skill-tag').textContent = q.skill;
+  document.getElementById('quiz-question-title').textContent = q.question;
+
+  const optContainer = document.getElementById('quiz-options-list');
+  optContainer.innerHTML = q.options.map((opt, idx) => `
+    <button type="button" onclick="selectOption(${idx})" id="opt-btn-${idx}" class="w-full text-left p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs sm:text-sm font-medium hover:border-primary-500 transition card-3d">
+      <span class="font-bold mr-2">${String.fromCharCode(65 + idx)}.</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  document.getElementById('quiz-explanation-box').classList.add('hidden');
+  document.getElementById('quiz-next-btn').classList.add('hidden');
+}
+
+function selectOption(optIdx) {
+  if (hasAnsweredCurrent) return;
+  hasAnsweredCurrent = true;
+
+  const q = questions[currentIdx];
+  userAnswers[currentIdx] = optIdx;
+  const isCorrect = optIdx === q.correct_answer;
+
+  const chosenBtn = document.getElementById(`opt-btn-${optIdx}`);
+  const correctBtn = document.getElementById(`opt-btn-${q.correct_answer}`);
+
+  if (isCorrect) {
+    chosenBtn.className = "w-full text-left p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/20 text-emerald-950 dark:text-emerald-100 text-xs sm:text-sm font-bold";
+  } else {
+    chosenBtn.className = "w-full text-left p-4 rounded-2xl border-2 border-rose-500 bg-rose-50/20 text-rose-950 dark:text-rose-100 text-xs sm:text-sm font-bold";
+    correctBtn.className = "w-full text-left p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/20 text-emerald-950 dark:text-emerald-100 text-xs sm:text-sm font-bold";
+  }
+
+  const expBox = document.getElementById('quiz-explanation-box');
+  expBox.className = `rounded-2xl p-4 text-xs leading-relaxed border ${
+    isCorrect ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+  }`;
+  expBox.innerHTML = `<b>${isCorrect ? '✓ Correct!' : 'ℹ Explanation:'}</b> ${q.explanation}`;
+  expBox.classList.remove('hidden');
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.textContent = (currentIdx === questions.length - 1) ? 'View Final Results' : 'Next Question';
+  nextBtn.classList.remove('hidden');
+}
+
+function nextQuestion() {
+  if (currentIdx < questions.length - 1) {
+    currentIdx++;
+    renderCurrentQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-question-view').classList.add('hidden');
+  document.getElementById('quiz-results-view').classList.remove('hidden');
+
+  let correctCount = 0;
+  questions.forEach((q, idx) => {
+    if (userAnswers[idx] === q.correct_answer) correctCount++;
+  });
+
+  const pct = Math.round((correctCount / questions.length) * 100);
+  document.getElementById('quiz-final-score').textContent = `${pct}% (${correctCount}/${questions.length})`;
+
+  let feedback = "";
+  if (pct >= 80) {
+    feedback = "Outstanding! You possess strong conceptual fluency in this domain. Focus on building showcase projects.";
+  } else if (pct >= 50) {
+    feedback = "Good foundation! Review the recommended resources in your roadmap to bridge technical gaps.";
+  } else {
+    feedback = "Key fundamentals need reinforcement. Follow the step-by-step procedures in your roadmap.";
+  }
+  document.getElementById('quiz-tier-feedback').textContent = feedback;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', initQuiz);
+</script>
+{% endblock %}
