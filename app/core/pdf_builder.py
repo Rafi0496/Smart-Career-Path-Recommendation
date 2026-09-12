@@ -5,7 +5,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 )
 from reportlab.pdfgen import canvas
 
@@ -46,7 +46,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica-Bold", 8)
         self.setFillColor(COLOR_SLATE_MUTED)
 
-        # Header on Pages 2, 3, 4
+        # Header on Pages 2+
         if self._pageNumber > 1:
             self.drawString(40, 755, "SMART CAREER PATH • EXECUTIVE CAREER BLUEPRINT")
             self.setFont("Helvetica", 8)
@@ -74,7 +74,8 @@ def build_executive_career_pdf(
     profile: Optional[Dict[str, Any]] = None
 ) -> bytes:
     """
-    Renders an Executive 4-Page Career Blueprint PDF in pure Python via ReportLab.
+    Renders an Executive Career Blueprint PDF in pure Python via ReportLab.
+    Page quantity is dynamic and driven by the depth of roadmap milestones, skills, and strategic plans.
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -116,19 +117,8 @@ def build_executive_career_pdf(
         fontSize=12,
         leading=15,
         textColor=COLOR_NAVY,
-        spaceBefore=8,
-        spaceAfter=4
-    )
-
-    h2_style = ParagraphStyle(
-        'SubSectionHeading',
-        parent=styles['Normal'],
-        fontName='Helvetica-Bold',
-        fontSize=10,
-        leading=13,
-        textColor=COLOR_PRIMARY_DARK,
-        spaceBefore=4,
-        spaceAfter=2
+        spaceBefore=12,
+        spaceAfter=6
     )
 
     body_style = ParagraphStyle(
@@ -167,7 +157,7 @@ def build_executive_career_pdf(
     today_date = datetime.now().strftime("%B %d, %Y")
 
     # =========================================================================
-    # PAGE 1: EXECUTIVE COVER & PROFILE SNAPSHOT
+    # SECTION 1: EXECUTIVE COVER & PROFILE SNAPSHOT
     # =========================================================================
     
     # Top Header Badge
@@ -215,25 +205,7 @@ def build_executive_career_pdf(
     story.append(t_metrics)
     story.append(Spacer(1, 12))
 
-    # Table of Contents
-    story.append(Paragraph("Blueprint Document Architecture", h1_style))
-    toc_data = [
-        [Paragraph("<b>Section 1:</b> Executive Profile Snapshot & Strategic Placement Rationale", body_style), Paragraph("Page 1", body_bold)],
-        [Paragraph("<b>Section 2:</b> Prioritized Competency Matrix & Industry Compensation Tiers", body_style), Paragraph("Page 2", body_bold)],
-        [Paragraph("<b>Section 3:</b> Sequential 4-Stage Execution Roadmap & Curated Resources", body_style), Paragraph("Page 3", body_bold)],
-        [Paragraph("<b>Section 4:</b> Tactical 30-60-90 Day Action Plan & Career Trajectory Playbook", body_style), Paragraph("Page 4", body_bold)],
-    ]
-    t_toc = Table(toc_data, colWidths=[460, 72])
-    t_toc.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-        ('BOX', (0, 0), (-1, -1), 0.75, COLOR_BORDER),
-        ('INNERGRID', (0, 0), (-1, -1), 0.5, COLOR_BORDER_LIGHT),
-        ('PADDING', (0, 0), (-1, -1), 5),
-    ]))
-    story.append(t_toc)
-    story.append(Spacer(1, 12))
-
-    # Placement Rationale
+    # Executive Placement Rationale
     story.append(Paragraph("Executive Placement Rationale", h1_style))
     story.append(Paragraph(
         f"• <b>Market Alignment:</b> {career_title} continues to experience sustained compound growth across enterprise, high-growth tech, and venture sectors globally.<br/>"
@@ -242,11 +214,10 @@ def build_executive_career_pdf(
         f"• <b>Autonomous Execution:</b> The sequential milestones outlined in this blueprint provide a deterministic path to production-grade competency.",
         body_style
     ))
-
-    story.append(PageBreak())
+    story.append(Spacer(1, 14))
 
     # =========================================================================
-    # PAGE 2: SKILLS MATRIX & COMPENSATION
+    # SECTION 2: PRIORITIZED COMPETENCY MATRIX & COMPENSATION
     # =========================================================================
     story.append(Paragraph("Section 2: Prioritized Competencies & Industry Compensation", h1_style))
     story.append(Paragraph(
@@ -255,20 +226,20 @@ def build_executive_career_pdf(
     ))
     story.append(Spacer(1, 8))
 
-    # Skills Table
+    # Skills Table - Dynamic iteration over all skills
     skills_table_data = [
         [
             Paragraph("<b>Core Competency</b>", body_bold),
             Paragraph("<b>Skill Category</b>", body_bold),
-            Paragraph("<b>Priority / Timeline</b>", body_bold),
+            Paragraph("<b>Priority / Phase</b>", body_bold),
             Paragraph("<b>Proficiency Target</b>", body_bold)
         ]
     ]
 
-    for i, s in enumerate(skills_list[:7]):
-        priority_label = "Priority 1 (Phase 1)" if i < 3 else ("Priority 2 (Phase 2)" if i < 5 else "Priority 3 (Phase 3)")
-        p_color = COLOR_PRIMARY if i < 3 else (COLOR_EMERALD if i < 5 else COLOR_AMBER)
-        category_label = "Core Engine" if i < 2 else ("Architecture & Tooling" if i < 4 else "Domain Specialization")
+    for i, s in enumerate(skills_list):
+        priority_label = "Priority 1 (Phase 1)" if i < 3 else ("Priority 2 (Phase 2)" if i < 6 else "Priority 3 (Phase 3)")
+        p_color = COLOR_PRIMARY if i < 3 else (COLOR_EMERALD if i < 6 else COLOR_AMBER)
+        category_label = "Core Engine" if i < 2 else ("Architecture & Tooling" if i < 5 else "Domain Specialization")
         
         skills_table_data.append([
             Paragraph(f"<b>{s}</b>", body_style),
@@ -285,7 +256,7 @@ def build_executive_career_pdf(
         ('PADDING', (0, 0), (-1, -1), 4.5),
     ]))
     story.append(t_skills)
-    story.append(Spacer(1, 14))
+    story.append(Spacer(1, 12))
 
     # Compensation Breakdown
     story.append(Paragraph("Market Compensation Benchmarks by Seniority", h1_style))
@@ -304,33 +275,14 @@ def build_executive_career_pdf(
         ('PADDING', (0, 0), (-1, -1), 4.5),
     ]))
     story.append(t_comp)
-    story.append(Spacer(1, 12))
-
-    # Recommended Certifications Card
-    story.append(Paragraph("Recommended Industry Credentials & Certifications", h1_style))
-    cert_data = [
-        [Paragraph("<b>Credential</b>", body_bold), Paragraph("<b>Issuing Body</b>", body_bold), Paragraph("<b>Strategic Value</b>", body_bold)],
-        [Paragraph("AWS Certified Solutions Architect / Cloud Practitioner", body_style), Paragraph("Amazon Web Services", muted_style), Paragraph("Cloud infrastructure deployment validation", body_style)],
-        [Paragraph("TensorFlow Developer Certificate / Google Professional", body_style), Paragraph("Google Cloud", muted_style), Paragraph("Machine learning pipeline credibility", body_style)],
-        [Paragraph("Certified Kubernetes Administrator (CKA)", body_style), Paragraph("Cloud Native Computing Foundation", muted_style), Paragraph("Enterprise container orchestration mastery", body_style)]
-    ]
-    t_cert = Table(cert_data, colWidths=[200, 150, 182])
-    t_cert.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), COLOR_BG_LIGHT),
-        ('BOX', (0, 0), (-1, -1), 0.75, COLOR_BORDER),
-        ('INNERGRID', (0, 0), (-1, -1), 0.5, COLOR_BORDER_LIGHT),
-        ('PADDING', (0, 0), (-1, -1), 4.5),
-    ]))
-    story.append(t_cert)
-
-    story.append(PageBreak())
+    story.append(Spacer(1, 14))
 
     # =========================================================================
-    # PAGE 3: SEQUENTIAL LEARNING ROADMAP
+    # SECTION 3: SEQUENTIAL EXECUTION ROADMAP & DETAILED MILESTONES
     # =========================================================================
-    story.append(Paragraph("Section 3: Sequential 4-Stage Execution Roadmap", h1_style))
+    story.append(Paragraph("Section 3: Sequential Execution Roadmap & Milestones", h1_style))
     story.append(Paragraph(
-        "Chronological milestones with step-by-step procedures and curated learning materials to systematically achieve mastery.",
+        "Structured, chronological milestones with procedures, deliverables, and vetted resources to systematically master each phase.",
         body_style
     ))
     story.append(Spacer(1, 8))
@@ -370,9 +322,10 @@ def build_executive_career_pdf(
         }
     ]
 
-    active_steps = learning_path if (learning_path and len(learning_path) >= 3) else default_steps
+    active_steps = learning_path if (learning_path and len(learning_path) >= 1) else default_steps
 
-    for step in active_steps[:4]:
+    # Dynamically render ALL milestone stages in the learning roadmap without limit
+    for step in active_steps:
         order = step.get("order", 1)
         stitle = step.get("title", f"Milestone {order}")
         duration = step.get("duration", "4–6 weeks")
@@ -380,41 +333,43 @@ def build_executive_career_pdf(
         procs = step.get("procedure", [])
         resources = step.get("resources", [])
 
-        # Step header banner
+        # Step block wrapped in KeepTogether so each milestone stays coherent
+        step_elements = []
         step_header_data = [
             [
                 Paragraph(f"<b>Stage {order}: {stitle}</b>", ParagraphStyle('StpH', parent=body_bold, textColor=COLOR_NAVY, fontSize=9.5)),
                 Paragraph(f"<b>Timeline:</b> {duration}", ParagraphStyle('StpT', parent=muted_style, alignment=2))
             ]
         ]
-        t_shead = Table(step_header_data, colWidths=[400, 132])
+        t_shead = Table(step_header_data, colWidths=[395, 137])
         t_shead.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), COLOR_PRIMARY_LIGHT),
             ('BOX', (0, 0), (-1, -1), 0.5, COLOR_PRIMARY),
             ('PADDING', (0, 0), (-1, -1), 3.5),
         ]))
-        story.append(t_shead)
-        story.append(Spacer(1, 3))
+        step_elements.append(t_shead)
+        step_elements.append(Spacer(1, 3))
 
         if desc:
-            story.append(Paragraph(f"<b>Objective:</b> {desc}", body_style))
-            story.append(Spacer(1, 2))
+            step_elements.append(Paragraph(f"<b>Objective:</b> {desc}", body_style))
+            step_elements.append(Spacer(1, 2))
 
         if procs:
-            proc_text = "<br/>".join([f"  • {p}" for p in procs[:3]])
-            story.append(Paragraph(f"<b>Step-by-Step Procedure:</b><br/>{proc_text}", muted_style))
-            story.append(Spacer(1, 2))
+            proc_text = "<br/>".join([f"  • {p}" for p in procs])
+            step_elements.append(Paragraph(f"<b>Step-by-Step Procedure:</b><br/>{proc_text}", muted_style))
+            step_elements.append(Spacer(1, 2))
 
         if resources:
-            res_str = ", ".join(resources[:3])
-            story.append(Paragraph(f"<b>Curated Learning Materials:</b> {res_str}", ParagraphStyle('ResP', parent=muted_style, textColor=COLOR_PRIMARY_DARK)))
+            res_str = ", ".join(resources)
+            step_elements.append(Paragraph(f"<b>Curated Learning Materials:</b> {res_str}", ParagraphStyle('ResP', parent=muted_style, textColor=COLOR_PRIMARY_DARK)))
 
-        story.append(Spacer(1, 8))
+        step_elements.append(Spacer(1, 8))
+        story.append(KeepTogether(step_elements))
 
-    story.append(PageBreak())
+    story.append(Spacer(1, 10))
 
     # =========================================================================
-    # PAGE 4: TRAJECTORY & 30-60-90 DAY PLAN
+    # SECTION 4: TACTICAL 30-60-90 DAY ACTION PLAN & CAREER TRAJECTORY
     # =========================================================================
     story.append(Paragraph("Section 4: Tactical 30-60-90 Day Plan & Career Trajectory", h1_style))
     story.append(Paragraph(
@@ -488,7 +443,7 @@ def build_executive_career_pdf(
     )
     story.append(Paragraph(interview_text, body_style))
 
-    # Build document
+    # Build document - dynamically generates as many pages as required
     doc.build(story, canvasmaker=NumberedCanvas)
     buffer.seek(0)
     return buffer.getvalue()

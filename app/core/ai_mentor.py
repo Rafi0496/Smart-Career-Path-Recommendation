@@ -59,7 +59,7 @@ def get_heuristic_fallback(user_message: str, context: Optional[Dict[str, Any]] 
             "Here's how **Smart Career Path** works:\n\n"
             "1. **Start Assessment**: Enter your academic stream, technical interests, and dream roles (or upload a PDF resume to auto-fill).\n"
             "2. **Explore Recommendations**: The engine ranks 140+ career tracks matching your strengths.\n"
-            "3. **Execute Your Roadmap**: Follow sequential milestones, track progress with checkboxes, and download the 4-page Executive Blueprint PDF.\n"
+            "3. **Execute Your Roadmap**: Follow sequential milestones, track progress with checkboxes, and download the Executive Blueprint PDF.\n"
             "4. **Take Diagnostic Quizzes**: Verify your technical readiness on skills you need to develop."
         )
 
