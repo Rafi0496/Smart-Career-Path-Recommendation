@@ -114,19 +114,66 @@ async def generate_quiz(req: QuizRequest):
         "questions": questions
     }
 
-# 5. Executive PDF Blueprint Export Endpoint
+# 5. Executive PDF Blueprint Export Endpoint (POST & GET supported)
 @api_router.post("/export/pdf")
-async def export_pdf(req: ExportPdfRequest):
-    if not req.career or not req.career.get("careerTitle"):
-        raise HTTPException(status_code=400, detail="career and careerTitle are required")
+async def export_pdf(req: ExportPdfRequest, request: Request):
+    career_dict = req.career or {}
+    career_title = career_dict.get("careerTitle") or career_dict.get("title") or "Software Developer"
+    
+    # Enrich with full career engine data if milestones or skills are partial
+    full_career = career_engine.get_career_by_title(career_title)
+    if full_career:
+        merged_career = {**full_career, **career_dict}
+    else:
+        merged_career = career_dict
 
-    career_title = req.career["careerTitle"]
+    user_name = req.user_name or "Candidate"
+    if user_name == "Candidate":
+        user_id_str = request.cookies.get("user_id")
+        if user_id_str and user_id_str.isdigit():
+            with database.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM users WHERE id = ?", (int(user_id_str),))
+                row = cursor.fetchone()
+                if row:
+                    user_name = row["name"]
+
     filename = f"{career_title.replace(' ', '_')}_Executive_Blueprint.pdf"
     
     pdf_bytes = build_executive_career_pdf(
-        req.career,
-        user_name=req.user_name or "Candidate",
+        merged_career,
+        user_name=user_name,
         profile=req.profile
+    )
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+@api_router.get("/export/pdf")
+async def export_pdf_get(title: str, request: Request, user_name: Optional[str] = "Candidate"):
+    career_title = title or "Software Developer"
+    full_career = career_engine.get_career_by_title(career_title)
+    if not full_career:
+        full_career = career_engine.get_career_by_title("Software Developer")
+
+    name = user_name or "Candidate"
+    if name == "Candidate":
+        user_id_str = request.cookies.get("user_id")
+        if user_id_str and user_id_str.isdigit():
+            with database.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM users WHERE id = ?", (int(user_id_str),))
+                row = cursor.fetchone()
+                if row:
+                    name = row["name"]
+
+    filename = f"{career_title.replace(' ', '_')}_Executive_Blueprint.pdf"
+    pdf_bytes = build_executive_career_pdf(
+        full_career,
+        user_name=name
     )
 
     return Response(

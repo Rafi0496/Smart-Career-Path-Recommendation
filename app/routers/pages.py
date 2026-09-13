@@ -20,6 +20,8 @@ def get_current_user(request: Request) -> Optional[dict]:
             row = cursor.fetchone()
             if row:
                 return dict(row)
+            # Fallback if user ID is active in session cookie
+            return {"id": int(user_id_str), "name": "Candidate", "email": ""}
     return None
 
 def get_redirect_target(request: Request) -> str:
@@ -74,8 +76,6 @@ async def dashboard_page(request: Request):
 @pages_router.get("/career-path", response_class=HTMLResponse)
 async def career_path_page(request: Request, title: Optional[str] = "Software Developer"):
     user = get_current_user(request)
-    if not user:
-        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     career = career_engine.get_career_by_title(title)
     if not career:
         career = career_engine.get_career_by_title("Software Developer")
@@ -94,8 +94,6 @@ async def career_path_page(request: Request, title: Optional[str] = "Software De
 @pages_router.get("/career-path/quiz", response_class=HTMLResponse)
 async def quiz_page(request: Request, title: Optional[str] = "Software Developer"):
     user = get_current_user(request)
-    if not user:
-        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     career = career_engine.get_career_by_title(title)
     if not career:
         career = career_engine.get_career_by_title("Software Developer")
@@ -114,8 +112,6 @@ async def quiz_page(request: Request, title: Optional[str] = "Software Developer
 @pages_router.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     user = get_current_user(request)
-    if not user:
-        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
     all_titles = career_engine.get_all_titles()
     return templates.TemplateResponse(
         request=request,
@@ -161,4 +157,3 @@ async def register_page(request: Request):
 async def favicon():
     from fastapi.responses import Response
     return Response(status_code=204)
-

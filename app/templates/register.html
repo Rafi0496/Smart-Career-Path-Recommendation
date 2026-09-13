@@ -49,6 +49,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const user = Storage.getUser();
+  if (user && user.name) {
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get('redirect') || '/dashboard';
+    window.location.replace(redirectUrl);
+    return;
+  }
+
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect');
   if (redirect) {

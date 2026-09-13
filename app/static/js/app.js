@@ -346,26 +346,23 @@ function syncNavbarAuth() {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// 6. Client Route Guard
-function enforceClientAuth() {
-  const protectedPrefixes = ['/assessment', '/dashboard', '/career-path', '/compare'];
+// 6. Seamless Navigation Check
+function checkAuthState() {
   const path = window.location.pathname;
-  const isProtected = protectedPrefixes.some(p => path === p || path.startsWith(p + '/') || path.startsWith(p + '?'));
-  if (isProtected) {
-    if (document.getElementById('server-user-data') || document.body.getAttribute('data-user-name')) {
-      return;
-    }
-    const user = Storage.getUser();
-    if (!user) {
-      const redirectUrl = '/login?redirect=' + encodeURIComponent(path + window.location.search);
-      window.location.href = redirectUrl;
-    }
+  const user = Storage.getUser();
+  
+  // If user is already authenticated and visits /login or /register, forward to dashboard
+  if ((path === '/login' || path === '/register') && user && user.name) {
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get('redirect') || '/dashboard';
+    window.location.replace(redirectUrl);
+    return;
   }
 }
 
 window.addEventListener('auth-change', syncNavbarAuth);
 document.addEventListener('DOMContentLoaded', () => {
-  enforceClientAuth();
+  checkAuthState();
   syncNavbarAuth();
   if (window.lucide) window.lucide.createIcons();
 });
