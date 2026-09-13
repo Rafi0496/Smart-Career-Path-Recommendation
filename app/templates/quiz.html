@@ -32,7 +32,7 @@
     <!-- Loading State -->
     <div id="quiz-loading" class="text-center py-16">
       <i data-lucide="loader-2" class="w-8 h-8 text-primary-600 mx-auto animate-spin mb-3"></i>
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Generating dynamic diagnostic questions...</p>
+      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Generating fresh technical diagnostic questions...</p>
       <p class="text-xs text-slate-500 mt-1">Synthesizing competencies for {{ career.title }}</p>
     </div>
 
@@ -44,8 +44,8 @@
 
       <!-- Explanation Box (revealed after selection) -->
       <div id="explanation-box" class="hidden p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
-        <span class="font-bold block mb-1 text-primary-600 dark:text-primary-400">Explanation:</span>
-        <p id="explanation-text"></p>
+        <span class="font-bold block mb-1 text-primary-600 dark:text-primary-400">Technical Rationale:</span>
+        <p id="explanation-text" class="leading-relaxed"></p>
       </div>
 
       <!-- Action Button -->
@@ -67,7 +67,7 @@
 
       <div class="pt-6 flex flex-wrap justify-center gap-3">
         <button onclick="initQuiz()" class="px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition btn-3d">
-          Retake Quiz
+          Retake Diagnostic (New Questions)
         </button>
         <a href="/career-path?title={{ career.title | urlencode }}" class="px-6 py-2.5 bg-primary-600 text-white text-xs font-bold rounded-xl shadow-md shadow-primary-500/25 transition btn-3d">
           Continue Roadmap
@@ -78,8 +78,8 @@
 </div>
 
 <script>
-const careerTitle = {{ career.title | tojson }};
-const careerSkills = {{ career.skills | tojson }};
+const careerTitle = {{ career.title | tojson if career else 'Software Developer' }};
+const careerSkills = {{ career.skills | tojson if career and career.skills else '[]' }};
 let questions = [];
 let currentIdx = 0;
 let userAnswers = {};
@@ -96,6 +96,7 @@ async function initQuiz() {
     const res = await fetch('/api/quiz/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({
         career_id: careerTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         career_title: careerTitle,
@@ -113,7 +114,7 @@ async function initQuiz() {
     }
   } catch (err) {
     document.getElementById('quiz-loading').innerHTML = `
-      <p class="text-rose-500 font-bold">Failed to load quiz. Please try again.</p>
+      <p class="text-rose-500 font-bold">Failed to load diagnostic quiz. Please try again.</p>
       <button onclick="initQuiz()" class="mt-4 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-xl">Retry</button>
     `;
   }
@@ -127,16 +128,19 @@ function renderQuestion() {
   document.getElementById('question-text').textContent = q.question;
   document.getElementById('explanation-box').classList.add('hidden');
   document.getElementById('next-q-btn').disabled = true;
+  document.getElementById('next-q-btn').textContent = (currentIdx === questions.length - 1) ? "View Diagnostic Results" : "Next Question";
 
   const container = document.getElementById('options-container');
   container.innerHTML = q.options.map((opt, idx) => `
     <button type="button" onclick="selectOption(${idx})" id="opt-btn-${idx}" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left text-xs sm:text-sm font-medium hover:border-primary-400 dark:hover:border-primary-500 transition flex items-center justify-between card-3d">
-      <span>${opt}</span>
-      <span id="opt-icon-${idx}" class="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[10px] text-slate-400">
+      <span class="pr-3">${opt}</span>
+      <span id="opt-icon-${idx}" class="w-6 h-6 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[11px] font-bold text-slate-500 shrink-0">
         ${String.fromCharCode(65 + idx)}
       </span>
     </button>
   `).join('');
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function selectOption(optIdx) {
@@ -145,15 +149,46 @@ function selectOption(optIdx) {
   userAnswers[currentIdx] = optIdx;
 
   const q = questions[currentIdx];
-  const isCorrect = optIdx === q.correct_index;
+  const correctIdx = (typeof q.correct_index === 'number') ? q.correct_index : q.correct_answer;
+  const isCorrect = (optIdx === correctIdx);
 
   const selectedBtn = document.getElementById(`opt-btn-${optIdx}`);
+  const selectedIcon = document.getElementById(`opt-icon-${optIdx}`);
+
+  // Disable all option buttons
+  q.options.forEach((_, idx) => {
+    const btn = document.getElementById(`opt-btn-${idx}`);
+    if (btn) btn.disabled = true;
+  });
+
   if (isCorrect) {
-    selectedBtn.classList.add('border-emerald-500', 'bg-emerald-50/20', 'text-emerald-700', 'dark:text-emerald-300');
+    if (selectedBtn) {
+      selectedBtn.className = "w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 text-left text-xs sm:text-sm font-bold flex items-center justify-between shadow-sm transition";
+    }
+    if (selectedIcon) {
+      selectedIcon.className = "w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0";
+      selectedIcon.innerHTML = "✓";
+    }
   } else {
-    selectedBtn.classList.add('border-rose-500', 'bg-rose-50/20', 'text-rose-700', 'dark:text-rose-300');
-    const correctBtn = document.getElementById(`opt-btn-${q.correct_index}`);
-    if (correctBtn) correctBtn.classList.add('border-emerald-500', 'bg-emerald-50/20');
+    // Highlight wrong selection in red
+    if (selectedBtn) {
+      selectedBtn.className = "w-full p-4 rounded-xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 text-left text-xs sm:text-sm font-bold flex items-center justify-between shadow-sm transition";
+    }
+    if (selectedIcon) {
+      selectedIcon.className = "w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs font-bold shrink-0";
+      selectedIcon.innerHTML = "✕";
+    }
+
+    // Highlight correct answer in green so user learns
+    const correctBtn = document.getElementById(`opt-btn-${correctIdx}`);
+    const correctIcon = document.getElementById(`opt-icon-${correctIdx}`);
+    if (correctBtn) {
+      correctBtn.className = "w-full p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 text-left text-xs sm:text-sm font-bold flex items-center justify-between shadow-sm transition";
+    }
+    if (correctIcon) {
+      correctIcon.className = "w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0";
+      correctIcon.innerHTML = "✓";
+    }
   }
 
   // Show explanation
@@ -163,9 +198,6 @@ function selectOption(optIdx) {
   }
 
   document.getElementById('next-q-btn').disabled = false;
-  if (currentIdx === questions.length - 1) {
-    document.getElementById('next-q-btn').textContent = "View Diagnostic Results";
-  }
 }
 
 function nextQuestion() {
@@ -183,11 +215,12 @@ function showResults() {
 
   let correctCount = 0;
   questions.forEach((q, idx) => {
-    if (userAnswers[idx] === q.correct_index) correctCount++;
+    const correctIdx = (typeof q.correct_index === 'number') ? q.correct_index : q.correct_answer;
+    if (userAnswers[idx] === correctIdx) correctCount++;
   });
 
   const pct = Math.round((correctCount / questions.length) * 100);
-  document.getElementById('quiz-final-score').textContent = `${pct}%`;
+  document.getElementById('quiz-final-score').textContent = `${pct}% (${correctCount}/${questions.length} Correct)`;
 
   let feedback = "";
   if (pct >= 80) {

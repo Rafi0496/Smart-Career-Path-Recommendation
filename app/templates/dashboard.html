@@ -17,7 +17,7 @@
           <span>AI Career Intelligence Center</span>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="dash-greeting">
-          Welcome back, {{ user.name if user else 'Candidate' }}!
+          Welcome back, {{ user.name if user else 'Professional' }}!
         </h1>
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
           Synthesizing your verified academic foundations, passions, and aspirations against 140+ career tracks.
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let profile = Storage.getProfile();
-  const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Candidate");
+  const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Professional");
   const greetingEl = document.getElementById('dash-greeting');
   if (greetingEl) {
     greetingEl.textContent = `Welcome back, ${displayName}!`;

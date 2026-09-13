@@ -58,6 +58,11 @@ def run_tests():
     assert r.status_code == 200, f"Expected 200, got {r.status_code}"
     print(" [PASS] Authenticated /compare accessible directly without redirect")
 
+    r = client.get("/profile", cookies=cookies)
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+    assert "Session Tester" in r.text
+    print(" [PASS] Authenticated /profile accessible directly without redirect")
+
     # 4. Test login page when already authenticated
     r = client.get("/login", cookies=cookies)
     assert r.status_code == 302, f"Expected 302 redirect for logged in user on /login, got {r.status_code}"

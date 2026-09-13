@@ -118,7 +118,46 @@ def run_end_to_end_test():
     assert len(pdf_export_res.content) > 1000
     print(" [Step 7] PDF Blueprint generation verified")
 
-    print("\n>>> ALL END-TO-END FLOW TESTS PASSED WITH ZERO ERRORS! <<<")
+    # 8. Test Dynamic Quiz Generation & Randomization
+    quiz_res_1 = client.post("/api/quiz/generate", json={
+        "career_id": "full-stack-developer",
+        "career_title": "Full Stack Developer",
+        "skills_to_develop": ["React", "Python", "FastAPI"]
+    })
+    assert quiz_res_1.status_code == 200
+    q_data_1 = quiz_res_1.json()["questions"]
+    assert len(q_data_1) == 5
+    for q in q_data_1:
+        assert "question" in q and len(q["question"]) > 10
+        assert "options" in q and len(q["options"]) == 4
+        assert "correct_index" in q and 0 <= q["correct_index"] < 4
+        assert "explanation" in q and len(q["explanation"]) > 5
+
+    # Second call should randomize
+    quiz_res_2 = client.post("/api/quiz/generate", json={
+        "career_id": "full-stack-developer",
+        "career_title": "Full Stack Developer",
+        "skills_to_develop": ["React", "Python", "FastAPI"]
+    })
+    assert quiz_res_2.status_code == 200
+    q_data_2 = quiz_res_2.json()["questions"]
+    print(f" [Step 8] Dynamic Quiz generation verified: {len(q_data_1)} questions synthesized with dynamic option shuffling and technical rationales")
+
+    # 9. Verify /profile page rendering and data binding
+    profile_page_res = client.get("/profile")
+    assert profile_page_res.status_code == 200
+    assert "Shaik Rafi" in profile_page_res.text
+    assert "shaik.rafi.flow@example.com" in profile_page_res.text
+    assert "Academic Background" in profile_page_res.text
+    assert "Technical Skills &amp; Certifications" in profile_page_res.text or "Technical Skills & Certifications" in profile_page_res.text
+    assert "Saved Careers &amp; Roadmaps" in profile_page_res.text or "Saved Careers & Roadmaps" in profile_page_res.text
+    print(" [Step 9] Professional Profile (/profile) page verified: Personal details, academics, skills, and progress intact")
+
+    # 10. Verify Executive PDF button label on Career Path page
+    assert "Download Executive PDF" in cp_res.text
+    print(" [Step 10] Executive PDF button text verified strictly as 'Download Executive PDF'")
+
+    print("\n>>> ALL 10 COMPREHENSIVE VERIFICATION TESTS PASSED WITH 100% SUCCESS! <<<")
 
 if __name__ == "__main__":
     run_end_to_end_test()

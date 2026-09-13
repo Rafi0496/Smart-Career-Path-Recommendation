@@ -61,7 +61,7 @@ const Storage = {
       // 4. Check active user_id cookie
       const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
       if (match && match[1]) {
-        const u = { id: parseInt(match[1]), name: (bodyName && bodyName !== "None") ? bodyName : "Candidate" };
+        const u = { id: parseInt(match[1]), name: (bodyName && bodyName !== "None") ? bodyName : "Professional" };
         sessionStorage.setItem('career_path_user', JSON.stringify(u));
         sessionStorage.setItem('career_path_session_active', '1');
         return u;
@@ -102,7 +102,7 @@ const Storage = {
     });
   },
 
-  // Candidate Profile
+  // User Profile
   getProfile() {
     try {
       const data = sessionStorage.getItem('career_path_profile') || localStorage.getItem('career_path_profile');
@@ -315,7 +315,7 @@ function syncNavbarAuth() {
     const initial = user.name.trim().charAt(0).toUpperCase();
     authContainer.innerHTML = `
       <div class="flex items-center gap-2">
-        <a href="/dashboard" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
+        <a href="/profile" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
           <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold">
             ${initial}
           </div>

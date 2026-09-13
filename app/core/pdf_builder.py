@@ -70,7 +70,7 @@ class NumberedCanvas(canvas.Canvas):
 
 def build_executive_career_pdf(
     career: Dict[str, Any],
-    user_name: str = "Candidate",
+    user_name: str = "Professional",
     profile: Optional[Dict[str, Any]] = None
 ) -> bytes:
     """
@@ -183,7 +183,7 @@ def build_executive_career_pdf(
     # 4 Key Metrics Card
     metrics_data = [
         [
-            Paragraph("<b>Candidate Profile</b>", body_bold),
+            Paragraph("<b>Professional Profile</b>", body_bold),
             Paragraph(f"{user_name}", body_style),
             Paragraph("<b>Target Timeframe</b>", body_bold),
             Paragraph(f"{timeline_str}", body_style)

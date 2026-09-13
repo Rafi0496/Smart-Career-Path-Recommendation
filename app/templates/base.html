@@ -90,6 +90,9 @@
         <a href="/dashboard" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'dashboard' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Dashboard</a>
         <a href="/assessment" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'assessment' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Assessment</a>
         <a href="/compare" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'compare' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Compare</a>
+        {% if user %}
+        <a href="/profile" class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if active_page == 'profile' %}bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400{% else %}text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">Profile</a>
+        {% endif %}
       </nav>
 
       <!-- Right Controls: Theme Toggle + Auth -->
@@ -104,7 +107,7 @@
         <div id="navbar-auth-container">
           {% if user %}
             <div class="flex items-center gap-2">
-              <a href="/dashboard" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
+              <a href="/profile" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-primary-400 transition btn-3d">
                 <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold">
                   {{ user.name[0] | upper }}
                 </div>

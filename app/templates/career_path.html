@@ -14,7 +14,7 @@
     <div class="flex items-center gap-2.5 w-full sm:w-auto">
       <button type="button" id="pdf-download-btn" onclick="downloadPdfBlueprint()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition btn-3d">
         <i data-lucide="download" class="w-4 h-4" id="pdf-btn-icon"></i>
-        <span id="pdf-btn-text">Download Executive Blueprint PDF</span>
+        <span id="pdf-btn-text">Download Executive PDF</span>
       </button>
       <a href="/career-path/quiz?title={{ career.title | urlencode }}" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
         <i data-lucide="help-circle" class="w-4 h-4"></i>
@@ -295,7 +295,7 @@ async function downloadPdfBlueprint() {
       requiredSkills: careerData.skills || careerData.requiredSkills || [],
       learningPath: careerData.learningPath || []
     },
-    user_name: Storage.getProfile()?.name || Storage.getUser()?.name || "Candidate"
+    user_name: Storage.getUser()?.name || Storage.getProfile()?.name || "Professional"
   };
 
   try {
@@ -322,7 +322,7 @@ async function downloadPdfBlueprint() {
     // Fallback to direct GET URL
     window.location.href = `/api/export/pdf?title=${encodeURIComponent(careerTitle)}&user_name=${encodeURIComponent(payload.user_name)}`;
   } finally {
-    if (btnText) btnText.textContent = "Download Executive Blueprint PDF";
+    if (btnText) btnText.textContent = "Download Executive PDF";
   }
 }
 

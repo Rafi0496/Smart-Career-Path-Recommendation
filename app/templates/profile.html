@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Professional Profile | Smart Career Path{% endblock %}
+
+{% block content %}
+<div class="py-6 space-y-8 fade-in-up max-w-5xl mx-auto">
+
+  <!-- ========================================================================= -->
+  <!-- 1. HERO PROFILE HEADER CARD                                               -->
+  <!-- ========================================================================= -->
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div class="flex items-center gap-5">
+      <div class="relative">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-primary-600 via-indigo-600 to-emerald-500 text-white flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-primary-500/25">
+          <span id="profile-avatar-initial">{{ user.name[0] | upper if user and user.name else 'P' }}</span>
+        </div>
+        <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-xs shadow-md" title="Verified Account">
+          <i data-lucide="check" class="w-4 h-4"></i>
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="profile-display-name">
+            {{ user.name if user and user.name else 'Professional Portfolio' }}
+          </h1>
+          <span class="px-2.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 text-[11px] font-bold">
+            Pro Portfolio
+          </span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5" id="profile-display-email">
+          <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>{{ user.email if user and user.email else 'Account Verified' }}</span>
+        </p>
+        <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span>Member ID: #{{ user.id if user and user.id else '1001' }} • AI Career Vector Active</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+      <a href="/assessment" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+        <span>Update Assessment</span>
+      </a>
+      <a href="/dashboard" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 transition btn-3d">
+        <i data-lucide="layout-dashboard" class="w-4 h-4 text-primary-600"></i>
+        <span>Dashboard</span>
+      </a>
+      <button type="button" onclick="Storage.logout()" class="p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition btn-3d" title="Log out">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN PROFILE SECTIONS GRID                                             -->
+  <!-- ========================================================================= -->
+  <div class="grid md:grid-cols-2 gap-6">
+
+    <!-- Academic Foundations & Specialization -->
+    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <i data-lucide="graduation-cap" class="w-4 h-4 text-primary-600"></i>
+          <span>Academic Background</span>
+        </h2>
+        <span id="edu-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300">
+          Verified
+        </span>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold">Highest Education Level</span>
+          <p class="font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="profile-edu-level">Undergraduate Degree</p>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold">Academic Stream / Major</span>
+          <p class="font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="profile-stream">Computer Science & Engineering</p>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Core Coursework Subjects</span>
+          <div id="profile-subjects-container" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Academic Strengths</span>
+          <div id="profile-strengths-container" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical Competencies & Certifications -->
+    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <i data-lucide="code" class="w-4 h-4 text-emerald-500"></i>
+          <span>Technical Skills & Certifications</span>
+        </h2>
+        <span id="skills-count-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+          0 Skills
+        </span>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Verified Technical Skills</span>
+          <div id="profile-skills-container" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Professional Certifications</span>
+          <div id="profile-certs-container" class="space-y-1.5"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Domain Passions & Interests</span>
+          <div id="profile-interests-container" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Career Aspirations & Work Style -->
+    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <i data-lucide="target" class="w-4 h-4 text-amber-500"></i>
+          <span>Aspirations & Priorities</span>
+        </h2>
+        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+          Target Track
+        </span>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Target Dream Roles</span>
+          <div id="profile-roles-container" class="space-y-1"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Career Priorities</span>
+          <div id="profile-priorities-container" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Preferred Work Style</span>
+          <div id="profile-workstyle-container" class="flex flex-wrap gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Saved Careers & Learning Progress -->
+    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+          <span>Saved Careers & Roadmaps</span>
+        </h2>
+        <a href="/compare" class="text-xs font-bold text-primary-600 hover:underline flex items-center gap-1">
+          <span>Compare</span>
+          <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </a>
+      </div>
+
+      <div id="profile-saved-careers" class="space-y-2"></div>
+      <div id="profile-progress-cards" class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. RESUME INTEGRATION CENTER                                              -->
+  <!-- ========================================================================= -->
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-primary-200/70 dark:border-primary-900/60 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0 shadow-sm">
+        <i data-lucide="file-text" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-900 dark:text-white text-base">Instant AI Resume Auto-Sync</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Re-upload your latest PDF resume anytime to update skills, academics, and target roles.</p>
+      </div>
+    </div>
+
+    <a href="/assessment" class="inline-flex items-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition btn-3d shrink-0">
+      <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+      <span>Upload / Parse Resume</span>
+    </a>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const user = Storage.getUser();
+  const profile = Storage.getProfile();
+  const favs = Storage.getFavorites();
+  const allProgress = Storage.getAllProgress();
+
+  if (user && user.name) {
+    document.getElementById('profile-display-name').textContent = user.name;
+    document.getElementById('profile-avatar-initial').textContent = user.name.charAt(0).toUpperCase();
+    if (user.email) {
+      document.getElementById('profile-display-email').innerHTML = `<i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i><span>${user.email}</span>`;
+    }
+  }
+
+  if (profile) {
+    // 1. Academics
+    if (profile.academics?.educationLevel) {
+      document.getElementById('profile-edu-level').textContent = profile.academics.educationLevel;
+    }
+    if (profile.academics?.streamOrField) {
+      document.getElementById('profile-stream').textContent = profile.academics.streamOrField;
+    }
+
+    const subjectsContainer = document.getElementById('profile-subjects-container');
+    const subjects = profile.academics?.subjects || ["Data Structures", "Algorithms", "Database Management", "Operating Systems"];
+    subjectsContainer.innerHTML = subjects.map(s => `
+      <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+        ${s}
+      </span>
+    `).join('');
+
+    const strengthsContainer = document.getElementById('profile-strengths-container');
+    const strengths = profile.academics?.strengths || ["Problem Solving", "Analytical Thinking", "System Design"];
+    strengthsContainer.innerHTML = strengths.map(s => `
+      <span class="px-2.5 py-1 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-semibold border border-primary-200/80 dark:border-primary-900/60">
+        ${s}
+      </span>
+    `).join('');
+
+    // 2. Skills & Certs
+    const skillsContainer = document.getElementById('profile-skills-container');
+    const skills = profile.interests?.skills || [];
+    document.getElementById('skills-count-badge').textContent = `${skills.length} Skills Verified`;
+    skillsContainer.innerHTML = skills.length > 0 ? skills.map(s => `
+      <span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/80 dark:border-emerald-900/60">
+        ${s}
+      </span>
+    `).join('') : '<span class="text-xs text-slate-400 italic">No skills listed yet. Complete assessment to add skills.</span>';
+
+    const certsContainer = document.getElementById('profile-certs-container');
+    const certs = profile.academics?.certifications || [];
+    certsContainer.innerHTML = certs.length > 0 ? certs.map(c => `
+      <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200">
+        <i data-lucide="award" class="w-4 h-4 text-primary-600 shrink-0"></i>
+        <span>${c}</span>
+      </div>
+    `).join('') : '<div class="text-xs text-slate-400 italic">No certifications recorded yet.</div>';
+
+    const interestsContainer = document.getElementById('profile-interests-container');
+    const interests = profile.interests?.interests || ["Software Architecture", "AI Innovation"];
+    interestsContainer.innerHTML = interests.map(i => `
+      <span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200 dark:border-indigo-900/60">
+        ${i}
+      </span>
+    `).join('');
+
+    // 3. Aspirations
+    const rolesContainer = document.getElementById('profile-roles-container');
+    const roles = profile.aspirations?.dreamRoles || ["Full Stack Developer", "AI Engineer"];
+    rolesContainer.innerHTML = roles.map(r => `
+      <div class="flex items-center gap-2 p-2 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs font-bold text-amber-900 dark:text-amber-200">
+        <i data-lucide="target" class="w-4 h-4 text-amber-600 shrink-0"></i>
+        <span>${r}</span>
+      </div>
+    `).join('');
+
+    const prioritiesContainer = document.getElementById('profile-priorities-container');
+    const priorities = profile.aspirations?.priorities || ["Technical Excellence & Rapid Growth", "Competitive Compensation"];
+    prioritiesContainer.innerHTML = priorities.map(p => `
+      <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+        ${p}
+      </span>
+    `).join('');
+
+    const workstyleContainer = document.getElementById('profile-workstyle-container');
+    const workstyles = profile.interests?.preferredWorkStyle || ["Hybrid", "Collaborative Team"];
+    workstyleContainer.innerHTML = workstyles.map(w => `
+      <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+        ${w}
+      </span>
+    `).join('');
+  }
+
+  // 4. Saved Careers
+  const savedContainer = document.getElementById('profile-saved-careers');
+  if (favs && favs.length > 0) {
+    savedContainer.innerHTML = favs.map(title => `
+      <a href="/career-path?title=${encodeURIComponent(title)}" class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:border-primary-400 transition card-3d">
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${title}</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 shrink-0"></i>
+      </a>
+    `).join('');
+  } else {
+    savedContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No saved careers yet. Click the star icon on any career to bookmark it.</p>';
+  }
+
+  // 5. Active Progress
+  const progressContainer = document.getElementById('profile-progress-cards');
+  const progressEntries = Object.entries(allProgress || {}).filter(([_, steps]) => steps && steps.length > 0);
+  if (progressEntries.length > 0) {
+    progressContainer.innerHTML = progressEntries.slice(0, 3).map(([title, steps]) => {
+      const pct = Math.min(100, Math.round((steps.length / 4) * 100));
+      return `
+        <a href="/career-path?title=${encodeURIComponent(title)}" class="block p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition card-3d">
+          <div class="flex justify-between text-xs font-bold mb-1">
+            <span class="truncate text-slate-800 dark:text-slate-200">${title}</span>
+            <span class="text-emerald-600 dark:text-emerald-400">${pct}%</span>
+          </div>
+          <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-500 rounded-full" style="width: ${pct}%"></div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  } else {
+    progressContainer.innerHTML = '<p class="text-xs text-slate-400 italic">No milestones tracked yet. Check off roadmap stages as you complete them.</p>';
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+});
+</script>
+{% endblock %}

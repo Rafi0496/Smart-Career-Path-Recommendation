@@ -1,162 +1,364 @@
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
-QUIZ_CACHE: Dict[str, List[Dict[str, Any]]] = {}
-
-SKILL_QUESTION_BANK = {
-    "Docker": [
+# Comprehensive Question Bank with realistic, high-yield technical and domain questions
+QUESTION_BANK: Dict[str, List[Dict[str, Any]]] = {
+    "Full Stack Developer": [
         {
-            "question": "What is the primary benefit of using multi-stage Docker builds?",
+            "question": "In a modern React application, what is the primary benefit of using React Server Components (RSC)?",
             "options": [
-                "It drastically reduces the final container image size by separating build tools from production runtime.",
-                "It forces all containers to share the host's root filesystem.",
-                "It enables Docker containers to bypass kernel virtualization layers.",
-                "It prevents containers from opening outbound network sockets."
+                "They render directly on the server without sending their component dependencies to the client bundle, reducing JS payload.",
+                "They replace CSS stylesheets with server-side bitmap canvases.",
+                "They eliminate the need for HTTP headers in API communication.",
+                "They force all client state to be stored in browser cookies."
             ],
-            "correct_answer": 0,
-            "explanation": "Multi-stage builds leave compiler SDKs and build caches behind, resulting in lean, secure production images."
+            "correct_answer": "They render directly on the server without sending their component dependencies to the client bundle, reducing JS payload.",
+            "explanation": "React Server Components execute only on the server, keeping large dependencies out of the client-side JavaScript bundle."
         },
         {
-            "question": "In a Dockerfile, how does 'COPY' differ from 'ADD'?",
+            "question": "How does CORS (Cross-Origin Resource Sharing) protect web applications?",
             "options": [
-                "'COPY' simply duplicates local files, whereas 'ADD' can unpack local tarballs and fetch remote URLs.",
-                "'COPY' runs during container startup, while 'ADD' runs during build time.",
-                "'ADD' is deprecated and cannot be used in modern Docker builds.",
-                "'COPY' only works for binary files, while 'ADD' is for text files."
+                "It instructs browsers via HTTP headers to restrict cross-origin script requests unless explicitly permitted by the target server.",
+                "It encrypts all database disk sectors using AES-256.",
+                "It automatically compiles TypeScript into WebAssembly.",
+                "It prevents users from taking screenshots of web pages."
             ],
-            "correct_answer": 0,
-            "explanation": "Best practices recommend using 'COPY' for clarity unless automatic local tar extraction is explicitly required."
+            "correct_answer": "It instructs browsers via HTTP headers to restrict cross-origin script requests unless explicitly permitted by the target server.",
+            "explanation": "CORS is a browser security mechanism that uses HTTP headers to tell browsers which cross-origin requests are allowed."
+        },
+        {
+            "question": "What is the primary advantage of database indexing on frequently queried columns?",
+            "options": [
+                "It creates B-Tree or Hash lookups to reduce search complexity from O(N) table scans to O(log N) or O(1).",
+                "It automatically compresses the table data into zip archives.",
+                "It prevents all deadlocks from occurring during concurrent writes.",
+                "It bypasses query authorization checks for faster execution."
+            ],
+            "correct_answer": "It creates B-Tree or Hash lookups to reduce search complexity from O(N) table scans to O(log N) or O(1).",
+            "explanation": "Indexes build auxiliary data structures (typically B-Trees) allowing the database engine to find matching rows in logarithmic time."
+        },
+        {
+            "question": "When designing a RESTful API, which HTTP status code should be returned after successfully creating a new resource?",
+            "options": [
+                "201 Created",
+                "200 OK with no payload",
+                "204 No Content",
+                "302 Found"
+            ],
+            "correct_answer": "201 Created",
+            "explanation": "HTTP 201 Created indicates that the request succeeded and a new resource has been provisioned."
+        },
+        {
+            "question": "What is the purpose of connection pooling in backend database drivers?",
+            "options": [
+                "To reuse a cached set of active database connections, eliminating the high latency of establishing a new TCP/TLS handshake per request.",
+                "To encrypt database passwords in browser local storage.",
+                "To convert SQL queries into NoSQL JSON documents.",
+                "To replicate data to backup disks during server shutdown."
+            ],
+            "correct_answer": "To reuse a cached set of active database connections, eliminating the high latency of establishing a new TCP/TLS handshake per request.",
+            "explanation": "Connection pooling maintains open socket connections to avoid the heavy overhead of repeated connection handshakes."
         }
     ],
-    "SQL": [
+    "AI Engineer": [
         {
-            "question": "What is the key performance difference between an INNER JOIN and a subquery with IN?",
+            "question": "In Transformer neural network architectures, what is the core purpose of the Self-Attention mechanism?",
             "options": [
-                "Modern query planners optimize INNER JOINs to hash/merge joins, whereas subqueries can sometimes result in nested loop scans if not indexed.",
-                "INNER JOINs cannot utilize composite indexes.",
-                "Subqueries with IN always execute faster on PostgreSQL.",
-                "There is no difference; all SQL engines execute them identically in O(1) time."
+                "It computes dynamic attention weights between all token pairs in a sequence, capturing long-range contextual relationships.",
+                "It eliminates the need for matrix multiplications during backpropagation.",
+                "It compresses all hidden states into a single scalar float.",
+                "It forces weights to remain strictly positive."
             ],
-            "correct_answer": 0,
-            "explanation": "Joins give the query optimizer greater flexibility to reorder operations and select optimal physical join algorithms."
+            "correct_answer": "It computes dynamic attention weights between all token pairs in a sequence, capturing long-range contextual relationships.",
+            "explanation": "Self-attention enables tokens to attend to other tokens across the entire sequence simultaneously regardless of positional distance."
         },
         {
-            "question": "Which isolation level prevents 'Dirty Reads' but still permits 'Non-Repeatable Reads'?",
+            "question": "Why is Temperature used during LLM text generation sampling?",
             "options": [
-                "Read Committed",
-                "Read Uncommitted",
-                "Repeatable Read",
-                "Serializable"
+                "It scales the logits before Softmax to control the randomness and entropy of token selection.",
+                "It measures the GPU silicon thermal output during matrix multiplication.",
+                "It controls the learning rate of the optimizer during inference.",
+                "It truncates input prompts to fit within the context window."
             ],
-            "correct_answer": 0,
-            "explanation": "'Read Committed' ensures only committed data is visible, but data read multiple times within a transaction may change."
+            "correct_answer": "It scales the logits before Softmax to control the randomness and entropy of token selection.",
+            "explanation": "Lower temperature makes generation more deterministic (greedy), while higher temperature flattens logits for creative diversity."
+        },
+        {
+            "question": "In Retrieval-Augmented Generation (RAG) systems, what is the primary role of a Vector Database?",
+            "options": [
+                "To perform high-dimensional approximate nearest neighbor (ANN) similarity searches across embedded document chunks.",
+                "To run relational SQL JOINs across normalized transaction tables.",
+                "To train deep learning models from scratch without GPU accelerators.",
+                "To convert audio streams into MP3 files."
+            ],
+            "correct_answer": "To perform high-dimensional approximate nearest neighbor (ANN) similarity searches across embedded document chunks.",
+            "explanation": "Vector databases index embeddings using cosine similarity or Euclidean distance to retrieve semantically relevant context chunks."
+        },
+        {
+            "question": "What is the key advantage of Low-Rank Adaptation (LoRA) for fine-tuning Large Language Models?",
+            "options": [
+                "It freezes base model weights and trains low-rank decomposition matrices, reducing trainable parameters and VRAM by up to 90%.",
+                "It converts floating-point weights into 1-bit integers during training.",
+                "It removes the need for training data during fine-tuning.",
+                "It guarantees zero hallucinations in generated responses."
+            ],
+            "correct_answer": "It freezes base model weights and trains low-rank decomposition matrices, reducing trainable parameters and VRAM by up to 90%.",
+            "explanation": "LoRA decomposes weight updates into two smaller rank matrices, making LLM fine-tuning accessible on consumer GPUs."
+        },
+        {
+            "question": "When training deep neural networks, what problem does Batch Normalization directly mitigate?",
+            "options": [
+                "Internal Covariate Shift, stabilizing gradient flow and allowing higher learning rates.",
+                "Overfitting on large datasets with millions of samples.",
+                "Excessive disk memory consumption during dataset loading.",
+                "The need for nonlinear activation functions like ReLU."
+            ],
+            "correct_answer": "Internal Covariate Shift, stabilizing gradient flow and allowing higher learning rates.",
+            "explanation": "Batch normalization standardizes intermediate layer activations, smoothing the optimization landscape."
         }
     ],
-    "Python": [
+    "Cloud Solutions Architect": [
         {
-            "question": "How does Python's Global Interpreter Lock (GIL) impact multi-threaded CPU-bound programs?",
+            "question": "In cloud architecture, what is the key difference between Horizontal Scaling and Vertical Scaling?",
             "options": [
-                "It restricts execution to one native thread at a time per interpreter, limiting multi-core CPU scaling.",
-                "It prevents network I/O requests from running concurrently.",
-                "It automatically distributes threads across separate CPU cores using hyper-threading.",
-                "It converts all recursive functions into iterative bytecode loops."
+                "Horizontal scaling adds more machine instances to distribute traffic; vertical scaling increases the CPU/RAM of a single machine.",
+                "Horizontal scaling only works on Windows; vertical scaling works on Linux.",
+                "Vertical scaling requires serverless containers, while horizontal scaling uses bare metal.",
+                "There is no difference; both terms refer to database replication."
             ],
-            "correct_answer": 0,
-            "explanation": "Because of the GIL, CPU-bound parallelism in standard CPython requires multiprocessing rather than threading."
+            "correct_answer": "Horizontal scaling adds more machine instances to distribute traffic; vertical scaling increases the CPU/RAM of a single machine.",
+            "explanation": "Horizontal scaling (scale-out) enhances fault tolerance by adding nodes, whereas vertical scaling (scale-up) hits hardware ceilings."
         },
         {
-            "question": "What is the time complexity of searching a key in a standard Python dictionary?",
+            "question": "What is the primary function of an Amazon AWS / Azure Virtual Private Cloud (VPC)?",
             "options": [
-                "O(1) average case, O(n) worst case on hash collisions.",
-                "O(log n) binary search on sorted keys.",
-                "O(n) linear scan through all key-value tuples.",
-                "O(n log n) because keys are re-hashed on lookup."
+                "To provide a logically isolated private virtual network where cloud resources can be securely provisioned with custom subnets and firewalls.",
+                "To automatically write front-end React components.",
+                "To convert SQL databases into static HTML pages.",
+                "To provide free unlimited cloud storage."
             ],
-            "correct_answer": 0,
-            "explanation": "Python dictionaries are hash tables offering O(1) average lookup and insertion performance."
+            "correct_answer": "To provide a logically isolated private virtual network where cloud resources can be securely provisioned with custom subnets and firewalls.",
+            "explanation": "A VPC isolates your cloud infrastructure with custom IP address ranges, subnets, route tables, and security gateways."
+        },
+        {
+            "question": "In distributed microservices, how does the Circuit Breaker pattern prevent cascading failures?",
+            "options": [
+                "It detects service degradation and temporarily trips calls to return fast fallbacks instead of overwhelming the failing downstream service.",
+                "It cuts physical electrical power to overheated server racks.",
+                "It forces all microservices to share a single monolithic database.",
+                "It prevents developers from making Git commits during incidents."
+            ],
+            "correct_answer": "It detects service degradation and temporarily trips calls to return fast fallbacks instead of overwhelming the failing downstream service.",
+            "explanation": "The Circuit Breaker pattern stops requests to failing dependencies, allowing them time to recover while preventing thread exhaustion."
+        },
+        {
+            "question": "What is the core principle of Infrastructure as Code (IaC) with tools like Terraform?",
+            "options": [
+                "Declaring infrastructure in version-controlled configuration files for automated, repeatable, and idempotent deployments.",
+                "Manually clicking buttons in cloud web consoles.",
+                "Compiling Python code into C++ binaries before deployment.",
+                "Storing secrets in unencrypted plaintext files on desktops."
+            ],
+            "correct_answer": "Declaring infrastructure in version-controlled configuration files for automated, repeatable, and idempotent deployments.",
+            "explanation": "IaC defines cloud topology declaratively, ensuring consistent environments and auditable version history."
         }
     ],
-    "Machine Learning": [
+    "Cybersecurity Analyst": [
         {
-            "question": "Why is L1 regularization (Lasso) effective for feature selection compared to L2 (Ridge)?",
+            "question": "How does Public Key (Asymmetric) Cryptography differ from Symmetric Cryptography?",
             "options": [
-                "L1 drives less relevant feature coefficients exactly to zero due to its diamond-shaped constraint geometry.",
-                "L1 penalizes larger weights exponentially more than small weights.",
-                "L1 cannot be used with gradient descent optimizers.",
-                "L1 produces an infinite number of non-zero support vectors."
+                "Asymmetric uses a mathematically paired public key for encryption and private key for decryption; symmetric uses a single shared secret key.",
+                "Asymmetric encryption only works on numbers, not text.",
+                "Symmetric encryption is only used on mobile phones.",
+                "Asymmetric encryption cannot be used over the internet."
             ],
-            "correct_answer": 0,
-            "explanation": "The sharp corners on L1's diamond-shaped constraint boundary encourage sparse weight vectors with exact zeroes."
+            "correct_answer": "Asymmetric uses a mathematically paired public key for encryption and private key for decryption; symmetric uses a single shared secret key.",
+            "explanation": "Asymmetric algorithms (e.g. RSA, ECC) eliminate the need to share private keys over unsecure channels."
         },
         {
-            "question": "When evaluating an imbalanced fraud detection dataset, why is ROC-AUC often preferred over Accuracy?",
+            "question": "Which security measure is most effective at preventing SQL Injection (SQLi) vulnerabilities?",
             "options": [
-                "A naive model predicting 'No Fraud' 100% of the time can achieve 99% accuracy while providing zero predictive utility.",
-                "Accuracy is mathematically impossible to calculate on continuous features.",
-                "ROC-AUC does not require a ground truth label.",
-                "Accuracy requires symmetric neural networks."
+                "Using Parameterized Queries (Prepared Statements) that separate SQL logic from untrusted user inputs.",
+                "Hiding the database port number using firewall rules.",
+                "Limiting input strings to 50 characters in frontend HTML.",
+                "Changing the database table names daily."
             ],
-            "correct_answer": 0,
-            "explanation": "Accuracy is misleading when negative class instances vastly outnumber positive class instances."
+            "correct_answer": "Using Parameterized Queries (Prepared Statements) that separate SQL logic from untrusted user inputs.",
+            "explanation": "Parameterized queries ensure the database engine treats input strictly as literal data parameters, never executable code."
+        },
+        {
+            "question": "What is the core philosophy of a Zero Trust Security Architecture?",
+            "options": [
+                "'Never trust, always verify'—every access request is authenticated, authorized, and encrypted regardless of network perimeter.",
+                "Trust all requests originating from inside the office local area network.",
+                "Disable passwords and allow anonymous access.",
+                "Block all outbound internet traffic from corporate servers."
+            ],
+            "correct_answer": "'Never trust, always verify'—every access request is authenticated, authorized, and encrypted regardless of network perimeter.",
+            "explanation": "Zero Trust assumes breach and requires strict identity verification and least-privilege access for all users and devices."
+        }
+    ],
+    "Data Scientist": [
+        {
+            "question": "Why is cross-validation (e.g., K-Fold CV) essential when tuning machine learning models?",
+            "options": [
+                "It provides an unbiased estimate of generalization error across multiple unseen validation subsets, preventing data leakage.",
+                "It increases the training dataset size by duplicating rows.",
+                "It converts continuous variables into categorical labels.",
+                "It guarantees a 100% R-squared score."
+            ],
+            "correct_answer": "It provides an unbiased estimate of generalization error across multiple unseen validation subsets, preventing data leakage.",
+            "explanation": "K-Fold cross validation splits the dataset into K folds to validate that the model generalizes robustly without overfitting."
+        },
+        {
+            "question": "What does a high p-value (p > 0.05) typically signify in a standard hypothesis test?",
+            "options": [
+                "There is insufficient evidence to reject the Null Hypothesis; the observed effect could reasonably occur by random chance.",
+                "The research hypothesis is 100% proven true.",
+                "The dataset must be discarded due to corruption.",
+                "The sample size is too large."
+            ],
+            "correct_answer": "There is insufficient evidence to reject the Null Hypothesis; the observed effect could reasonably occur by random chance.",
+            "explanation": "A p-value above alpha threshold (0.05) means the observed data is consistent with the null hypothesis."
+        }
+    ],
+    "DevOps Engineer": [
+        {
+            "question": "In Kubernetes, what is the role of a ReplicaSet?",
+            "options": [
+                "To ensure a specified number of identical Pod replicas are running at all times across worker nodes.",
+                "To encrypt cluster network traffic using SSL certificates.",
+                "To manage physical hard drive partitioning on host nodes.",
+                "To compile Go source code into Docker images."
+            ],
+            "correct_answer": "To ensure a specified number of identical Pod replicas are running at all times across worker nodes.",
+            "explanation": "ReplicaSets maintain pod availability and automatically provision new pods if any instance terminates unexpectedly."
+        },
+        {
+            "question": "What is the key advantage of a Blue-Green deployment strategy?",
+            "options": [
+                "Zero-downtime releases with instant traffic switching via load balancer and near-instantaneous rollback capability.",
+                "It requires zero server resources or cloud instances.",
+                "It automatically generates production test data.",
+                "It compresses Docker images by 95%."
+            ],
+            "correct_answer": "Zero-downtime releases with instant traffic switching via load balancer and near-instantaneous rollback capability.",
+            "explanation": "Blue-Green maintains two identical environments; once the new version (Green) is verified, router traffic is switched over instantaneously."
         }
     ]
 }
 
+# Generic High-Yield Universal Engineering Questions
+UNIVERSAL_QUESTIONS = [
+    {
+        "question": "What is the primary characteristic of an idempotent API operation (such as HTTP PUT or DELETE)?",
+        "options": [
+            "Making the same request multiple times produces the identical server state as making it once.",
+            "The request executes in exactly zero milliseconds.",
+            "The request can only be executed once per user account lifetime.",
+            "The server reboots after the request completes."
+        ],
+        "correct_answer": "Making the same request multiple times produces the identical server state as making it once.",
+        "explanation": "Idempotence guarantees that repeated identical requests will not create unintended duplicate state changes."
+    },
+    {
+        "question": "In asynchronous programming, what problem does an Event Loop solve?",
+        "options": [
+            "It manages non-blocking I/O operations by delegating them to the OS kernel and executing callbacks upon completion.",
+            "It turns single-threaded programs into multi-threaded C++ executables.",
+            "It forces all functions to execute synchronously in a loop.",
+            "It disables memory garbage collection."
+        ],
+        "correct_answer": "It manages non-blocking I/O operations by delegating them to the OS kernel and executing callbacks upon completion.",
+        "explanation": "The event loop continuously polls for completed asynchronous I/O events, enabling high concurrency on a single thread."
+    },
+    {
+        "question": "Why is the Single Responsibility Principle (SRP) fundamental to maintainable software architecture?",
+        "options": [
+            "Each module or class has only one reason to change, making code easier to test, refactor, and decouple.",
+            "It forces all project code to reside in a single file.",
+            "It prevents classes from having more than one method.",
+            "It restricts software development to a single engineer."
+        ],
+        "correct_answer": "Each module or class has only one reason to change, making code easier to test, refactor, and decouple.",
+        "explanation": "SRP states that a class should encapsulate a single responsibility, reducing side-effects when requirements change."
+    },
+    {
+        "question": "What is the primary purpose of a Reverse Proxy (such as Nginx or Traefik)?",
+        "options": [
+            "To sit in front of web servers, handling SSL termination, load balancing, compression, and request routing.",
+            "To convert client HTTP requests into database binary logs.",
+            "To replace browser rendering engines.",
+            "To delete outdated files from client devices."
+        ],
+        "correct_answer": "To sit in front of web servers, handling SSL termination, load balancing, compression, and request routing.",
+        "explanation": "Reverse proxies act as intermediaries to protect origin servers, distribute load, and optimize traffic throughput."
+    }
+]
+
 def generate_quiz_questions(
     career_id: str,
     career_title: str,
-    skills_to_develop: List[str]
+    skills_to_develop: Optional[List[str]] = None,
+    num_questions: int = 5
 ) -> List[Dict[str, Any]]:
-    cache_key = f"{career_id}:{','.join(sorted(skills_to_develop))}"
-    if cache_key in QUIZ_CACHE:
-        return QUIZ_CACHE[cache_key]
+    """
+    Generates dynamic, realistic technical diagnostic questions.
+    Every time this is called:
+    1. A fresh candidate pool of relevant domain and skill questions is compiled.
+    2. Questions are randomly sampled.
+    3. Options are randomly shuffled, and correct_index is accurately tracked.
+    """
+    candidate_pool: List[Dict[str, Any]] = []
 
-    target_skills = skills_to_develop[:3] if skills_to_develop else ["Core Problem Solving", "System Design"]
-    questions: List[Dict[str, Any]] = []
+    # 1. Match career title in question bank
+    for bank_career, q_list in QUESTION_BANK.items():
+        if bank_career.lower() in career_title.lower() or career_title.lower() in bank_career.lower():
+            candidate_pool.extend(q_list)
 
-    for skill in target_skills:
-        # Check if known skill in bank
-        matched_bank = None
-        for bank_key, bank_qs in SKILL_QUESTION_BANK.items():
-            if bank_key.lower() in skill.lower() or skill.lower() in bank_key.lower():
-                matched_bank = bank_qs
-                break
+    # 2. Match skills if provided
+    if skills_to_develop:
+        for skill in skills_to_develop:
+            for bank_career, q_list in QUESTION_BANK.items():
+                if skill.lower() in bank_career.lower():
+                    candidate_pool.extend(q_list)
 
-        if matched_bank:
-            for q in matched_bank:
-                questions.append({
-                    "skill": skill,
-                    "question": q["question"],
-                    "options": q["options"],
-                    "correct_answer": q["correct_answer"],
-                    "explanation": q["explanation"]
-                })
-        else:
-            # Generate high-yield template questions for domain skill
-            questions.append({
-                "skill": skill,
-                "question": f"When applying '{skill}' in modern production workflows, which methodology represents an essential industry standard?",
-                "options": [
-                    f"Implementing modular, decoupled architectures supported by automated unit tests and telemetry.",
-                    f"Skipping peer code reviews and testing to shorten initial deployment timelines.",
-                    f"Storing unencrypted API credentials directly in public version control commits.",
-                    f"Avoiding standardized documentation and issue trackers."
-                ],
-                "correct_answer": 0,
-                "explanation": f"Industry standards for {skill} emphasize architectural modularity, test-driven validation, and clean observability."
-            })
-            questions.append({
-                "skill": skill,
-                "question": f"Which strategy best mitigates systemic risk and technical debt when adopting '{skill}'?",
-                "options": [
-                    f"Continuous integration, incremental refactoring, and benchmarked stress testing.",
-                    f"Deploying unmonitored changes directly into client-facing environments.",
-                    f"Eliminating error boundaries and exception logging mechanisms.",
-                    f"Refusing to update dependencies or patch security vulnerabilities."
-                ],
-                "correct_answer": 0,
-                "explanation": f"Automated CI pipelines, code reviews, and structured stress testing keep implementations of {skill} robust."
-            })
+    # 3. If pool is small, add universal engineering questions
+    candidate_pool.extend(UNIVERSAL_QUESTIONS)
 
-    QUIZ_CACHE[cache_key] = questions
-    return questions
+    # 4. Deduplicate questions by question text
+    unique_pool = []
+    seen_texts = set()
+    for q in candidate_pool:
+        if q["question"] not in seen_texts:
+            seen_texts.add(q["question"])
+            unique_pool.append(q)
+
+    # 5. Randomly sample requested number of questions
+    selected_count = min(len(unique_pool), num_questions)
+    sampled = random.sample(unique_pool, selected_count)
+
+    formatted_questions: List[Dict[str, Any]] = []
+
+    for q in sampled:
+        correct_text = q["correct_answer"]
+        all_options = list(q["options"])
+        
+        # Ensure correct answer is in options
+        if correct_text not in all_options:
+            all_options[0] = correct_text
+
+        # Randomly shuffle options for realistic testing
+        random.shuffle(all_options)
+        new_correct_index = all_options.index(correct_text)
+
+        formatted_questions.append({
+            "skill": career_title,
+            "question": q["question"],
+            "options": all_options,
+            "correct_index": new_correct_index,
+            "correct_answer": new_correct_index,
+            "explanation": q["explanation"]
+        })
+
+    return formatted_questions

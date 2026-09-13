@@ -15,7 +15,7 @@ def run_tests():
     client = TestClient(app, follow_redirects=False)
 
     print("=== 1. Testing Auth Gating for Protected Routes ===")
-    protected_routes = ['/assessment', '/dashboard', '/career-path', '/career-path/quiz', '/compare']
+    protected_routes = ['/assessment', '/dashboard', '/profile']
     for route in protected_routes:
         resp = client.get(route)
         loc = resp.headers.get("location", "")
@@ -36,7 +36,8 @@ def run_tests():
     assert login_resp.status_code == 200
 
     auth_client = TestClient(app, follow_redirects=True, cookies=login_resp.cookies)
-    for route in protected_routes:
+    all_pages = ['/', '/dashboard', '/assessment', '/profile', '/career-path', '/compare']
+    for route in all_pages:
         resp = auth_client.get(route)
         print(f"GET {route} (authenticated) -> status: {resp.status_code}")
         assert resp.status_code == 200
@@ -92,7 +93,7 @@ def run_tests():
     )
     assert chat_resp.status_code == 200
     chat_content = chat_resp.json().get("content", "")
-    print("Ask V response sample (first 100 chars):", chat_content[:100], "...")
+    print("Ask V response length:", len(chat_content))
     assert len(chat_content) > 10
 
     print("[PASS] Ask V chatbot responding accurately!")

@@ -23,7 +23,7 @@ class QuizRequest(BaseModel):
 
 class ExportPdfRequest(BaseModel):
     career: Dict[str, Any]
-    user_name: Optional[str] = "Candidate"
+    user_name: Optional[str] = "Professional"
     profile: Optional[Dict[str, Any]] = None
 
 class ProgressRequest(BaseModel):
@@ -127,8 +127,8 @@ async def export_pdf(req: ExportPdfRequest, request: Request):
     else:
         merged_career = career_dict
 
-    user_name = req.user_name or "Candidate"
-    if user_name == "Candidate":
+    user_name = req.user_name or "Professional"
+    if user_name in ["Professional", "Candidate", "Anonymous", "None", ""]:
         user_id_str = request.cookies.get("user_id")
         if user_id_str and user_id_str.isdigit():
             with database.get_connection() as conn:
@@ -153,14 +153,14 @@ async def export_pdf(req: ExportPdfRequest, request: Request):
     )
 
 @api_router.get("/export/pdf")
-async def export_pdf_get(title: str, request: Request, user_name: Optional[str] = "Candidate"):
+async def export_pdf_get(title: str, request: Request, user_name: Optional[str] = "Professional"):
     career_title = title or "Software Developer"
     full_career = career_engine.get_career_by_title(career_title)
     if not full_career:
         full_career = career_engine.get_career_by_title("Software Developer")
 
-    name = user_name or "Candidate"
-    if name == "Candidate":
+    name = user_name or "Professional"
+    if name in ["Professional", "Candidate", "Anonymous", "None", ""]:
         user_id_str = request.cookies.get("user_id")
         if user_id_str and user_id_str.isdigit():
             with database.get_connection() as conn:
