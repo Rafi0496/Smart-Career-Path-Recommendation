@@ -1,3 +1,6 @@
+import os
+import re
+from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File, Request, Response
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
@@ -20,6 +23,11 @@ class QuizRequest(BaseModel):
     career_id: str
     career_title: Optional[str] = None
     skills_to_develop: Optional[List[str]] = Field(default_factory=list)
+
+class QuizResultRequest(BaseModel):
+    career_id: str
+    quiz_score: int
+    weak_skills: Optional[List[str]] = Field(default_factory=list)
 
 class ExportPdfRequest(BaseModel):
     career: Dict[str, Any]
@@ -59,14 +67,14 @@ async def get_recommendations(profile: Dict[str, Any]):
 
 # 2. Ask V ("V") Chat Endpoint
 @api_router.post("/chat")
-async def chat_with_mentor(req: ChatRequest):
+async def chat_with_v(req: ChatRequest):
     if not req.messages:
-        raise HTTPException(status_code=400, detail="No messages provided")
+        raise HTTPException(status_code=400, detail="No chat messages provided")
     
-    reply = await get_mentor_response(req.messages, req.context)
-    return {"content": reply}
+    response = get_mentor_response(req.messages, context=req.context)
+    return response
 
-# 3. Resume Parser Endpoint
+# 3. Native Python PDF Resume Parser Endpoint
 @api_router.post("/resume/parse")
 async def parse_resume(
     request: Request,
@@ -95,6 +103,15 @@ async def parse_resume(
                 user_hint = row["name"]
 
     profile = parse_resume_to_profile(contents, filename=upload.filename, user_hint=user_hint)
+
+    if user_id_str and user_id_str.isdigit():
+        uid = int(user_id_str)
+        try:
+            database.log_activity(uid, "resume_uploaded", f"Uploaded resume: {upload.filename}")
+            database.check_and_unlock_achievements(uid, "first_resume")
+        except Exception:
+            pass
+
     return {
         "success": True,
         "filename": upload.filename,
@@ -102,7 +119,7 @@ async def parse_resume(
         "skillsFound": profile.get("interests", {}).get("skills", [])
     }
 
-# 4. Diagnostic Quiz Generator Endpoint
+# 4. Diagnostic Quiz Generator & Result Logger Endpoints
 @api_router.post("/quiz/generate")
 async def generate_quiz(req: QuizRequest):
     title = req.career_title or req.career_id
@@ -113,6 +130,17 @@ async def generate_quiz(req: QuizRequest):
         "career_title": title,
         "questions": questions
     }
+
+@api_router.post("/quiz/result")
+async def save_quiz_result(req: QuizResultRequest, request: Request):
+    user_id = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        user_id = int(user_id_str)
+    if user_id:
+        database.log_quiz_result(user_id, req.career_id, req.quiz_score, req.weak_skills)
+        return {"success": True}
+    return {"success": False, "message": "Not authenticated"}
 
 # 5. Executive PDF Blueprint Export Endpoint (POST & GET supported)
 @api_router.post("/export/pdf")
@@ -128,15 +156,16 @@ async def export_pdf(req: ExportPdfRequest, request: Request):
         merged_career = career_dict
 
     user_name = req.user_name or "Professional"
-    if user_name in ["Professional", "Candidate", "Anonymous", "None", ""]:
-        user_id_str = request.cookies.get("user_id")
-        if user_id_str and user_id_str.isdigit():
-            with database.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT name FROM users WHERE id = ?", (int(user_id_str),))
-                row = cursor.fetchone()
-                if row:
-                    user_name = row["name"]
+    user_id = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        user_id = int(user_id_str)
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM users WHERE id = ?", (user_id,))
+            row = cursor.fetchone()
+            if row and row["name"]:
+                user_name = row["name"]
 
     filename = f"{career_title.replace(' ', '_')}_Executive_Blueprint.pdf"
     
@@ -145,6 +174,20 @@ async def export_pdf(req: ExportPdfRequest, request: Request):
         user_name=user_name,
         profile=req.profile
     )
+
+    # Persist PDF file for instant re-download
+    pdf_dir = Path("app/static/uploads/pdfs")
+    pdf_dir.mkdir(parents=True, exist_ok=True)
+    clean_fn = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', filename)
+    file_path = str(pdf_dir / clean_fn)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(pdf_bytes)
+        if user_id:
+            database.save_generated_pdf_record(user_id, career_title, clean_fn, file_path)
+            database.log_activity(user_id, "pdf_downloaded", f"Downloaded Executive PDF for {career_title}")
+    except Exception:
+        pass
 
     return Response(
         content=pdf_bytes,
@@ -160,21 +203,35 @@ async def export_pdf_get(title: str, request: Request, user_name: Optional[str] 
         full_career = career_engine.get_career_by_title("Software Developer")
 
     name = user_name or "Professional"
-    if name in ["Professional", "Candidate", "Anonymous", "None", ""]:
-        user_id_str = request.cookies.get("user_id")
-        if user_id_str and user_id_str.isdigit():
-            with database.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT name FROM users WHERE id = ?", (int(user_id_str),))
-                row = cursor.fetchone()
-                if row:
-                    name = row["name"]
+    user_id = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        user_id = int(user_id_str)
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM users WHERE id = ?", (user_id,))
+            row = cursor.fetchone()
+            if row and row["name"]:
+                name = row["name"]
 
     filename = f"{career_title.replace(' ', '_')}_Executive_Blueprint.pdf"
     pdf_bytes = build_executive_career_pdf(
         full_career,
         user_name=name
     )
+
+    pdf_dir = Path("app/static/uploads/pdfs")
+    pdf_dir.mkdir(parents=True, exist_ok=True)
+    clean_fn = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', filename)
+    file_path = str(pdf_dir / clean_fn)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(pdf_bytes)
+        if user_id:
+            database.save_generated_pdf_record(user_id, career_title, clean_fn, file_path)
+            database.log_activity(user_id, "pdf_downloaded", f"Downloaded Executive PDF for {career_title}")
+    except Exception:
+        pass
 
     return Response(
         content=pdf_bytes,
@@ -186,6 +243,11 @@ async def export_pdf_get(title: str, request: Request, user_name: Optional[str] 
 @api_router.post("/progress")
 async def toggle_progress(req: ProgressRequest):
     completed = database.toggle_step_progress(req.userId, req.careerTitle, req.stepOrder)
+    try:
+        database.log_activity(req.userId, "roadmap_stage_completed", f"Progressed milestone #{req.stepOrder} for {req.careerTitle}")
+        database.check_and_unlock_achievements(req.userId, "roadmap_stage_completed")
+    except Exception:
+        pass
     return {
         "success": True,
         "careerTitle": req.careerTitle,

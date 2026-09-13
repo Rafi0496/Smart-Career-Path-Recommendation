@@ -148,10 +148,10 @@ def run_end_to_end_test():
     assert profile_page_res.status_code == 200
     assert "Shaik Rafi" in profile_page_res.text
     assert "shaik.rafi.flow@example.com" in profile_page_res.text
-    assert "Academic Background" in profile_page_res.text
-    assert "Technical Skills &amp; Certifications" in profile_page_res.text or "Technical Skills & Certifications" in profile_page_res.text
-    assert "Saved Careers &amp; Roadmaps" in profile_page_res.text or "Saved Careers & Roadmaps" in profile_page_res.text
-    print(" [Step 9] Professional Profile (/profile) page verified: Personal details, academics, skills, and progress intact")
+    assert "Career Journey Summary" in profile_page_res.text
+    assert "Skills Profile" in profile_page_res.text
+    assert "Progress &amp; Milestone Achievements" in profile_page_res.text or "Progress & Milestone Achievements" in profile_page_res.text
+    print(" [Step 9] Executive Profile (/profile) page verified: Personal details, career journey, skills radar, and achievements intact")
 
     # 10. Verify Executive PDF button label on Career Path page
     assert "Download Executive PDF" in cp_res.text

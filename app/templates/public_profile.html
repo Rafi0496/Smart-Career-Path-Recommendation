@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ user.name }}'s Career Portfolio | Smart Career Path</title>
+  
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="/static/css/styles.css" />
+
+  <script>
+    try {
+      const stored = localStorage.getItem('career_path_theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col antialiased">
+
+  <!-- Minimal Header -->
+  <header class="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-primary-600 to-emerald-500 text-white shadow-sm">
+          <i data-lucide="compass" class="w-4 h-4"></i>
+        </div>
+        <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 tracking-tight">
+          Smart Career Path
+        </span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="/register" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/25 transition btn-3d">
+          <span>Create Your Portfolio</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Public Portfolio Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+    
+    <!-- Hero Header -->
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xl relative overflow-hidden bg-gradient-to-br from-white/90 via-slate-50/70 to-primary-50/30 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-primary-950/20 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center gap-6">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden bg-gradient-to-tr from-primary-600 via-indigo-600 to-emerald-500 text-white flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-primary-500/25 ring-4 ring-white dark:ring-slate-800 shrink-0">
+        {% if user.profile_photo_url %}
+          <img src="{{ user.profile_photo_url }}" alt="{{ user.name }}" class="w-full h-full object-cover" />
+        {% else %}
+          <span>{{ user.name[0] | upper if user.name else 'P' }}</span>
+        {% endif %}
+      </div>
+
+      <div class="space-y-1.5 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            {{ user.name }}
+          </h1>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-3 h-3"></i> Verified Portfolio
+          </span>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
+          {{ user.bio if user.bio else 'Professional career portfolio powered by Smart Career Path AI Intelligence.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Career Target Card & Skills Radar Grid -->
+    <div class="grid md:grid-cols-12 gap-6">
+      
+      <!-- Primary Career Match -->
+      <div class="md:col-span-5 glass-panel rounded-3xl p-6 border border-primary-200/80 dark:border-primary-900/60 shadow-lg flex flex-col justify-between space-y-4 bg-gradient-to-b from-primary-50/40 to-white/70 dark:from-primary-950/30 dark:to-slate-900/70">
+        <div class="space-y-3">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-300 bg-primary-100/80 dark:bg-primary-950 px-2.5 py-1 rounded-lg border border-primary-200 dark:border-primary-800">
+            Primary Career Match
+          </span>
+
+          {% if top_career %}
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-white leading-tight">
+              {{ top_career.careerTitle if top_career.careerTitle else top_career.title }}
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {{ top_career.category if top_career.category else 'Technology' }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs pt-2">
+            <div class="p-3 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
+              <span class="text-slate-400 text-[10px] block uppercase font-semibold">Compensation</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">{{ top_career.salaryRange if top_career.salaryRange else '$95k - $145k' }}</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
+              <span class="text-slate-400 text-[10px] block uppercase font-semibold">Market Demand</span>
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ top_career.growthOutlook if top_career.growthOutlook else '+22% (High)' }}</span>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-xs text-slate-400">Career match in progress.</p>
+          {% endif %}
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+          <a href="/register" class="w-full inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition btn-3d shadow-md shadow-primary-500/25">
+            <span>Explore This Career Path</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Skills Radar -->
+      <div class="md:col-span-7 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i>
+            <span>Verified Skills Radar</span>
+          </h3>
+          <span class="text-[10px] text-slate-400">AI Evaluated</span>
+        </div>
+
+        <div class="flex justify-center items-center py-2 relative min-h-[250px]">
+          <canvas id="publicSkillsRadar" class="max-w-full max-h-[280px]"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Achievements & Badges Earned -->
+    <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+          <span>Milestone Badges Earned</span>
+        </h3>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        {% for badge in achievements %}
+        <div class="glass-panel rounded-2xl p-3 border {% if badge.unlocked %}border-amber-400/70 dark:border-amber-500/50 bg-amber-500/10 shadow-sm{% else %}border-slate-200 dark:border-slate-800 opacity-40 bg-slate-100/40 dark:bg-slate-800/30{% endif %} text-center flex flex-col items-center justify-between gap-1.5">
+          <div class="w-10 h-10 rounded-xl {% if badge.unlocked %}bg-gradient-to-tr from-amber-400 to-amber-600 text-white shadow-md shadow-amber-500/30{% else %}bg-slate-200 dark:bg-slate-700 text-slate-400{% endif %} flex items-center justify-center text-lg">
+            {% if badge.unlocked %}
+              <i data-lucide="{{ badge.icon }}" class="w-5 h-5"></i>
+            {% else %}
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            {% endif %}
+          </div>
+          <div>
+            <h4 class="text-[11px] font-bold text-slate-900 dark:text-white leading-tight">{{ badge.title }}</h4>
+          </div>
+          <span class="text-[8px] uppercase font-extrabold px-1.5 py-0.5 rounded {% if badge.unlocked %}bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300{% else %}bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400{% endif %}">
+            {{ 'Earned' if badge.unlocked else 'Locked' }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Public Footer -->
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <i data-lucide="compass" class="w-4 h-4 text-primary-600"></i>
+        <span>Built with <strong>Smart Career Path AI</strong></span>
+      </div>
+      <a href="/" class="text-primary-600 dark:text-primary-400 hover:underline font-semibold">
+        Discover Your Career Blueprint →
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.lucide) lucide.createIcons();
+
+      try {
+        const shareId = "{{ public_share_id }}";
+        const res = await fetch(`/profile/skills-radar?share_id=${encodeURIComponent(shareId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const ctx = document.getElementById('publicSkillsRadar');
+        if (!ctx) return;
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
+        const labelColor = isDark ? '#94a3b8' : '#475569';
+
+        new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: data.labels,
+            datasets: data.datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              r: {
+                angleLines: { color: gridColor },
+                grid: { color: gridColor },
+                pointLabels: {
+                  color: labelColor,
+                  font: { size: 10, weight: '600' }
+                },
+                ticks: { display: false, max: 100, min: 0 }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  color: labelColor,
+                  boxWidth: 10,
+                  font: { size: 10 }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Public radar error:', e);
+      }
+    });
+  </script>
+</body>
+</html>

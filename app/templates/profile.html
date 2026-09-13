@@ -1,396 +1,1104 @@
 {% extends "base.html" %}
 
-{% block title %}User Profile | Smart Career Path{% endblock %}
+{% block title %}{{ user.name }}'s Executive Profile | Smart Career Path{% endblock %}
 
 {% block content %}
-<div class="py-6 space-y-8 fade-in-up max-w-5xl mx-auto">
+<!-- Chart.js CDN for interactive Skills Radar -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="py-4 space-y-10 fade-in-up max-w-6xl mx-auto pb-16">
 
   <!-- ========================================================================= -->
-  <!-- 1. HERO PROFILE HEADER CARD                                               -->
+  <!-- 1. IDENTITY & PROFILE HEADER                                              -->
   <!-- ========================================================================= -->
-  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-    <div class="flex items-center gap-5">
-      <div class="relative">
-        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-primary-600 via-indigo-600 to-emerald-500 text-white flex items-center justify-center text-3xl font-extrabold shadow-lg shadow-primary-500/25">
-          <span id="profile-avatar-initial">{{ user.name[0] | upper if user and user.name else 'U' }}</span>
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-xl relative overflow-hidden bg-gradient-to-br from-white/90 via-slate-50/70 to-primary-50/30 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-primary-950/20 backdrop-blur-xl">
+    <div class="absolute -right-16 -top-16 w-64 h-64 bg-primary-500/10 dark:bg-primary-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
+        
+        <!-- Profile Avatar with Upload Trigger -->
+        <div class="relative group shrink-0">
+          <div id="avatar-container" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden bg-gradient-to-tr from-primary-600 via-indigo-600 to-emerald-500 text-white flex items-center justify-center text-4xl font-extrabold shadow-lg shadow-primary-500/25 ring-4 ring-white dark:ring-slate-800">
+            {% if user.profile_photo_url %}
+              <img id="profile-avatar-img" src="{{ user.profile_photo_url }}" alt="{{ user.name }}" class="w-full h-full object-cover" />
+            {% else %}
+              <span id="profile-avatar-initial">{{ user.name[0] | upper if user.name else 'U' }}</span>
+              <img id="profile-avatar-img" src="" alt="{{ user.name }}" class="w-full h-full object-cover hidden" />
+            {% endif %}
+          </div>
+          
+          <label for="avatar-file-input" class="absolute inset-0 bg-black/50 text-white rounded-3xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer text-xs font-semibold backdrop-blur-xs" title="Change profile photo">
+            <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
+            <span>Upload</span>
+          </label>
+          <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp,image/jpg" class="hidden" onchange="uploadAvatar(event)" />
+          
+          <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-xs shadow-md" title="Verified Account">
+            <i data-lucide="check" class="w-4 h-4"></i>
+          </div>
         </div>
-        <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-xs shadow-md" title="Active Account">
-          <i data-lucide="check" class="w-4 h-4"></i>
+
+        <!-- Identity Details & Bio -->
+        <div class="space-y-2">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight" id="profile-name-text">
+              {{ user.name }}
+            </h1>
+            <span class="px-2.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-xs font-bold border border-primary-200 dark:border-primary-800">
+              Pro Member
+            </span>
+            {% if user.is_profile_public %}
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="globe" class="w-3 h-3"></i> Public
+            </span>
+            {% endif %}
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5">
+            <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>{{ user.email }}</span>
+          </p>
+
+          <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 max-w-xl line-clamp-2 leading-relaxed" id="profile-bio-text">
+            {{ user.bio if user.bio else 'No bio added yet. Click "Edit Profile" to write a short professional summary.' }}
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 pt-1">
+            <span class="flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-primary-500"></i>
+              Member since: {{ member_since }}
+            </span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-500"></i>
+              {{ streak }} Day Streak
+            </span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="award" class="w-3.5 h-3.5 text-emerald-500"></i>
+              {{ unlocked_badges_count }}/{{ total_badges_count }} Badges Unlocked
+            </span>
+          </div>
         </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full md:w-auto">
+        <button type="button" onclick="openEditProfileModal()" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 transition btn-3d">
+          <i data-lucide="user-cog" class="w-4 h-4 text-primary-600"></i>
+          <span>Edit Profile</span>
+        </button>
+        <a href="/assessment" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Assessment</span>
+        </a>
+        <a href="/dashboard" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 transition btn-3d">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-emerald-600"></i>
+          <span>Dashboard</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. CAREER JOURNEY SUMMARY                                                 -->
+  <!-- ========================================================================= -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="compass" class="w-5 h-5 text-primary-600"></i>
+        <span>Career Journey Summary</span>
+      </h2>
+      <a href="/compare" class="text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1">
+        <span>Explore All Paths</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      
+      <!-- Top Matched Career Card -->
+      <div class="lg:col-span-1 glass-panel rounded-3xl p-6 border border-primary-200/80 dark:border-primary-900/60 shadow-lg relative overflow-hidden flex flex-col justify-between bg-gradient-to-b from-primary-50/50 to-white/80 dark:from-primary-950/30 dark:to-slate-900/80">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-primary-700 dark:text-primary-300 bg-primary-100/80 dark:bg-primary-950 px-2.5 py-1 rounded-lg border border-primary-200 dark:border-primary-800">
+              #1 Primary Target
+            </span>
+            {% if top_career %}
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-extrabold">
+              <i data-lucide="zap" class="w-3.5 h-3.5 fill-current"></i>
+              <span>{{ top_career.matchScore if top_career.matchScore else 94 }}% Match</span>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if top_career %}
+          <div>
+            <h3 class="text-xl font-black text-slate-900 dark:text-white leading-tight">
+              {{ top_career.careerTitle if top_career.careerTitle else top_career.title }}
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {{ top_career.category if top_career.category else 'Technology & Engineering' }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+            <div class="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
+              <span class="text-slate-400 text-[10px] block uppercase font-semibold">Salary Range</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200 text-xs">{{ top_career.salaryRange if top_career.salaryRange else '$95k - $145k' }}</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
+              <span class="text-slate-400 text-[10px] block uppercase font-semibold">Growth Outlook</span>
+              <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">{{ top_career.growthOutlook if top_career.growthOutlook else '+22% (High)' }}</span>
+            </div>
+          </div>
+          {% else %}
+          <div class="py-6 text-center text-slate-400 space-y-2">
+            <i data-lucide="sparkles" class="w-8 h-8 mx-auto text-slate-300"></i>
+            <p class="text-xs">No primary career matched yet. Take the diagnostic assessment to discover your top path.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="pt-5 space-y-2">
+          {% if top_career %}
+          <a href="/career/{{ (top_career.careerTitle if top_career.careerTitle else top_career.title) | urlencode }}" class="w-full inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
+            <i data-lucide="map" class="w-4 h-4"></i>
+            <span>View Executive Roadmap</span>
+          </a>
+          <a href="/api/export/pdf?title={{ (top_career.careerTitle if top_career.careerTitle else top_career.title) | urlencode }}" class="w-full inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 transition btn-3d">
+            <i data-lucide="file-down" class="w-3.5 h-3.5 text-primary-600"></i>
+            <span>Download Executive PDF</span>
+          </a>
+          {% else %}
+          <a href="/assessment" class="w-full inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition btn-3d">
+            <span>Start Career Assessment</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Bookmarked Careers Carousel / Grid -->
+      <div class="lg:col-span-2 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              <i data-lucide="bookmark" class="w-4 h-4 text-amber-500"></i>
+              <span>Bookmarked Careers ({{ bookmarked_careers | length }})</span>
+            </h3>
+            <span class="text-xs text-slate-400">Direct Career Roadmap Access</span>
+          </div>
+
+          {% if bookmarked_careers and bookmarked_careers | length > 0 %}
+          <div class="grid sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1" id="bookmarks-list-container">
+            {% for bm in bookmarked_careers %}
+            <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 hover:border-primary-400 transition flex items-center justify-between gap-3 group" id="bookmark-card-{{ loop.index }}">
+              <div class="min-w-0">
+                <a href="/career/{{ bm.title | urlencode }}" class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 truncate block">
+                  {{ bm.title }}
+                </a>
+                <p class="text-[11px] text-slate-400 truncate">{{ bm.category }} • {{ bm.salaryRange }}</p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <a href="/career/{{ bm.title | urlencode }}" class="p-1.5 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 hover:bg-primary-100 transition" title="Open Roadmap">
+                  <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                </a>
+                <button type="button" onclick="removeBookmark('{{ bm.title }}', 'bookmark-card-{{ loop.index }}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition" title="Remove Bookmark">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="py-8 text-center text-slate-400 space-y-2 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+            <i data-lucide="bookmark-plus" class="w-8 h-8 mx-auto text-slate-300"></i>
+            <p class="text-xs">No careers bookmarked yet.</p>
+            <p class="text-[11px] text-slate-500">Visit Compare or Career pages to bookmark roles for quick tracking.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Diagnostic Quiz Recent Scores Strip -->
+        <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>Recent Diagnostic Quizzes</span>
+            </span>
+            {% if quiz_history and quiz_history | length > 0 %}
+            <span class="text-[10px] text-slate-400">{{ quiz_history | length }} Recorded</span>
+            {% endif %}
+          </div>
+
+          {% if quiz_history and quiz_history | length > 0 %}
+          <div class="flex items-center gap-3 overflow-x-auto pb-1">
+            {% for q in quiz_history[:3] %}
+            <div class="shrink-0 px-3 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg {% if q.quiz_score >= 80 %}bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300{% elif q.quiz_score >= 60 %}bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300{% else %}bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300{% endif %} flex items-center justify-center font-extrabold text-[11px]">
+                {{ q.quiz_score }}%
+              </div>
+              <div>
+                <p class="font-bold text-slate-800 dark:text-slate-200 text-[11px] truncate max-w-[140px]">{{ q.career_id }}</p>
+                <p class="text-[10px] text-slate-400">{{ q.taken_at[:10] }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-[11px] text-slate-400">No quizzes taken yet. Test your readiness on any Career Blueprint page!</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 3. SKILLS PROFILE & RADAR CHART                                           -->
+  <!-- ========================================================================= -->
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div>
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i>
+          <span>Triangulated Skills Profile & Gap Radar</span>
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Comparing Required Core Competencies vs. Resume-Verified Evidence vs. Self-Reported Confidence.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" id="radar-career-target-pill">
+          Target: {{ top_career.careerTitle if top_career else 'Target Role' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Chart.js Radar Canvas -->
+      <div class="lg:col-span-6 flex justify-center items-center py-2 relative min-h-[300px]">
+        <canvas id="skillsRadarChart" class="max-w-full max-h-[340px]"></canvas>
+      </div>
+
+      <!-- Skills Analysis Breakdown -->
+      <div class="lg:col-span-6 space-y-4">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            Skill Verification Breakdown
+          </h3>
+          <div class="space-y-2" id="radar-legend-breakdown">
+            <div class="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">Required Target Benchmark</span>
+              </div>
+              <span class="font-extrabold text-indigo-600 dark:text-indigo-400">100% Core</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">Resume-Verified Capabilities</span>
+              </div>
+              <span class="font-extrabold text-emerald-600 dark:text-emerald-400">High Confidence</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-sky-50/60 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800/60 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-sky-500"></span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">Self-Reported Assessment</span>
+              </div>
+              <span class="font-extrabold text-sky-600 dark:text-sky-400">Validated</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Fix Recommendations -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
+            <span>Optimization Recommendation</span>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed" id="skills-recommendation-text">
+            Upload your resume or add manual certifications to boost your verified skill levels against your target career.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 4. PROGRESS & ACHIEVEMENTS                                                -->
+  <!-- ========================================================================= -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="award" class="w-5 h-5 text-emerald-600"></i>
+        <span>Progress & Milestone Achievements</span>
+      </h2>
+      <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+        {{ unlocked_badges_count }}/{{ total_badges_count }} Badges Earned
+      </span>
+    </div>
+
+    <!-- Completion Gauge & Streak Stats -->
+    <div class="grid sm:grid-cols-3 gap-4">
+      
+      <!-- Overall Roadmap Progress -->
+      <div class="sm:col-span-2 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Overall Roadmap Mastery</span>
+            <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{{ overall_roadmap_pct }}% Completed</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950 text-primary-600 flex items-center justify-center font-black text-sm">
+            {{ overall_roadmap_pct }}%
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden">
+          <div class="bg-gradient-to-r from-primary-500 via-indigo-500 to-emerald-500 h-full rounded-full transition-all duration-700" style="width: {{ overall_roadmap_pct }}%;"></div>
+        </div>
+
+        <p class="text-[11px] text-slate-500">Track and toggle milestone completion steps directly on each career roadmap.</p>
+      </div>
+
+      <!-- Streak Counter -->
+      <div class="sm:col-span-1 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-2 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Activity Streak</span>
+          <i data-lucide="flame" class="w-6 h-6 text-amber-500 fill-amber-500"></i>
+        </div>
+        <div>
+          <span class="text-3xl font-extrabold text-slate-900 dark:text-white">{{ streak }}</span>
+          <span class="text-sm font-semibold text-slate-500 dark:text-slate-400 ml-1">Days Active</span>
+        </div>
+        <p class="text-[11px] text-slate-500">Log in and take assessments to maintain your daily momentum.</p>
+      </div>
+
+    </div>
+
+    <!-- Badge Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
+      {% for badge in achievements %}
+      <div class="glass-panel rounded-2xl p-4 border {% if badge.unlocked %}border-amber-400/70 dark:border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent shadow-md shadow-amber-500/10{% else %}border-slate-200 dark:border-slate-800 opacity-60 bg-slate-100/40 dark:bg-slate-800/30{% endif %} text-center flex flex-col items-center justify-between gap-2 transition-transform hover:scale-[1.02]">
+        <div class="w-12 h-12 rounded-2xl {% if badge.unlocked %}bg-gradient-to-tr from-amber-400 to-amber-600 text-white shadow-md shadow-amber-500/30{% else %}bg-slate-200 dark:bg-slate-700 text-slate-400{% endif %} flex items-center justify-center text-xl">
+          {% if badge.unlocked %}
+            <i data-lucide="{{ badge.icon }}" class="w-6 h-6"></i>
+          {% else %}
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          {% endif %}
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+            {{ badge.title }}
+          </h4>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+            {{ badge.description }}
+          </p>
+        </div>
+
+        <span class="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-md {% if badge.unlocked %}bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300{% else %}bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400{% endif %}">
+          {{ 'Earned' if badge.unlocked else 'Locked' }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 5. DOCUMENTS & CREDENTIALS HUB                                            -->
+  <!-- ========================================================================= -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="folder-check" class="w-5 h-5 text-indigo-600"></i>
+        <span>Documents & Credentials Hub</span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- 1. Resume Manager -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="file-text" class="w-4 h-4 text-indigo-500"></i>
+              <span>Resume (PDF)</span>
+            </h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+              Active
+            </span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Parsed Competencies</span>
+              <p class="font-bold text-slate-800 dark:text-slate-200" id="resume-parsed-count">
+                {{ profile.interests.skills | length if profile.interests and profile.interests.skills else 0 }} Skills Detected
+              </p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Education Level</span>
+              <p class="font-bold text-slate-800 dark:text-slate-200" id="resume-parsed-edu">
+                {{ profile.education.highestDegree if profile.education and profile.education.highestDegree else 'Not extracted' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="replace-resume-input" class="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-indigo-500/25 transition btn-3d cursor-pointer">
+            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+            <span id="resume-btn-label">Upload / Replace Resume</span>
+          </label>
+          <input type="file" id="replace-resume-input" accept="application/pdf" class="hidden" onchange="uploadResumePDF(event)" />
+        </div>
+      </div>
+
+      <!-- 2. Generated Executive Blueprints -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="download" class="w-4 h-4 text-sky-500"></i>
+              <span>Generated Blueprints ({{ generated_pdfs | length }})</span>
+            </h3>
+            <span class="text-[10px] text-slate-400">Instant Download</span>
+          </div>
+
+          {% if generated_pdfs and generated_pdfs | length > 0 %}
+          <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {% for pdf in generated_pdfs %}
+            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs gap-2">
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 dark:text-slate-200 truncate text-[11px]">{{ pdf.career_id }}</p>
+                <p class="text-[10px] text-slate-400">{{ pdf.generated_at[:10] }}</p>
+              </div>
+              <a href="/profile/pdfs/{{ pdf.id }}/redownload" class="px-2.5 py-1 rounded-lg bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 hover:bg-sky-200 text-[10px] font-bold shrink-0 transition" download>
+                Re-download
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="py-6 text-center text-slate-400 space-y-1">
+            <i data-lucide="file-minus" class="w-6 h-6 mx-auto text-slate-300"></i>
+            <p class="text-xs">No PDFs exported yet.</p>
+            <p class="text-[10px]">Click "Download Executive PDF" on any career to save copies here.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div>
+          {% if top_career %}
+          <a href="/api/export/pdf?title={{ (top_career.careerTitle if top_career.careerTitle else top_career.title) | urlencode }}" class="w-full inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-semibold border border-slate-300 dark:border-slate-700 transition btn-3d">
+            <i data-lucide="file-down" class="w-3.5 h-3.5 text-primary-600"></i>
+            <span>Export Target Blueprint</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 3. Professional Certifications -->
+      <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="badge-check" class="w-4 h-4 text-emerald-500"></i>
+              <span>Certifications ({{ certifications | length }})</span>
+            </h3>
+            <button type="button" onclick="openAddCertModal()" class="text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400">
+              + Add
+            </button>
+          </div>
+
+          {% if certifications and certifications | length > 0 %}
+          <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="certifications-list">
+            {% for cert in certifications %}
+            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs gap-2" id="cert-item-{{ cert.id }}">
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 dark:text-slate-200 truncate text-[11px]">{{ cert.title }}</p>
+                <p class="text-[10px] text-slate-400">{{ cert.issuer }} • {{ cert.date_earned }}</p>
+              </div>
+              <button type="button" onclick="deleteCertification({{ cert.id }})" class="text-slate-400 hover:text-rose-600 p-1 transition" title="Delete">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="py-6 text-center text-slate-400 space-y-1" id="no-certs-msg">
+            <i data-lucide="award" class="w-6 h-6 mx-auto text-slate-300"></i>
+            <p class="text-xs">No manual certifications added.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div>
+          <button type="button" onclick="openAddCertModal()" class="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/25 transition btn-3d">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Certification</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 6. RECENT ACTIVITY TIMELINE                                               -->
+  <!-- ========================================================================= -->
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="activity" class="w-5 h-5 text-primary-600"></i>
+        <span>Activity Log & Audit Trail</span>
+      </h2>
+      <span class="text-xs text-slate-400">Live Timestamped</span>
+    </div>
+
+    {% if activities and activities | length > 0 %}
+    <div class="space-y-3">
+      {% for act in activities[:10] %}
+      <div class="flex items-start gap-3.5 p-3 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+        <div class="w-8 h-8 rounded-xl {{ act.color_class }} flex items-center justify-center shrink-0 mt-0.5">
+          <i data-lucide="{{ act.icon }}" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-slate-800 dark:text-slate-200">
+            {{ act.action_detail }}
+          </p>
+          <span class="text-[10px] text-slate-400">
+            {{ act.relative_time }} • {{ act.created_at[:19].replace('T', ' ') }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="py-6 text-center text-slate-400 space-y-1">
+      <p class="text-xs">No user activities logged yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 7. ACCOUNT, PRIVACY & SHARE CONTROLS                                      -->
+  <!-- ========================================================================= -->
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+    <div class="pb-3 border-b border-slate-100 dark:border-slate-800">
+      <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="shield" class="w-5 h-5 text-indigo-600"></i>
+        <span>Account, Privacy & Share Settings</span>
+      </h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        Manage public portfolio visibility, data exports, and account settings.
+      </p>
+    </div>
+
+    <div class="space-y-6">
+      
+      <!-- Public Shareable Link Toggle -->
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1 max-w-xl">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Public Career Portfolio Link</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if user.is_profile_public %}bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300{% else %}bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300{% endif %}" id="public-status-badge">
+              {{ 'Public' if user.is_profile_public else 'Private' }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Allow recruiters, mentors, and peers to view your top matched career, skills radar, and achievements without sharing your private contact details.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <button type="button" id="share-toggle-btn" onclick="togglePublicShare()" class="px-4 py-2 rounded-xl text-xs font-bold transition btn-3d {% if user.is_profile_public %}bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900{% else %}bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25{% endif %}">
+            {{ 'Make Private' if user.is_profile_public else 'Enable Public Share' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Public Share Link Container (Shown if public) -->
+      <div id="share-url-container" class="{% if not user.is_profile_public %}hidden{% endif %} p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <i data-lucide="link" class="w-4 h-4 text-indigo-600 shrink-0"></i>
+          <span class="text-xs font-mono font-medium text-indigo-900 dark:text-indigo-200 truncate" id="public-share-link-text">
+            {{ share_url if share_url else '/share/' ~ user.public_share_id }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <a id="public-share-view-btn" href="{{ share_url if share_url else '#' }}" target="_blank" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 text-xs font-bold hover:bg-indigo-50 transition">
+            Preview
+          </a>
+          <button type="button" onclick="copyPublicShareLink()" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+            Copy Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Export & Account Deletion Actions -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <div class="flex items-center gap-3">
+          <a href="/profile/export-data" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition btn-3d" download>
+            <i data-lucide="download" class="w-4 h-4 text-primary-600"></i>
+            <span>Download My Data (JSON)</span>
+          </a>
+        </div>
+
+        <button type="button" onclick="openDeleteModal()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/50 text-xs font-bold transition btn-3d">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span>Delete Account</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: EDIT PROFILE                                                       -->
+<!-- ========================================================================= -->
+<div id="edit-profile-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 bg-white dark:bg-slate-900">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="user-cog" class="w-5 h-5 text-primary-600"></i>
+        <span>Edit Profile Details</span>
+      </h3>
+      <button type="button" onclick="closeEditProfileModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form id="edit-profile-form" onsubmit="saveProfileDetails(event)" class="space-y-4 text-xs sm:text-sm">
+      <div class="space-y-1">
+        <label class="font-bold text-slate-700 dark:text-slate-300 block">Full Name</label>
+        <input type="text" id="edit-name-input" value="{{ user.name }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary-500 font-medium" />
       </div>
 
       <div class="space-y-1">
-        <div class="flex items-center gap-2">
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="profile-display-name">
-            {{ user.name if user and user.name else 'User Account' }}
-          </h1>
-          <span class="px-2.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 text-[11px] font-bold">
-            Member
-          </span>
-        </div>
-        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium flex items-center gap-1.5" id="profile-display-email">
-          <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i>
-          <span>{{ user.email if user and user.email else '' }}</span>
-        </p>
-        <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
-          <span>Member ID: #{{ user.id if user and user.id else '1001' }} • AI Career Vector Active</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Quick Action Buttons -->
-    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-      <a href="/assessment" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d">
-        <i data-lucide="edit-3" class="w-4 h-4"></i>
-        <span>Update Assessment</span>
-      </a>
-      <a href="/dashboard" class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 transition btn-3d">
-        <i data-lucide="layout-dashboard" class="w-4 h-4 text-primary-600"></i>
-        <span>Dashboard</span>
-      </a>
-      <button type="button" onclick="Storage.logout()" class="p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition btn-3d" title="Log out">
-        <i data-lucide="log-out" class="w-4 h-4"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- Profile Setup Prompt (shown only if profile not yet completed) -->
-  <div id="profile-setup-banner" class="hidden glass-panel rounded-3xl p-6 border border-primary-200 dark:border-primary-900/60 bg-gradient-to-r from-primary-500/10 via-sky-500/10 to-emerald-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-    <div class="space-y-1">
-      <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
-        <i data-lucide="sparkles" class="w-5 h-5 text-primary-600"></i>
-        <span>Complete Your Career Assessment</span>
-      </h3>
-      <p class="text-xs text-slate-600 dark:text-slate-300">
-        You haven't configured your profile yet. Complete the 3-minute assessment or upload your resume to unlock matched career paths.
-      </p>
-    </div>
-    <a href="/assessment" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary-500/25 transition btn-3d shrink-0">
-      <span>Start Assessment</span>
-      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-    </a>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 2. MAIN PROFILE SECTIONS GRID                                             -->
-  <!-- ========================================================================= -->
-  <div class="grid md:grid-cols-2 gap-6">
-
-    <!-- Academic Foundations & Specialization -->
-    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <i data-lucide="graduation-cap" class="w-4 h-4 text-primary-600"></i>
-          <span>Academic Background</span>
-        </h2>
-        <span id="edu-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          Pending
-        </span>
+        <label class="font-bold text-slate-700 dark:text-slate-300 block">Professional Bio / Summary</label>
+        <textarea id="edit-bio-input" rows="3" placeholder="Aspiring Full Stack Engineer passionate about cloud-native systems..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary-500 font-medium resize-none">{{ user.bio if user.bio else '' }}</textarea>
       </div>
 
-      <div class="space-y-3 text-xs sm:text-sm">
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold">Highest Education Level</span>
-          <p class="font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="profile-edu-level">Not specified</p>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold">Academic Stream / Major</span>
-          <p class="font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="profile-stream">Not specified</p>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Core Coursework Subjects</span>
-          <div id="profile-subjects-container" class="flex flex-wrap gap-1.5">
-            <span class="text-xs text-slate-400 italic">No coursework added yet.</span>
-          </div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Academic Strengths</span>
-          <div id="profile-strengths-container" class="flex flex-wrap gap-1.5">
-            <span class="text-xs text-slate-400 italic">No strengths added yet.</span>
-          </div>
-        </div>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeEditProfileModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800">
+          Cancel
+        </button>
+        <button type="submit" id="save-profile-btn" class="px-5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold shadow-md shadow-primary-500/25 btn-3d">
+          Save Changes
+        </button>
       </div>
-    </div>
-
-    <!-- Technical Competencies & Certifications -->
-    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <i data-lucide="code" class="w-4 h-4 text-emerald-500"></i>
-          <span>Technical Skills & Certifications</span>
-        </h2>
-        <span id="skills-count-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          0 Skills
-        </span>
-      </div>
-
-      <div class="space-y-3 text-xs sm:text-sm">
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Verified Technical Skills</span>
-          <div id="profile-skills-container" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-            <span class="text-xs text-slate-400 italic">No skills listed yet. Complete assessment to add skills.</span>
-          </div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Professional Certifications</span>
-          <div id="profile-certs-container" class="space-y-1.5">
-            <span class="text-xs text-slate-400 italic">No certifications recorded yet.</span>
-          </div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Domain Passions & Interests</span>
-          <div id="profile-interests-container" class="flex flex-wrap gap-1.5">
-            <span class="text-xs text-slate-400 italic">No interests recorded yet.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Career Aspirations & Work Style -->
-    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <i data-lucide="target" class="w-4 h-4 text-amber-500"></i>
-          <span>Aspirations & Priorities</span>
-        </h2>
-        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          Aspirations
-        </span>
-      </div>
-
-      <div class="space-y-3 text-xs sm:text-sm">
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Target Dream Roles</span>
-          <div id="profile-roles-container" class="space-y-1">
-            <span class="text-xs text-slate-400 italic">No dream roles added yet.</span>
-          </div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Career Priorities</span>
-          <div id="profile-priorities-container" class="flex flex-wrap gap-1.5">
-            <span class="text-xs text-slate-400 italic">No priorities recorded yet.</span>
-          </div>
-        </div>
-
-        <div>
-          <span class="text-slate-400 block text-[11px] uppercase font-semibold mb-1.5">Preferred Work Style</span>
-          <div id="profile-workstyle-container" class="flex flex-wrap gap-1.5">
-            <span class="text-xs text-slate-400 italic">No work styles specified.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Saved Careers & Learning Progress -->
-    <div class="glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-          <span>Saved Careers & Roadmaps</span>
-        </h2>
-        <a href="/compare" class="text-xs font-bold text-primary-600 hover:underline flex items-center gap-1">
-          <span>Compare</span>
-          <i data-lucide="arrow-right" class="w-3 h-3"></i>
-        </a>
-      </div>
-
-      <div id="profile-saved-careers" class="space-y-2">
-        <p class="text-xs text-slate-400 italic">No saved careers yet. Click the star icon on any career to bookmark it.</p>
-      </div>
-      <div id="profile-progress-cards" class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-        <p class="text-xs text-slate-400 italic">No milestones tracked yet. Check off roadmap stages as you complete them.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 3. RESUME INTEGRATION CENTER                                              -->
-  <!-- ========================================================================= -->
-  <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-primary-200/70 dark:border-primary-900/60 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <div class="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0 shadow-sm">
-        <i data-lucide="file-text" class="w-6 h-6"></i>
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-900 dark:text-white text-base">Instant AI Resume Auto-Sync</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Re-upload your latest PDF resume anytime to update skills, academics, and target roles.</p>
-      </div>
-    </div>
-
-    <a href="/assessment" class="inline-flex items-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition btn-3d shrink-0">
-      <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-      <span>Upload / Parse Resume</span>
-    </a>
+    </form>
   </div>
 </div>
 
+
+<!-- ========================================================================= -->
+<!-- MODAL: ADD CERTIFICATION                                                  -->
+<!-- ========================================================================= -->
+<div id="add-cert-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 bg-white dark:bg-slate-900">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+      <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="award" class="w-5 h-5 text-emerald-600"></i>
+        <span>Add Credential / Certification</span>
+      </h3>
+      <button type="button" onclick="closeAddCertModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form id="add-cert-form" onsubmit="saveCertification(event)" class="space-y-4 text-xs sm:text-sm">
+      <div class="space-y-1">
+        <label class="font-bold text-slate-700 dark:text-slate-300 block">Certification Title</label>
+        <input type="text" id="cert-title-input" placeholder="e.g. AWS Certified Solutions Architect" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary-500 font-medium" />
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-bold text-slate-700 dark:text-slate-300 block">Issuing Organization</label>
+        <input type="text" id="cert-issuer-input" placeholder="e.g. Amazon Web Services, Coursera, Google" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary-500 font-medium" />
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-bold text-slate-700 dark:text-slate-300 block">Date Earned / Year</label>
+        <input type="text" id="cert-date-input" placeholder="e.g. Nov 2024 or 2024" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary-500 font-medium" />
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeAddCertModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800">
+          Cancel
+        </button>
+        <button type="submit" id="save-cert-btn" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-500/25 btn-3d">
+          Add Certification
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- MODAL: DELETE ACCOUNT CONFIRMATION                                        -->
+<!-- ========================================================================= -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-md w-full border border-rose-300 dark:border-rose-900 shadow-2xl space-y-4 bg-white dark:bg-slate-900">
+    <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center">
+      <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+    </div>
+    
+    <div class="space-y-1">
+      <h3 class="text-lg font-black text-slate-900 dark:text-white">Delete Account & Career Portfolio?</h3>
+      <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        This action is permanent. All your diagnostic profiles, bookmarked careers, quiz scores, certifications, and learning milestone progress will be deleted.
+      </p>
+    </div>
+
+    <div class="flex items-center justify-end gap-2.5 pt-3">
+      <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 text-xs">
+        Cancel
+      </button>
+      <button type="button" onclick="confirmDeleteAccount()" id="confirm-delete-btn" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-500/25 btn-3d">
+        Permanently Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- JAVASCRIPT LOGIC FOR PROFILE                                              -->
+<!-- ========================================================================= -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const user = Storage.getUser();
-  const profile = Storage.getProfile();
-  const favs = Storage.getFavorites();
-  const allProgress = Storage.getAllProgress();
+  let radarChartInstance = null;
 
-  if (user && user.name) {
-    document.getElementById('profile-display-name').textContent = user.name;
-    document.getElementById('profile-avatar-initial').textContent = user.name.charAt(0).toUpperCase();
-    if (user.email) {
-      document.getElementById('profile-display-email').innerHTML = `<i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400"></i><span>${user.email}</span>`;
-    }
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    initSkillsRadarChart();
+    if (window.lucide) lucide.createIcons();
+  });
 
-  // Check if profile is empty
-  const hasProfileData = profile && (
-    profile.academics?.educationLevel ||
-    profile.academics?.streamOrField ||
-    (profile.interests?.skills && profile.interests.skills.length > 0)
-  );
+  // 1. Initialize Skills Radar via API
+  async function initSkillsRadarChart() {
+    try {
+      const res = await fetch('/profile/skills-radar');
+      if (!res.ok) return;
+      const data = await res.json();
 
-  const banner = document.getElementById('profile-setup-banner');
-  if (!hasProfileData && banner) {
-    banner.classList.remove('hidden');
-  }
+      const ctx = document.getElementById('skillsRadarChart');
+      if (!ctx) return;
 
-  if (hasProfileData) {
-    // 1. Academics
-    if (profile.academics?.educationLevel) {
-      document.getElementById('profile-edu-level').textContent = profile.academics.educationLevel;
-      const eduBadge = document.getElementById('edu-badge');
-      if (eduBadge) {
-        eduBadge.textContent = "Configured";
-        eduBadge.className = "px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300";
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
+      const labelColor = isDark ? '#94a3b8' : '#475569';
+
+      if (data.careerTitle) {
+        const pill = document.getElementById('radar-career-target-pill');
+        if (pill) pill.textContent = 'Target: ' + data.careerTitle;
       }
-    }
-    if (profile.academics?.streamOrField) {
-      document.getElementById('profile-stream').textContent = profile.academics.streamOrField;
-    }
 
-    const subjectsContainer = document.getElementById('profile-subjects-container');
-    const subjects = profile.academics?.subjects || [];
-    if (subjects.length > 0) {
-      subjectsContainer.innerHTML = subjects.map(s => `
-        <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
-          ${s}
-        </span>
-      `).join('');
-    }
-
-    const strengthsContainer = document.getElementById('profile-strengths-container');
-    const strengths = profile.academics?.strengths || [];
-    if (strengths.length > 0) {
-      strengthsContainer.innerHTML = strengths.map(s => `
-        <span class="px-2.5 py-1 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-semibold border border-primary-200/80 dark:border-primary-900/60">
-          ${s}
-        </span>
-      `).join('');
-    }
-
-    // 2. Skills & Certs
-    const skillsContainer = document.getElementById('profile-skills-container');
-    const skills = profile.interests?.skills || [];
-    if (skills.length > 0) {
-      document.getElementById('skills-count-badge').textContent = `${skills.length} Skills`;
-      document.getElementById('skills-count-badge').className = "px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300";
-      skillsContainer.innerHTML = skills.map(s => `
-        <span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200/80 dark:border-emerald-900/60">
-          ${s}
-        </span>
-      `).join('');
-    }
-
-    const certsContainer = document.getElementById('profile-certs-container');
-    const certs = profile.academics?.certifications || [];
-    if (certs.length > 0) {
-      certsContainer.innerHTML = certs.map(c => `
-        <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200">
-          <i data-lucide="award" class="w-4 h-4 text-primary-600 shrink-0"></i>
-          <span>${c}</span>
-        </div>
-      `).join('');
-    }
-
-    const interestsContainer = document.getElementById('profile-interests-container');
-    const interests = profile.interests?.interests || [];
-    if (interests.length > 0) {
-      interestsContainer.innerHTML = interests.map(i => `
-        <span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200 dark:border-indigo-900/60">
-          ${i}
-        </span>
-      `).join('');
-    }
-
-    // 3. Aspirations
-    const rolesContainer = document.getElementById('profile-roles-container');
-    const roles = profile.aspirations?.dreamRoles || [];
-    if (roles.length > 0) {
-      rolesContainer.innerHTML = roles.map(r => `
-        <div class="flex items-center gap-2 p-2 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs font-bold text-amber-900 dark:text-amber-200">
-          <i data-lucide="target" class="w-4 h-4 text-amber-600 shrink-0"></i>
-          <span>${r}</span>
-        </div>
-      `).join('');
-    }
-
-    const prioritiesContainer = document.getElementById('profile-priorities-container');
-    const priorities = profile.aspirations?.priorities || [];
-    if (priorities.length > 0) {
-      prioritiesContainer.innerHTML = priorities.map(p => `
-        <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
-          ${p}
-        </span>
-      `).join('');
-    }
-
-    const workstyleContainer = document.getElementById('profile-workstyle-container');
-    const workstyles = profile.interests?.preferredWorkStyle || [];
-    if (workstyles.length > 0) {
-      workstyleContainer.innerHTML = workstyles.map(w => `
-        <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
-          ${w}
-        </span>
-      `).join('');
+      radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: data.labels,
+          datasets: data.datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            r: {
+              angleLines: { color: gridColor },
+              grid: { color: gridColor },
+              pointLabels: {
+                color: labelColor,
+                font: { size: 11, weight: '600' }
+              },
+              ticks: { display: false, max: 100, min: 0 }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                color: labelColor,
+                boxWidth: 12,
+                font: { size: 11 }
+              }
+            }
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Skills radar init error:', err);
     }
   }
 
-  // 4. Saved Careers
-  const savedContainer = document.getElementById('profile-saved-careers');
-  if (favs && favs.length > 0) {
-    savedContainer.innerHTML = favs.map(title => `
-      <a href="/career-path?title=${encodeURIComponent(title)}" class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:border-primary-400 transition card-3d">
-        <span class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">${title}</span>
-        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 shrink-0"></i>
-      </a>
-    `).join('');
+  // 2. Avatar Photo Upload
+  async function uploadAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/profile/photo', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && data.photo_url) {
+        const img = document.getElementById('profile-avatar-img');
+        const initial = document.getElementById('profile-avatar-initial');
+        if (img) {
+          img.src = data.photo_url;
+          img.classList.remove('hidden');
+        }
+        if (initial) initial.classList.add('hidden');
+        showToast('Profile photo updated successfully!');
+      } else {
+        alert(data.detail || 'Could not upload photo.');
+      }
+    } catch (e) {
+      alert('Photo upload failed: ' + e.message);
+    }
   }
 
-  // 5. Active Progress
-  const progressContainer = document.getElementById('profile-progress-cards');
-  const progressEntries = Object.entries(allProgress || {}).filter(([_, steps]) => steps && steps.length > 0);
-  if (progressEntries.length > 0) {
-    progressContainer.innerHTML = progressEntries.slice(0, 3).map(([title, steps]) => {
-      const pct = Math.min(100, Math.round((steps.length / 4) * 100));
-      return `
-        <a href="/career-path?title=${encodeURIComponent(title)}" class="block p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition card-3d">
-          <div class="flex justify-between text-xs font-bold mb-1">
-            <span class="truncate text-slate-800 dark:text-slate-200">${title}</span>
-            <span class="text-emerald-600 dark:text-emerald-400">${pct}%</span>
-          </div>
-          <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-            <div class="h-full bg-emerald-500 rounded-full" style="width: ${pct}%"></div>
-          </div>
-        </a>
-      `;
-    }).join('');
+  // 3. Edit Profile Modal & Save
+  function openEditProfileModal() {
+    document.getElementById('edit-profile-modal').classList.remove('hidden');
+  }
+  function closeEditProfileModal() {
+    document.getElementById('edit-profile-modal').classList.add('hidden');
   }
 
-  if (window.lucide) window.lucide.createIcons();
-});
+  async function saveProfileDetails(e) {
+    e.preventDefault();
+    const name = document.getElementById('edit-name-input').value.trim();
+    const bio = document.getElementById('edit-bio-input').value.trim();
+
+    try {
+      const res = await fetch('/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, bio })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('profile-name-text').textContent = name;
+        document.getElementById('profile-bio-text').textContent = bio || 'No bio added yet.';
+        closeEditProfileModal();
+        showToast('Profile details updated!');
+      } else {
+        alert(data.detail || 'Could not update profile.');
+      }
+    } catch (err) {
+      alert('Update failed: ' + err.message);
+    }
+  }
+
+  // 4. Remove Bookmarked Career
+  async function removeBookmark(careerId, cardId) {
+    try {
+      const res = await fetch(`/profile/bookmark/${encodeURIComponent(careerId)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        const card = document.getElementById(cardId);
+        if (card) {
+          card.style.opacity = '0';
+          setTimeout(() => card.remove(), 250);
+        }
+        showToast(`Removed ${careerId} from bookmarks`);
+      }
+    } catch (e) {
+      alert('Error removing bookmark: ' + e.message);
+    }
+  }
+
+  // 5. Add / Delete Certification
+  function openAddCertModal() {
+    document.getElementById('add-cert-modal').classList.remove('hidden');
+  }
+  function closeAddCertModal() {
+    document.getElementById('add-cert-modal').classList.add('hidden');
+  }
+
+  async function saveCertification(e) {
+    e.preventDefault();
+    const title = document.getElementById('cert-title-input').value.trim();
+    const issuer = document.getElementById('cert-issuer-input').value.trim();
+    const date_earned = document.getElementById('cert-date-input').value.trim();
+
+    try {
+      const res = await fetch('/profile/certifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, issuer, date_earned })
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeAddCertModal();
+        window.location.reload();
+      } else {
+        alert(data.detail || 'Could not save certification');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function deleteCertification(certId) {
+    if (!confirm('Are you sure you want to remove this certification?')) return;
+    try {
+      const res = await fetch(`/profile/certifications/${certId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        const el = document.getElementById(`cert-item-${certId}`);
+        if (el) el.remove();
+        showToast('Certification deleted');
+      }
+    } catch (e) {
+      alert('Error deleting certification: ' + e.message);
+    }
+  }
+
+  // 6. Resume PDF Replacement
+  async function uploadResumePDF(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const label = document.getElementById('resume-btn-label');
+    if (label) label.textContent = 'Parsing Resume...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/resume/parse', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (label) label.textContent = 'Resume Parsed!';
+        showToast('Resume parsed successfully! Reloading...');
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        alert(data.detail || 'Failed to parse resume');
+        if (label) label.textContent = 'Upload / Replace Resume';
+      }
+    } catch (e) {
+      alert('Upload error: ' + e.message);
+      if (label) label.textContent = 'Upload / Replace Resume';
+    }
+  }
+
+  // 7. Toggle Public Share
+  async function togglePublicShare() {
+    try {
+      const res = await fetch('/profile/share/toggle', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        const container = document.getElementById('share-url-container');
+        const badge = document.getElementById('public-status-badge');
+        const btn = document.getElementById('share-toggle-btn');
+        const linkText = document.getElementById('public-share-link-text');
+        const viewBtn = document.getElementById('public-share-view-btn');
+
+        if (data.is_public) {
+          container.classList.remove('hidden');
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
+          badge.textContent = 'Public';
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition btn-3d bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900';
+          btn.textContent = 'Make Private';
+          
+          const fullUrl = window.location.origin + data.share_url;
+          linkText.textContent = fullUrl;
+          viewBtn.href = data.share_url;
+          showToast('Public portfolio link enabled!');
+        } else {
+          container.classList.add('hidden');
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
+          badge.textContent = 'Private';
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition btn-3d bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25';
+          btn.textContent = 'Enable Public Share';
+          showToast('Profile set to private.');
+        }
+      }
+    } catch (e) {
+      alert('Error toggling share: ' + e.message);
+    }
+  }
+
+  function copyPublicShareLink() {
+    const linkText = document.getElementById('public-share-link-text').textContent.trim();
+    navigator.clipboard.writeText(linkText).then(() => {
+      showToast('Public portfolio link copied to clipboard!');
+    }).catch(() => {
+      alert('Link: ' + linkText);
+    });
+  }
+
+  // 8. Delete Account Modal
+  function openDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+  function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+  }
+
+  async function confirmDeleteAccount() {
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    try {
+      const res = await fetch('/profile/account', { method: 'DELETE' });
+      if (res.ok) {
+        if (window.Storage && Storage.clearUserData) {
+          Storage.clearUserData();
+        }
+        sessionStorage.clear();
+        localStorage.removeItem('user');
+        window.location.href = '/register?msg=account_deleted';
+      } else {
+        alert('Could not delete account. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Permanently Delete';
+      }
+    } catch (e) {
+      alert('Delete failed: ' + e.message);
+      btn.disabled = false;
+      btn.textContent = 'Permanently Delete';
+    }
+  }
+
+  // Toast Helper
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed bottom-6 right-6 z-50 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-2xl text-xs font-bold shadow-2xl flex items-center gap-2 border border-slate-700 transition-all duration-300';
+    t.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 dark:text-emerald-600"></i><span>${msg}</span>`;
+    document.body.appendChild(t);
+    if (window.lucide) lucide.createIcons();
+    setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => t.remove(), 300);
+    }, 2800);
+  }
 </script>
+
 {% endblock %}

@@ -71,26 +71,6 @@ async def dashboard_page(request: Request):
         }
     )
 
-@pages_router.get("/profile", response_class=HTMLResponse)
-async def profile_page(request: Request):
-    user = get_current_user(request)
-    if not user:
-        return RedirectResponse(url=f"/login?redirect={get_redirect_target(request)}", status_code=302)
-    user_profile = database.get_profile(user["id"]) if user and user.get("id") else None
-    favorites = database.get_favorites(user["id"]) if user and user.get("id") else []
-    progress = database.get_all_progress(user["id"]) if user and user.get("id") else {}
-    return templates.TemplateResponse(
-        request=request,
-        name="profile.html",
-        context={
-            "active_page": "profile",
-            "user": user,
-            "user_profile": user_profile,
-            "favorites": favorites,
-            "progress": progress
-        }
-    )
-
 @pages_router.get("/career-path", response_class=HTMLResponse)
 async def career_path_page(request: Request, title: Optional[str] = "Software Developer"):
     user = get_current_user(request)

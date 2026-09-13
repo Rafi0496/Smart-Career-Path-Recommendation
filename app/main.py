@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.routers.api import api_router
 from app.routers.pages import pages_router
+from app.routers.profile import profile_router
 from app.core.database import init_db
 
 @asynccontextmanager
@@ -37,6 +38,8 @@ try:
     settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
     (settings.STATIC_DIR / "css").mkdir(exist_ok=True)
     (settings.STATIC_DIR / "js").mkdir(exist_ok=True)
+    (settings.STATIC_DIR / "uploads" / "avatars").mkdir(parents=True, exist_ok=True)
+    (settings.STATIC_DIR / "uploads" / "pdfs").mkdir(parents=True, exist_ok=True)
     settings.TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 except OSError:
     pass
@@ -44,5 +47,6 @@ except OSError:
 app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
 # Include routers
+app.include_router(profile_router)
 app.include_router(api_router)
 app.include_router(pages_router)
