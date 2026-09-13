@@ -22,21 +22,42 @@ const Storage = {
   // User Account (Session-Scoped)
   getUser() {
     try {
-      const isActive = sessionStorage.getItem('career_path_session_active');
-      if (!isActive) return null;
-
-      const data = sessionStorage.getItem('career_path_user');
-      if (data) return JSON.parse(data);
-
-      // Hydrate from server-rendered tag if in an active session
+      // 1. First check server-rendered tag if present on the page
       const serverDataEl = document.getElementById('server-user-data');
       if (serverDataEl && serverDataEl.textContent.trim()) {
         const u = JSON.parse(serverDataEl.textContent);
-        if (u && u.id) {
+        if (u && (u.id || u.name)) {
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
+          sessionStorage.setItem('career_path_session_active', '1');
           return u;
         }
       }
+
+      // 2. Check session storage
+      const data = sessionStorage.getItem('career_path_user');
+      if (data) {
+        const u = JSON.parse(data);
+        if (u && (u.id || u.name)) return u;
+      }
+
+      // 3. Check body data-user-name attribute
+      const bodyName = document.body.getAttribute('data-user-name');
+      if (bodyName && bodyName.trim() && bodyName.trim() !== "None") {
+        const u = { name: bodyName.trim() };
+        sessionStorage.setItem('career_path_user', JSON.stringify(u));
+        sessionStorage.setItem('career_path_session_active', '1');
+        return u;
+      }
+
+      // 4. Check active user_id cookie
+      const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
+      if (match && match[1]) {
+        const u = { id: parseInt(match[1]), name: (bodyName && bodyName !== "None") ? bodyName : "Candidate" };
+        sessionStorage.setItem('career_path_user', JSON.stringify(u));
+        sessionStorage.setItem('career_path_session_active', '1');
+        return u;
+      }
+
       return null;
     } catch {
       return null;
@@ -316,6 +337,9 @@ function enforceClientAuth() {
   const path = window.location.pathname;
   const isProtected = protectedPrefixes.some(p => path === p || path.startsWith(p + '/') || path.startsWith(p + '?'));
   if (isProtected) {
+    if (document.getElementById('server-user-data') || document.body.getAttribute('data-user-name')) {
+      return;
+    }
     const user = Storage.getUser();
     if (!user) {
       const redirectUrl = '/login?redirect=' + encodeURIComponent(path + window.location.search);

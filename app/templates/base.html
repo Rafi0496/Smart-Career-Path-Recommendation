@@ -47,7 +47,7 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="/static/css/styles.css" />
 
-  <!-- Pre-render theme & session check -->
+  <!-- Pre-render theme check to prevent flickering -->
   <script>
     try {
       const stored = localStorage.getItem('career_path_theme');
@@ -56,13 +56,6 @@
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
-      }
-    } catch (e) {}
-
-    // Session validation: If browser session ended (tab/browser closed & reopened), clear stale cookie
-    try {
-      if (!sessionStorage.getItem('career_path_session_active')) {
-        document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       }
     } catch (e) {}
   </script>
