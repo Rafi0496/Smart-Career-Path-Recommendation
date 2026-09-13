@@ -77,7 +77,7 @@ async function loadCompareData() {
 
   try {
     const promises = activeCompared.map(title =>
-      fetch(`/api/careers/${encodeURIComponent(title)}`)
+      fetch(`/api/careers/${encodeURIComponent(title)}`, { credentials: 'same-origin' })
         .then(r => r.ok ? r.json() : null)
         .catch(() => null)
     );

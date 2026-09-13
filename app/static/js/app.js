@@ -19,7 +19,7 @@ function toggleTheme() {
 
 // 2. Session & Client Storage Engine (Tied strictly to website browser session)
 const Storage = {
-  // User Account (Session-Scoped)
+  // User Account (Session-Scoped & Cookie Synchronized)
   getUser() {
     try {
       // 1. First check server-rendered tag if present on the page
@@ -29,6 +29,9 @@ const Storage = {
         if (u && (u.id || u.name)) {
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
           sessionStorage.setItem('career_path_session_active', '1');
+          if (u.id) {
+            document.cookie = `user_id=${u.id}; path=/; SameSite=Lax`;
+          }
           return u;
         }
       }
@@ -37,13 +40,19 @@ const Storage = {
       const data = sessionStorage.getItem('career_path_user');
       if (data) {
         const u = JSON.parse(data);
-        if (u && (u.id || u.name)) return u;
+        if (u && (u.id || u.name)) {
+          if (u.id && !document.cookie.includes(`user_id=${u.id}`)) {
+            document.cookie = `user_id=${u.id}; path=/; SameSite=Lax`;
+          }
+          return u;
+        }
       }
 
       // 3. Check body data-user-name attribute
       const bodyName = document.body.getAttribute('data-user-name');
       if (bodyName && bodyName.trim() && bodyName.trim() !== "None") {
-        const u = { name: bodyName.trim() };
+        const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
+        const u = { id: match ? parseInt(match[1]) : 1, name: bodyName.trim() };
         sessionStorage.setItem('career_path_user', JSON.stringify(u));
         sessionStorage.setItem('career_path_session_active', '1');
         return u;
@@ -68,6 +77,9 @@ const Storage = {
     if (user) {
       sessionStorage.setItem('career_path_session_active', '1');
       sessionStorage.setItem('career_path_user', JSON.stringify(user));
+      if (user.id) {
+        document.cookie = `user_id=${user.id}; path=/; SameSite=Lax`;
+      }
       try { localStorage.removeItem('career_path_user'); } catch {}
       window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
     }
@@ -85,7 +97,7 @@ const Storage = {
     } catch {}
     document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     window.dispatchEvent(new CustomEvent('auth-change', { detail: null }));
-    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => {
       window.location.href = '/login';
     });
   },
@@ -109,6 +121,7 @@ const Storage = {
         fetch('/api/user/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ userId: user.id, profile })
         }).catch(() => {});
       }
@@ -134,6 +147,7 @@ const Storage = {
         fetch('/api/user/recommendations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify({ userId: user.id, recommendations: recs })
         }).catch(() => {});
       }
@@ -241,6 +255,7 @@ const Storage = {
       fetch('/api/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ userId: user.id, careerTitle, stepOrder })
       }).catch(() => {});
     }

@@ -6,42 +6,9 @@
 <div class="py-6 space-y-10 fade-in-up">
 
   <!-- ========================================================================= -->
-  <!-- STATE A: GATED STATE (When user is NOT logged in or has NO profile)       -->
+  <!-- MAIN DASHBOARD CONTENT AREA                                               -->
   <!-- ========================================================================= -->
-  <div id="dashboard-gated-state" class="hidden glass-panel rounded-3xl p-8 sm:p-12 border border-slate-200/80 dark:border-slate-800 shadow-xl text-center max-w-xl mx-auto space-y-5">
-    <div class="w-16 h-16 rounded-3xl bg-primary-100 dark:bg-primary-950/80 text-primary-600 dark:text-primary-400 flex items-center justify-center mx-auto shadow-md">
-      <i data-lucide="lock" class="w-8 h-8"></i>
-    </div>
-    
-    <div>
-      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white" id="gated-title">
-        Sign In Required to Access Dashboard
-      </h1>
-      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-2" id="gated-desc">
-        Your Career Dashboard contains confidential career alignment vectors, skill gap diagnostics, and active roadmap tracking. Please sign in or complete your profile assessment to access your dashboard.
-      </p>
-    </div>
-
-    <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2" id="gated-actions">
-      <a href="/login" class="inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-primary-500/25 transition btn-3d">
-        <i data-lucide="log-in" class="w-4 h-4"></i>
-        <span>Sign In</span>
-      </a>
-      <a href="/register" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-emerald-500/25 transition btn-3d">
-        <i data-lucide="user-plus" class="w-4 h-4"></i>
-        <span>Register Account</span>
-      </a>
-      <a href="/assessment" class="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-6 py-2.5 rounded-xl font-bold text-xs hover:border-primary-400 transition btn-3d">
-        <i data-lucide="sparkles" class="w-4 h-4 text-primary-500"></i>
-        <span>Take Assessment</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- STATE B: AUTHENTICATED DASHBOARD (Shown ONLY when data is entered)        -->
-  <!-- ========================================================================= -->
-  <div id="dashboard-authenticated-state" class="hidden space-y-10">
+  <div id="dashboard-authenticated-state" class="space-y-10">
     <!-- Top Welcome Banner -->
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md">
       <div>
@@ -50,7 +17,7 @@
           <span>AI Career Intelligence Center</span>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white" id="dash-greeting">
-          Welcome to your Career Dashboard
+          Welcome back, {{ user.name if user else 'Candidate' }}!
         </h1>
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
           Synthesizing your verified academic foundations, passions, and aspirations against 140+ career tracks.
@@ -179,7 +146,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- PUBLIC CATEGORY EXPLORER (Available across all modes)                     -->
+  <!-- PUBLIC CATEGORY EXPLORER                                                  -->
   <!-- ========================================================================= -->
   <section class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
     <div class="mb-6">
@@ -287,7 +254,7 @@ function renderRecommendationsUI(recs) {
             <span class="px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-400 font-bold text-xs">
               ${score}% Match
             </span>
-            <button onclick="handleFavToggle('${title}', this)" class="text-slate-400 hover:text-amber-500 transition" title="Save Favorite">
+            <button onclick="handleFavToggle('${title}', this)" class="text-slate-400 hover:text-amber-500 transition p-1" title="Save Favorite">
               <i data-lucide="star" class="w-5 h-5 ${isFav ? 'text-amber-500 fill-amber-500' : ''}"></i>
             </button>
           </div>
@@ -449,6 +416,7 @@ async function refreshRecommendations() {
     const res = await fetch('/api/recommend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify(p)
     });
     const data = await res.json();
@@ -478,70 +446,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let profile = Storage.getProfile();
-  const gatedState = document.getElementById('dashboard-gated-state');
-  const authState = document.getElementById('dashboard-authenticated-state');
-
-  const hasAccess = Boolean((user && user.name) || (profile && profile.name));
-
-  if (!hasAccess) {
-    gatedState.classList.remove('hidden');
-    authState.classList.add('hidden');
-  } else {
-    gatedState.classList.add('hidden');
-    authState.classList.remove('hidden');
-
-    const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Candidate");
-    document.getElementById('dash-greeting').textContent = `Welcome back, ${displayName}!`;
-
-    // If profile is missing in storage but user is logged in, try fetching from server
-    if (!profile && user && user.id) {
-      try {
-        const res = await fetch(`/api/user/profile?userId=${user.id}`);
-        const data = await res.json();
-        if (data.profile) {
-          profile = data.profile;
-          Storage.saveProfile(profile);
-        }
-      } catch {}
-    }
-
-    if (profile) {
-      let acadPct = 0;
-      if (profile.academics?.educationLevel) acadPct += 30;
-      if (profile.academics?.streamOrField) acadPct += 40;
-      if (profile.academics?.subjects?.length) acadPct += 30;
-      updateGauge('gauge-academics', acadPct);
-      document.getElementById('percent-academics').textContent = `${acadPct}% configured`;
-      document.getElementById('detail-academics').textContent = profile.academics?.streamOrField || "Active";
-
-      let intPct = 0;
-      if (profile.interests?.skills?.length) intPct += 60;
-      if (profile.interests?.interests?.length) intPct += 40;
-      updateGauge('gauge-interests', intPct);
-      document.getElementById('percent-interests').textContent = `${intPct}% configured`;
-      document.getElementById('detail-interests').textContent = `${profile.interests?.skills?.length || 0} skills verified`;
-
-      let aspPct = 0;
-      if (profile.aspirations?.dreamRoles?.length) aspPct += 50;
-      if (profile.aspirations?.priorities?.length) aspPct += 50;
-      updateGauge('gauge-aspirations', aspPct);
-      document.getElementById('percent-aspirations').textContent = `${aspPct}% configured`;
-      document.getElementById('detail-aspirations').textContent = profile.aspirations?.dreamRoles?.[0] || "Active";
-    }
-
-    const storedRecs = Storage.getRecommendations();
-    if (storedRecs && storedRecs.length > 0) {
-      renderRecommendationsUI(storedRecs);
-    } else if (profile) {
-      refreshRecommendations();
-    } else {
-      renderRecommendationsUI([]);
-    }
-
-    renderProgressUI();
-    renderFavoritesUI();
-    syncComparisonBar();
+  const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Candidate");
+  const greetingEl = document.getElementById('dash-greeting');
+  if (greetingEl) {
+    greetingEl.textContent = `Welcome back, ${displayName}!`;
   }
+
+  // If profile is missing in storage but user is logged in, try fetching from server
+  if (!profile && user && user.id) {
+    try {
+      const res = await fetch(`/api/user/profile?userId=${user.id}`, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (data.profile) {
+        profile = data.profile;
+        Storage.saveProfile(profile);
+      }
+    } catch {}
+  }
+
+  if (profile) {
+    let acadPct = 0;
+    if (profile.academics?.educationLevel) acadPct += 30;
+    if (profile.academics?.streamOrField) acadPct += 40;
+    if (profile.academics?.subjects?.length) acadPct += 30;
+    updateGauge('gauge-academics', acadPct);
+    document.getElementById('percent-academics').textContent = `${acadPct}% configured`;
+    document.getElementById('detail-academics').textContent = profile.academics?.streamOrField || "Active";
+
+    let intPct = 0;
+    if (profile.interests?.skills?.length) intPct += 60;
+    if (profile.interests?.interests?.length) intPct += 40;
+    updateGauge('gauge-interests', intPct);
+    document.getElementById('percent-interests').textContent = `${intPct}% configured`;
+    document.getElementById('detail-interests').textContent = `${profile.interests?.skills?.length || 0} skills verified`;
+
+    let aspPct = 0;
+    if (profile.aspirations?.dreamRoles?.length) aspPct += 50;
+    if (profile.aspirations?.priorities?.length) aspPct += 50;
+    updateGauge('gauge-aspirations', aspPct);
+    document.getElementById('percent-aspirations').textContent = `${aspPct}% configured`;
+    document.getElementById('detail-aspirations').textContent = profile.aspirations?.dreamRoles?.[0] || "Active";
+  }
+
+  const storedRecs = Storage.getRecommendations();
+  if (storedRecs && storedRecs.length > 0) {
+    renderRecommendationsUI(storedRecs);
+  } else if (profile) {
+    refreshRecommendations();
+  } else {
+    renderRecommendationsUI([]);
+  }
+
+  renderProgressUI();
+  renderFavoritesUI();
+  syncComparisonBar();
 
   if (window.lucide) window.lucide.createIcons();
 });

@@ -60,9 +60,9 @@
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Highest Education Level</label>
         <select id="educationLevel" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition">
-          <option value="Undergraduate">Undergraduate (Bachelor's / B.Tech / B.Sc)</option>
-          <option value="Postgraduate">Postgraduate (Master's / M.Tech / MS / MBA)</option>
-          <option value="High School">High School (10th / 12th / Diploma)</option>
+          <option value="Undergraduate">Undergraduate (Bachelor's / B.Tech / B.Sc / B.E)</option>
+          <option value="Postgraduate">Postgraduate (Master's / M.Tech / MS / MBA / MCA)</option>
+          <option value="High School">High School (10th / 12th / Diploma / Intermediate)</option>
           <option value="Doctorate">Doctorate / Ph.D.</option>
         </select>
       </div>
@@ -83,20 +83,22 @@
           <button type="button" onclick="appendChip('subjects', 'Data Structures')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Data Structures</button>
           <button type="button" onclick="appendChip('subjects', 'Operating Systems')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Operating Systems</button>
           <button type="button" onclick="appendChip('subjects', 'DBMS')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ DBMS</button>
+          <button type="button" onclick="appendChip('subjects', 'Computer Networks')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Computer Networks</button>
         </div>
       </div>
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Core Academic Strengths (Comma separated)</label>
-        <input type="text" id="strengths" placeholder="e.g. Logical Reasoning, Analytical Thinking, Math" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
+        <input type="text" id="strengths" placeholder="e.g. Logical Reasoning, Analytical Thinking, Problem Solving" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
         <div class="flex flex-wrap gap-1.5 text-xs">
           <span class="text-[11px] text-slate-400 self-center">Suggestions:</span>
           <button type="button" onclick="appendChip('strengths', 'Problem Solving')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Problem Solving</button>
-          <button type="button" onclick="appendChip('strengths', 'Quantitative Aptitude')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Quantitative Aptitude</button>
+          <button type="button" onclick="appendChip('strengths', 'Analytical Thinking')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Analytical Thinking</button>
+          <button type="button" onclick="appendChip('strengths', 'System Design')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ System Design</button>
         </div>
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Certifications (Optional)</label>
-        <input type="text" id="certifications" placeholder="e.g. AWS Certified Developer, TensorFlow Certificate" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition" />
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Certifications (Optional, comma separated)</label>
+        <input type="text" id="certifications" placeholder="e.g. AWS Certified Developer, TensorFlow Developer Certificate" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition" />
       </div>
     </div>
 
@@ -105,7 +107,7 @@
       <h3 class="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Step 3: Professional Interests & Skills</h3>
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Technical & Professional Skills (Comma separated)</label>
-        <input type="text" id="skills" required placeholder="e.g. Python, React, SQL, Machine Learning, Git" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
+        <input type="text" id="skills" required placeholder="e.g. Python, React, SQL, Machine Learning, Git, Docker" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
         <div class="flex flex-wrap gap-1.5 text-xs">
           <span class="text-[11px] text-slate-400 self-center">Suggestions:</span>
           <button type="button" onclick="appendChip('skills', 'Python')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Python</button>
@@ -113,11 +115,12 @@
           <button type="button" onclick="appendChip('skills', 'React')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ React</button>
           <button type="button" onclick="appendChip('skills', 'SQL')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ SQL</button>
           <button type="button" onclick="appendChip('skills', 'Machine Learning')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Machine Learning</button>
+          <button type="button" onclick="appendChip('skills', 'AWS')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ AWS</button>
         </div>
       </div>
       <div>
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Passions & Interests (Comma separated)</label>
-        <input type="text" id="interests" placeholder="e.g. Artificial Intelligence, Cloud Architecture, UI Design, Robotics" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition" />
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Passions & Domain Interests (Comma separated)</label>
+        <input type="text" id="interests" placeholder="e.g. Artificial Intelligence, Cloud Architecture, Full-Stack Development" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition" />
       </div>
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Preferred Work Style</label>
@@ -127,11 +130,11 @@
             <span>Remote</span>
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" value="Hybrid" class="workstyle-cb rounded text-primary-600 focus:ring-0" />
+            <input type="checkbox" value="Hybrid" checked class="workstyle-cb rounded text-primary-600 focus:ring-0" />
             <span>Hybrid</span>
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" value="Collaborative Team" class="workstyle-cb rounded text-primary-600 focus:ring-0" />
+            <input type="checkbox" value="Collaborative Team" checked class="workstyle-cb rounded text-primary-600 focus:ring-0" />
             <span>Collaborative Team</span>
           </label>
         </div>
@@ -143,23 +146,24 @@
       <h3 class="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">Step 4: Long-Term Aspirations</h3>
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Dream Career Roles (Comma separated)</label>
-        <input type="text" id="dreamRoles" placeholder="e.g. AI Engineer, Full Stack Developer, Product Architect" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
+        <input type="text" id="dreamRoles" placeholder="e.g. AI Engineer, Full Stack Developer, Cloud Solutions Architect" class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary-500 transition mb-2" />
         <div class="flex flex-wrap gap-1.5 text-xs">
           <span class="text-[11px] text-slate-400 self-center">Suggestions:</span>
           <button type="button" onclick="appendChip('dreamRoles', 'AI Engineer')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ AI Engineer</button>
           <button type="button" onclick="appendChip('dreamRoles', 'Full Stack Developer')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Full Stack Developer</button>
-          <button type="button" onclick="appendChip('dreamRoles', 'Cloud Architect')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Cloud Architect</button>
+          <button type="button" onclick="appendChip('dreamRoles', 'Cloud Solutions Architect')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Cloud Solutions Architect</button>
+          <button type="button" onclick="appendChip('dreamRoles', 'Data Scientist')" class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:text-primary-600 border border-slate-200 dark:border-slate-700 transition">+ Data Scientist</button>
         </div>
       </div>
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Career Priorities</label>
         <div class="grid grid-cols-2 gap-2">
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" value="High Growth" class="priorities-cb rounded text-primary-600 focus:ring-0" />
+            <input type="checkbox" value="High Growth" checked class="priorities-cb rounded text-primary-600 focus:ring-0" />
             <span>High Growth Trajectory</span>
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" value="Top Compensation" class="priorities-cb rounded text-primary-600 focus:ring-0" />
+            <input type="checkbox" value="Top Compensation" checked class="priorities-cb rounded text-primary-600 focus:ring-0" />
             <span>Competitive Compensation</span>
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
@@ -167,7 +171,7 @@
             <span>Work-Life Balance</span>
           </label>
           <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-xs font-semibold cursor-pointer">
-            <input type="checkbox" value="Innovative Impact" class="priorities-cb rounded text-primary-600 focus:ring-0" />
+            <input type="checkbox" value="Innovative Impact" checked class="priorities-cb rounded text-primary-600 focus:ring-0" />
             <span>Cutting-Edge Innovation</span>
           </label>
         </div>
@@ -240,7 +244,8 @@ async function handleResumeUpload(e) {
   try {
     const res = await fetch('/api/resume/parse', {
       method: 'POST',
-      body: formData
+      body: formData,
+      credentials: 'same-origin'
     });
     const data = await res.json();
     if (!res.ok) {
@@ -250,25 +255,35 @@ async function handleResumeUpload(e) {
     if (data.profile) {
       const p = data.profile;
       const user = Storage.getUser();
+      
+      // Step 1: Basic Info
       if (p.name && p.name !== "Candidate") {
         document.getElementById('name').value = p.name;
       } else if (user && user.name) {
         document.getElementById('name').value = user.name;
       }
+      if (p.academics?.educationLevel) {
+        const eduEl = document.getElementById('educationLevel');
+        if (eduEl) eduEl.value = p.academics.educationLevel;
+      }
 
-      if (p.academics?.educationLevel) document.getElementById('educationLevel').value = p.academics.educationLevel;
+      // Step 2: Academics
       if (p.academics?.streamOrField) document.getElementById('streamOrField').value = p.academics.streamOrField;
       if (p.academics?.subjects && p.academics.subjects.length > 0) document.getElementById('subjects').value = p.academics.subjects.join(', ');
       if (p.academics?.strengths && p.academics.strengths.length > 0) document.getElementById('strengths').value = p.academics.strengths.join(', ');
       if (p.academics?.certifications && p.academics.certifications.length > 0) document.getElementById('certifications').value = p.academics.certifications.join(', ');
+
+      // Step 3: Skills & Interests
       if (p.interests?.skills && p.interests.skills.length > 0) document.getElementById('skills').value = p.interests.skills.join(', ');
       if (p.interests?.interests && p.interests.interests.length > 0) document.getElementById('interests').value = p.interests.interests.join(', ');
+
+      // Step 4: Aspirations
       if (p.aspirations?.dreamRoles && p.aspirations.dreamRoles.length > 0) document.getElementById('dreamRoles').value = p.aspirations.dreamRoles.join(', ');
 
       const skillsCount = data.skillsFound?.length || p.interests?.skills?.length || 0;
-      status.textContent = `Extracted successfully: ${skillsCount} skills, academics & domains identified!`;
+      status.textContent = `Extracted successfully: ${skillsCount} skills, academics, and certifications auto-filled across all 4 stages!`;
       status.className = "text-xs text-emerald-600 dark:text-emerald-400 font-bold";
-      showToast(`Resume parsed! Details accurately filled across all 4 stages.`, "success");
+      showToast(`Resume parsed! Details filled across all 4 assessment stages.`, "success");
     } else {
       status.textContent = "Could not parse text. Please fill manually.";
       status.className = "text-xs text-amber-600 dark:text-amber-400 font-semibold";
@@ -279,7 +294,6 @@ async function handleResumeUpload(e) {
     showToast(err.message || "Resume upload failed", "error");
   } finally {
     btnLabel.textContent = "Choose PDF Resume";
-    // Reset file input so user can re-upload if desired
     e.target.value = '';
   }
 }
@@ -306,21 +320,31 @@ async function handleAssessmentSubmit(e) {
     aspirations: { dreamRoles, priorities }
   };
 
+  // 1. Persist profile locally and to server
   Storage.saveProfile(profile);
+
+  // 2. Ensure active user session is preserved
+  const user = Storage.getUser();
+  if (user && user.id) {
+    document.cookie = `user_id=${user.id}; path=/; SameSite=Lax`;
+  }
+
   showToast("Calculating top career vectors...", "info");
 
   try {
     const res = await fetch('/api/recommend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify(profile)
     });
     const data = await res.json();
     if (data.recommendations) {
       Storage.saveRecommendations(data.recommendations);
     }
-    window.location.href = '/dashboard';
   } catch (err) {
+    console.warn("Recommendation calculation warning:", err);
+  } finally {
     window.location.href = '/dashboard';
   }
 }
