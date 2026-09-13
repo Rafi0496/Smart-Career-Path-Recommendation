@@ -17,35 +17,52 @@ function toggleTheme() {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// 2. Global Click Ripple Animator
-(function initClickAnimator() {
-  window.addEventListener('mousedown', (e) => {
-    const ripple = document.createElement('div');
-    ripple.className = 'global-click-ripple';
-    ripple.style.left = `${e.clientX}px`;
-    ripple.style.top = `${e.clientY}px`;
-    document.body.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
-  }, true);
-})();
-
-// 3. LocalStorage Engine
+// 2. Session & Client Storage Engine (Tied strictly to website browser session)
 const Storage = {
-  // User Account
+  // User Account (Session-Scoped)
   getUser() {
     try {
-      const data = localStorage.getItem('career_path_user');
-      return data ? JSON.parse(data) : null;
+      const isActive = sessionStorage.getItem('career_path_session_active');
+      if (!isActive) return null;
+
+      const data = sessionStorage.getItem('career_path_user');
+      if (data) return JSON.parse(data);
+
+      // Hydrate from server-rendered tag if in an active session
+      const serverDataEl = document.getElementById('server-user-data');
+      if (serverDataEl && serverDataEl.textContent.trim()) {
+        const u = JSON.parse(serverDataEl.textContent);
+        if (u && u.id) {
+          sessionStorage.setItem('career_path_user', JSON.stringify(u));
+          return u;
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   },
+
   setUser(user) {
-    localStorage.setItem('career_path_user', JSON.stringify(user));
-    window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
+    if (user) {
+      sessionStorage.setItem('career_path_session_active', '1');
+      sessionStorage.setItem('career_path_user', JSON.stringify(user));
+      try { localStorage.removeItem('career_path_user'); } catch {}
+      window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
+    }
   },
+
   logout() {
-    localStorage.removeItem('career_path_user');
+    sessionStorage.removeItem('career_path_user');
+    sessionStorage.removeItem('career_path_session_active');
+    sessionStorage.removeItem('career_path_profile');
+    sessionStorage.removeItem('career_path_recommendations');
+    try {
+      localStorage.removeItem('career_path_user');
+      localStorage.removeItem('career_path_profile');
+      localStorage.removeItem('career_path_recommendations');
+    } catch {}
+    document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     window.dispatchEvent(new CustomEvent('auth-change', { detail: null }));
     fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
       window.location.href = '/login';
@@ -55,43 +72,69 @@ const Storage = {
   // Candidate Profile
   getProfile() {
     try {
-      const data = localStorage.getItem('career_path_profile');
+      const data = sessionStorage.getItem('career_path_profile') || localStorage.getItem('career_path_profile');
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
     }
   },
+
   saveProfile(profile) {
-    localStorage.setItem('career_path_profile', JSON.stringify(profile));
+    try {
+      sessionStorage.setItem('career_path_profile', JSON.stringify(profile));
+      localStorage.setItem('career_path_profile', JSON.stringify(profile));
+      const user = this.getUser();
+      if (user && user.id) {
+        fetch('/api/user/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, profile })
+        }).catch(() => {});
+      }
+    } catch {}
   },
 
   // Career Recommendations
   getRecommendations() {
     try {
-      const data = localStorage.getItem('career_path_recommendations');
+      const data = sessionStorage.getItem('career_path_recommendations') || localStorage.getItem('career_path_recommendations');
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
     }
   },
+
   saveRecommendations(recs) {
-    localStorage.setItem('career_path_recommendations', JSON.stringify(recs));
+    try {
+      sessionStorage.setItem('career_path_recommendations', JSON.stringify(recs));
+      localStorage.setItem('career_path_recommendations', JSON.stringify(recs));
+      const user = this.getUser();
+      if (user && user.id) {
+        fetch('/api/user/recommendations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, recommendations: recs })
+        }).catch(() => {});
+      }
+    } catch {}
   },
 
   // Saved Favorites
   getFavorites() {
     try {
-      const data = localStorage.getItem('career_path_favorites');
+      const data = sessionStorage.getItem('career_path_favorites') || localStorage.getItem('career_path_favorites');
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
     }
   },
+
   toggleFavorite(title) {
     const list = this.getFavorites();
     const idx = list.indexOf(title);
     if (idx > -1) list.splice(idx, 1);
     else list.push(title);
+    sessionStorage.setItem('career_path_favorites', JSON.stringify(list));
     localStorage.setItem('career_path_favorites', JSON.stringify(list));
     return list;
   },
@@ -99,12 +142,13 @@ const Storage = {
   // Career Comparison List (Max 3)
   getComparisonList() {
     try {
-      const data = localStorage.getItem('career_path_comparison');
+      const data = sessionStorage.getItem('career_path_comparison') || localStorage.getItem('career_path_comparison');
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
     }
   },
+
   addComparison(title) {
     let list = this.getComparisonList();
     if (list.includes(title)) {
@@ -114,17 +158,21 @@ const Storage = {
       return { success: false, reason: "limit_reached", list };
     }
     list.push(title);
+    sessionStorage.setItem('career_path_comparison', JSON.stringify(list));
     localStorage.setItem('career_path_comparison', JSON.stringify(list));
     window.dispatchEvent(new CustomEvent('compare-change', { detail: list }));
     return { success: true, list };
   },
+
   removeComparison(title) {
     let list = this.getComparisonList();
     list = list.filter(t => t !== title);
+    sessionStorage.setItem('career_path_comparison', JSON.stringify(list));
     localStorage.setItem('career_path_comparison', JSON.stringify(list));
     window.dispatchEvent(new CustomEvent('compare-change', { detail: list }));
     return list;
   },
+
   toggleComparison(title) {
     let list = this.getComparisonList();
     if (list.includes(title)) {
@@ -133,11 +181,14 @@ const Storage = {
       if (list.length >= 3) list.shift();
       list.push(title);
     }
+    sessionStorage.setItem('career_path_comparison', JSON.stringify(list));
     localStorage.setItem('career_path_comparison', JSON.stringify(list));
     window.dispatchEvent(new CustomEvent('compare-change', { detail: list }));
     return list;
   },
+
   clearComparison() {
+    sessionStorage.removeItem('career_path_comparison');
     localStorage.removeItem('career_path_comparison');
     window.dispatchEvent(new CustomEvent('compare-change', { detail: [] }));
   },
@@ -146,12 +197,13 @@ const Storage = {
   getStepProgress(careerTitle) {
     try {
       const key = `career_path_progress_${careerTitle}`;
-      const data = localStorage.getItem(key);
+      const data = sessionStorage.getItem(key) || localStorage.getItem(key);
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
     }
   },
+
   toggleStepProgress(careerTitle, stepOrder) {
     const key = `career_path_progress_${careerTitle}`;
     let steps = this.getStepProgress(careerTitle);
@@ -160,20 +212,36 @@ const Storage = {
     } else {
       steps.push(stepOrder);
     }
+    sessionStorage.setItem(key, JSON.stringify(steps));
     localStorage.setItem(key, JSON.stringify(steps));
+
+    const user = this.getUser();
+    if (user && user.id) {
+      fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, careerTitle, stepOrder })
+      }).catch(() => {});
+    }
     return steps;
   },
+
   getAllProgress() {
     const progressMap = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('career_path_progress_')) {
-        const title = key.replace('career_path_progress_', '');
-        try {
-          progressMap[title] = JSON.parse(localStorage.getItem(key) || '[]');
-        } catch {}
-      }
-    }
+    const sources = [sessionStorage, localStorage];
+    sources.forEach(storage => {
+      try {
+        for (let i = 0; i < storage.length; i++) {
+          const key = storage.key(i);
+          if (key && key.startsWith('career_path_progress_')) {
+            const title = key.replace('career_path_progress_', '');
+            try {
+              progressMap[title] = JSON.parse(storage.getItem(key) || '[]');
+            } catch {}
+          }
+        }
+      } catch {}
+    });
     return progressMap;
   }
 };

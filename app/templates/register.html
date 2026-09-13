@@ -75,7 +75,10 @@ async function handleRegister(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Registration failed");
 
-    if (data.user) Storage.setUser(data.user);
+    if (data.user) {
+      sessionStorage.setItem('career_path_session_active', '1');
+      Storage.setUser(data.user);
+    }
     showToast("Account created successfully!", "success");
 
     const params = new URLSearchParams(window.location.search);

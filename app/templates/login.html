@@ -116,7 +116,12 @@ async function handleLogin(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Invalid login credentials");
 
-    if (data.user) Storage.setUser(data.user);
+    if (data.user) {
+      sessionStorage.setItem('career_path_session_active', '1');
+      Storage.setUser(data.user);
+      if (data.profile) Storage.saveProfile(data.profile);
+      if (data.recommendations) Storage.saveRecommendations(data.recommendations);
+    }
     showToast("Signed in successfully!", "success");
     
     const params = new URLSearchParams(window.location.search);

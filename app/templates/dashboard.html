@@ -462,30 +462,50 @@ async function refreshRecommendations() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const user = Storage.getUser();
-  const profile = Storage.getProfile();
+document.addEventListener('DOMContentLoaded', async () => {
+  let user = Storage.getUser();
+  if (!user) {
+    const serverDataEl = document.getElementById('server-user-data');
+    if (serverDataEl && serverDataEl.textContent.trim()) {
+      try {
+        const u = JSON.parse(serverDataEl.textContent);
+        if (u && u.id) {
+          Storage.setUser(u);
+          user = u;
+        }
+      } catch {}
+    }
+  }
+
+  let profile = Storage.getProfile();
   const gatedState = document.getElementById('dashboard-gated-state');
   const authState = document.getElementById('dashboard-authenticated-state');
 
-  // STRICT ACCESS GATING:
-  // If user is neither logged in nor has filled out their profile assessment, gate access strictly.
   const hasAccess = Boolean((user && user.name) || (profile && profile.name));
 
   if (!hasAccess) {
-    // Show Gated State - NO statistics, NO gauges, NO mock data
     gatedState.classList.remove('hidden');
     authState.classList.add('hidden');
   } else {
-    // Show Real Authenticated Dashboard
     gatedState.classList.add('hidden');
     authState.classList.remove('hidden');
 
     const displayName = (user && user.name) ? user.name : (profile && profile.name ? profile.name : "Candidate");
     document.getElementById('dash-greeting').textContent = `Welcome back, ${displayName}!`;
 
+    // If profile is missing in storage but user is logged in, try fetching from server
+    if (!profile && user && user.id) {
+      try {
+        const res = await fetch(`/api/user/profile?userId=${user.id}`);
+        const data = await res.json();
+        if (data.profile) {
+          profile = data.profile;
+          Storage.saveProfile(profile);
+        }
+      } catch {}
+    }
+
     if (profile) {
-      // Calculate REAL completeness
       let acadPct = 0;
       if (profile.academics?.educationLevel) acadPct += 30;
       if (profile.academics?.streamOrField) acadPct += 40;

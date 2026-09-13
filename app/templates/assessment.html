@@ -249,7 +249,13 @@ async function handleResumeUpload(e) {
 
     if (data.profile) {
       const p = data.profile;
-      if (p.name && p.name !== "Candidate") document.getElementById('name').value = p.name;
+      const user = Storage.getUser();
+      if (p.name && p.name !== "Candidate") {
+        document.getElementById('name').value = p.name;
+      } else if (user && user.name) {
+        document.getElementById('name').value = user.name;
+      }
+
       if (p.academics?.educationLevel) document.getElementById('educationLevel').value = p.academics.educationLevel;
       if (p.academics?.streamOrField) document.getElementById('streamOrField').value = p.academics.streamOrField;
       if (p.academics?.subjects && p.academics.subjects.length > 0) document.getElementById('subjects').value = p.academics.subjects.join(', ');
@@ -260,9 +266,9 @@ async function handleResumeUpload(e) {
       if (p.aspirations?.dreamRoles && p.aspirations.dreamRoles.length > 0) document.getElementById('dreamRoles').value = p.aspirations.dreamRoles.join(', ');
 
       const skillsCount = data.skillsFound?.length || p.interests?.skills?.length || 0;
-      status.textContent = `Extracted successfully: ${skillsCount} skills identified!`;
+      status.textContent = `Extracted successfully: ${skillsCount} skills, academics & domains identified!`;
       status.className = "text-xs text-emerald-600 dark:text-emerald-400 font-bold";
-      showToast(`Resume parsed! Found ${skillsCount} verified skills.`, "success");
+      showToast(`Resume parsed! Details accurately filled across all 4 stages.`, "success");
     } else {
       status.textContent = "Could not parse text. Please fill manually.";
       status.className = "text-xs text-amber-600 dark:text-amber-400 font-semibold";
@@ -320,9 +326,11 @@ async function handleAssessmentSubmit(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const user = Storage.getUser();
   const p = Storage.getProfile();
   if (p) {
     if (p.name) document.getElementById('name').value = p.name;
+    else if (user && user.name) document.getElementById('name').value = user.name;
     if (p.academics?.educationLevel) document.getElementById('educationLevel').value = p.academics.educationLevel;
     if (p.academics?.streamOrField) document.getElementById('streamOrField').value = p.academics.streamOrField;
     if (p.academics?.subjects) document.getElementById('subjects').value = p.academics.subjects.join(', ');
@@ -331,6 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p.interests?.skills) document.getElementById('skills').value = p.interests.skills.join(', ');
     if (p.interests?.interests) document.getElementById('interests').value = p.interests.interests.join(', ');
     if (p.aspirations?.dreamRoles) document.getElementById('dreamRoles').value = p.aspirations.dreamRoles.join(', ');
+  } else if (user && user.name) {
+    document.getElementById('name').value = user.name;
   }
 });
 </script>

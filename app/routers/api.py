@@ -69,6 +69,7 @@ async def chat_with_mentor(req: ChatRequest):
 # 3. Resume Parser Endpoint
 @api_router.post("/resume/parse")
 async def parse_resume(
+    request: Request,
     file: Optional[UploadFile] = File(None),
     resume: Optional[UploadFile] = File(None)
 ):
@@ -83,7 +84,17 @@ async def parse_resume(
     if len(contents) == 0:
         raise HTTPException(status_code=400, detail="Uploaded PDF is empty")
 
-    profile = parse_resume_to_profile(contents, filename=upload.filename)
+    user_hint = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        with database.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM users WHERE id = ?", (int(user_id_str),))
+            row = cursor.fetchone()
+            if row:
+                user_hint = row["name"]
+
+    profile = parse_resume_to_profile(contents, filename=upload.filename, user_hint=user_hint)
     return {
         "success": True,
         "filename": upload.filename,
@@ -142,14 +153,14 @@ async def get_progress(userId: int, careerTitle: Optional[str] = None):
     all_p = database.get_all_progress(userId)
     return {"userId": userId, "allProgress": all_p}
 
-# 7. User Authentication Endpoints
+# 7. User Authentication & Profile Endpoints
 @api_router.post("/auth/register")
 async def api_register(req: AuthRegisterRequest, response: Response):
     user = database.register_user(req.name, req.email, req.password)
     if not user:
         raise HTTPException(status_code=400, detail="Email already exists or invalid data")
     
-    response.set_cookie(key="user_id", value=str(user["id"]), httponly=True, samesite="lax")
+    response.set_cookie(key="user_id", value=str(user["id"]), path="/", httponly=False, samesite="lax")
     return {"success": True, "user": user}
 
 @api_router.post("/auth/login")
@@ -158,12 +169,25 @@ async def api_login(req: AuthLoginRequest, response: Response):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    response.set_cookie(key="user_id", value=str(user["id"]), httponly=True, samesite="lax")
-    return {"success": True, "user": user}
+    response.set_cookie(key="user_id", value=str(user["id"]), path="/", httponly=False, samesite="lax")
+    
+    profile = database.get_profile(user["id"])
+    recommendations = database.get_recommendations(user["id"])
+    favorites = database.get_favorites(user["id"])
+    progress = database.get_all_progress(user["id"])
+
+    return {
+        "success": True,
+        "user": user,
+        "profile": profile,
+        "recommendations": recommendations,
+        "favorites": favorites,
+        "progress": progress
+    }
 
 @api_router.post("/auth/logout")
 async def api_logout(response: Response):
-    response.delete_cookie(key="user_id")
+    response.delete_cookie(key="user_id", path="/")
     return {"success": True}
 
 @api_router.post("/auth/recover")
@@ -177,6 +201,48 @@ async def api_recover(req: AuthRecoverRequest):
         raise HTTPException(status_code=400, detail="Password update failed")
     
     return {"success": True, "message": "Password updated successfully"}
+
+@api_router.post("/user/profile")
+async def save_user_profile(req: Dict[str, Any], request: Request):
+    user_id = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        user_id = int(user_id_str)
+    elif "userId" in req and str(req["userId"]).isdigit():
+        user_id = int(req["userId"])
+    
+    profile_data = req.get("profile", req)
+    if user_id and profile_data:
+        database.save_profile(user_id, profile_data)
+        return {"success": True, "userId": user_id}
+    return {"success": False, "message": "User not authenticated or empty profile"}
+
+@api_router.get("/user/profile")
+async def get_user_profile(request: Request, userId: Optional[int] = None):
+    user_id = userId
+    if not user_id:
+        user_id_str = request.cookies.get("user_id")
+        if user_id_str and user_id_str.isdigit():
+            user_id = int(user_id_str)
+    if not user_id:
+        return {"success": False, "profile": None}
+    profile = database.get_profile(user_id)
+    return {"success": True, "userId": user_id, "profile": profile}
+
+@api_router.post("/user/recommendations")
+async def save_user_recommendations(req: Dict[str, Any], request: Request):
+    user_id = None
+    user_id_str = request.cookies.get("user_id")
+    if user_id_str and user_id_str.isdigit():
+        user_id = int(user_id_str)
+    elif "userId" in req and str(req["userId"]).isdigit():
+        user_id = int(req["userId"])
+    
+    recs = req.get("recommendations", [])
+    if user_id and recs:
+        database.save_recommendations(user_id, recs)
+        return {"success": True, "userId": user_id}
+    return {"success": False, "message": "User not authenticated or empty recommendations"}
 
 # 8. Career Metadata API
 @api_router.get("/careers/all")
