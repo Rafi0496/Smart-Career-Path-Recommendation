@@ -104,7 +104,7 @@ async function sendAssistantMessage(customQuery = null) {
   const profile = Storage.getProfile();
   const user = Storage.getUser();
   const activeCareer = document.body.getAttribute("data-career-title");
-  const userName = document.body.getAttribute("data-user-name") || (user ? user.name : (profile ? profile.name : "Professional"));
+  const userName = document.body.getAttribute("data-user-name") || (user ? user.name : (profile ? profile.name : ""));
 
   const context = {
     userName: userName,

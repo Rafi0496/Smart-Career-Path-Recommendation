@@ -17,6 +17,21 @@ function toggleTheme() {
   if (window.lucide) window.lucide.createIcons();
 }
 
+// Clean up any stale dummy sessions
+(function cleanupDummySessions() {
+  try {
+    const raw = sessionStorage.getItem('career_path_user') || localStorage.getItem('career_path_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.name || ['Professional', 'Candidate', 'Anonymous', 'None'].includes(parsed.name.trim())) {
+        sessionStorage.removeItem('career_path_user');
+        sessionStorage.removeItem('career_path_session_active');
+        localStorage.removeItem('career_path_user');
+      }
+    }
+  } catch {}
+})();
+
 // 2. Session & Client Storage Engine (Tied strictly to website browser session)
 const Storage = {
   // User Account (Session-Scoped & Cookie Synchronized)
@@ -26,7 +41,7 @@ const Storage = {
       const serverDataEl = document.getElementById('server-user-data');
       if (serverDataEl && serverDataEl.textContent.trim()) {
         const u = JSON.parse(serverDataEl.textContent);
-        if (u && (u.id || u.name)) {
+        if (u && u.id && u.name && !['Professional', 'Candidate', 'Anonymous', 'None'].includes(u.name.trim())) {
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
           sessionStorage.setItem('career_path_session_active', '1');
           if (u.id) {
@@ -40,33 +55,27 @@ const Storage = {
       const data = sessionStorage.getItem('career_path_user');
       if (data) {
         const u = JSON.parse(data);
-        if (u && (u.id || u.name)) {
-          if (u.id && !document.cookie.includes(`user_id=${u.id}`)) {
-            document.cookie = `user_id=${u.id}; path=/; SameSite=Lax`;
-          }
+        if (u && u.id && u.name && !['Professional', 'Candidate', 'Anonymous', 'None'].includes(u.name.trim())) {
+          return u;
+        } else {
+          sessionStorage.removeItem('career_path_user');
+          sessionStorage.removeItem('career_path_session_active');
+        }
+      }
+
+      // 3. Check body data-user-name attribute (only if valid genuine name)
+      const bodyName = document.body.getAttribute('data-user-name');
+      if (bodyName && bodyName.trim() && !['Professional', 'Candidate', 'Anonymous', 'None'].includes(bodyName.trim())) {
+        const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
+        if (match && match[1]) {
+          const u = { id: parseInt(match[1]), name: bodyName.trim() };
+          sessionStorage.setItem('career_path_user', JSON.stringify(u));
+          sessionStorage.setItem('career_path_session_active', '1');
           return u;
         }
       }
 
-      // 3. Check body data-user-name attribute
-      const bodyName = document.body.getAttribute('data-user-name');
-      if (bodyName && bodyName.trim() && bodyName.trim() !== "None") {
-        const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
-        const u = { id: match ? parseInt(match[1]) : 1, name: bodyName.trim() };
-        sessionStorage.setItem('career_path_user', JSON.stringify(u));
-        sessionStorage.setItem('career_path_session_active', '1');
-        return u;
-      }
-
-      // 4. Check active user_id cookie
-      const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
-      if (match && match[1]) {
-        const u = { id: parseInt(match[1]), name: (bodyName && bodyName !== "None") ? bodyName : "Professional" };
-        sessionStorage.setItem('career_path_user', JSON.stringify(u));
-        sessionStorage.setItem('career_path_session_active', '1');
-        return u;
-      }
-
+      // If server does not recognize user, clean up stale cookies
       return null;
     } catch {
       return null;

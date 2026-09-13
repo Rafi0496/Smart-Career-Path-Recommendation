@@ -20,8 +20,6 @@ def get_current_user(request: Request) -> Optional[dict]:
             row = cursor.fetchone()
             if row:
                 return dict(row)
-            # Fallback if user ID is active in session cookie
-            return {"id": int(user_id_str), "name": "Professional", "email": ""}
     return None
 
 def get_redirect_target(request: Request) -> str:
