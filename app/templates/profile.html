@@ -826,7 +826,12 @@
   // 1. Initialize Skills Radar via API
   async function initSkillsRadarChart() {
     try {
-      const res = await fetch('/profile/skills-radar');
+      const localUser = Storage.getUser();
+      const userId = localUser ? localUser.id : null;
+      const radarUrl = '/profile/skills-radar' + (userId ? `?userId=${userId}` : '');
+      const headers = userId ? { 'X-User-Id': String(userId) } : {};
+
+      const res = await fetch(radarUrl, { headers, credentials: 'same-origin' });
       if (!res.ok) return;
       const data = await res.json();
 
@@ -890,15 +895,29 @@
       return;
     }
 
+    const localUser = Storage.getUser();
+    const userId = localUser ? localUser.id : null;
+
     const uploadText = document.getElementById('avatar-upload-text');
     if (uploadText) uploadText.textContent = 'Saving...';
 
     const formData = new FormData();
     formData.append('file', file);
+    if (userId) formData.append('userId', userId);
 
     try {
-      const res = await fetch('/profile/photo', {
+      const headers = {};
+      if (userId) {
+        headers['X-User-Id'] = String(userId);
+        if (localUser.name) headers['X-User-Name'] = localUser.name;
+        if (localUser.email) headers['X-User-Email'] = localUser.email;
+      }
+
+      const uploadUrl = '/profile/photo' + (userId ? `?userId=${userId}` : '');
+      const res = await fetch(uploadUrl, {
         method: 'POST',
+        headers: headers,
+        credentials: 'same-origin',
         body: formData
       });
       
@@ -940,11 +959,17 @@
     e.preventDefault();
     const name = document.getElementById('edit-name-input').value.trim();
     const bio = document.getElementById('edit-bio-input').value.trim();
+    const localUser = Storage.getUser();
+    const userId = localUser ? localUser.id : null;
 
     try {
-      const res = await fetch('/profile', {
+      const headers = { 'Content-Type': 'application/json' };
+      if (userId) headers['X-User-Id'] = String(userId);
+
+      const res = await fetch('/profile' + (userId ? `?userId=${userId}` : ''), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
+        credentials: 'same-origin',
         body: JSON.stringify({ name, bio })
       });
       const data = await res.json();

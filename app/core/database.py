@@ -228,6 +228,41 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
             return dict(row)
     return None
 
+def ensure_user_exists(user_id: int, name: Optional[str] = None, email: Optional[str] = None) -> Dict[str, Any]:
+    existing = get_user_by_id(user_id)
+    if existing:
+        return existing
+    
+    clean_name = name or f"User {user_id}"
+    clean_email = email or f"user_{user_id}@careerpath.io"
+    now_iso = datetime.utcnow().isoformat()
+    share_id = str(uuid.uuid4())[:12]
+    pwd_hash = hash_password("default_session_pass")
+    
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """INSERT OR IGNORE INTO users 
+                   (id, name, email, password_hash, created_at, public_share_id, is_profile_public) 
+                   VALUES (?, ?, ?, ?, ?, ?, 0)""",
+                (user_id, clean_name, clean_email, pwd_hash, now_iso, share_id)
+            )
+            conn.commit()
+    except Exception:
+        pass
+    
+    return get_user_by_id(user_id) or {
+        "id": user_id,
+        "name": clean_name,
+        "email": clean_email,
+        "created_at": now_iso,
+        "profile_photo_url": None,
+        "bio": None,
+        "public_share_id": share_id,
+        "is_profile_public": 0
+    }
+
 def verify_user_for_recovery(email: str, name: str) -> Optional[Dict[str, Any]]:
     with get_connection() as conn:
         cursor = conn.cursor()
