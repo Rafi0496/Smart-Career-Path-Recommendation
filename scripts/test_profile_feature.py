@@ -57,8 +57,8 @@ def test_full_profile_workflow():
     assert res.status_code == 200, f"Avatar upload failed: {res.text}"
     avatar_data = res.json()
     assert avatar_data["success"] is True
-    assert "/static/uploads/avatars/" in avatar_data["photo_url"]
-    print(f"Avatar uploaded successfully: {avatar_data['photo_url']}")
+    assert avatar_data["photo_url"].startswith("data:image/") or "/static/uploads/avatars/" in avatar_data["photo_url"]
+    print(f"Avatar uploaded successfully: {avatar_data['photo_url'][:45]}...")
 
     print("\n--- 5. Career Bookmarks (POST & DELETE) ---")
     res = client.post("/profile/bookmark/Cloud%20Architect", cookies=cookies)

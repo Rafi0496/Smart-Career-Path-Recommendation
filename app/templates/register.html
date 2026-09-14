@@ -3,6 +3,30 @@
 {% block title %}Register | Smart Career Path{% endblock %}
 
 {% block content %}
+<!-- Instant Anti-Flicker Pre-check -->
+<script>
+  (function() {
+    try {
+      const raw = sessionStorage.getItem('career_path_user') || localStorage.getItem('career_path_user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        if (u && u.name && !['Professional', 'Candidate', 'Anonymous', 'None'].includes(u.name.trim())) {
+          document.documentElement.classList.add('auth-redirecting');
+          if (u.id) {
+            document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
+          }
+          const params = new URLSearchParams(window.location.search);
+          const redirectUrl = params.get('redirect') || '/dashboard';
+          window.location.replace(redirectUrl);
+        }
+      }
+    } catch(e) {}
+  })();
+</script>
+<style>
+  html.auth-redirecting main { opacity: 0 !important; visibility: hidden !important; }
+</style>
+
 <div class="max-w-md mx-auto py-12 fade-in-up">
   <div class="glass-panel rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-xl">
     <div class="text-center mb-6">

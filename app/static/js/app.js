@@ -45,21 +45,25 @@ const Storage = {
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
           sessionStorage.setItem('career_path_session_active', '1');
           if (u.id) {
-            document.cookie = `user_id=${u.id}; path=/; SameSite=Lax`;
+            document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
           }
           return u;
         }
       }
 
-      // 2. Check session storage
-      const data = sessionStorage.getItem('career_path_user');
+      // 2. Check session storage or local storage
+      const data = sessionStorage.getItem('career_path_user') || localStorage.getItem('career_path_user');
       if (data) {
         const u = JSON.parse(data);
         if (u && u.id && u.name && !['Professional', 'Candidate', 'Anonymous', 'None'].includes(u.name.trim())) {
+          sessionStorage.setItem('career_path_user', JSON.stringify(u));
+          sessionStorage.setItem('career_path_session_active', '1');
+          document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
           return u;
         } else {
           sessionStorage.removeItem('career_path_user');
           sessionStorage.removeItem('career_path_session_active');
+          localStorage.removeItem('career_path_user');
         }
       }
 
@@ -71,11 +75,11 @@ const Storage = {
           const u = { id: parseInt(match[1]), name: bodyName.trim() };
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
           sessionStorage.setItem('career_path_session_active', '1');
+          document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
           return u;
         }
       }
 
-      // If server does not recognize user, clean up stale cookies
       return null;
     } catch {
       return null;
@@ -86,10 +90,10 @@ const Storage = {
     if (user) {
       sessionStorage.setItem('career_path_session_active', '1');
       sessionStorage.setItem('career_path_user', JSON.stringify(user));
+      try { localStorage.setItem('career_path_user', JSON.stringify(user)); } catch {}
       if (user.id) {
-        document.cookie = `user_id=${user.id}; path=/; SameSite=Lax`;
+        document.cookie = `user_id=${user.id}; path=/; max-age=2592000; SameSite=Lax`;
       }
-      try { localStorage.removeItem('career_path_user'); } catch {}
       window.dispatchEvent(new CustomEvent('auth-change', { detail: user }));
     }
   },

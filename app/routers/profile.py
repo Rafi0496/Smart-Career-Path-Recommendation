@@ -1,6 +1,7 @@
 import os
 import io
 import json
+import base64
 import shutil
 import uuid
 from datetime import datetime
@@ -19,11 +20,14 @@ from app.core.career_engine import career_engine
 profile_router = APIRouter()
 templates = Jinja2Templates(directory=str(settings.TEMPLATES_DIR))
 
-# Ensure avatar and PDF storage directories exist
+# Ensure avatar and PDF storage directories exist (safely handled on read-only serverless filesystems)
 AVATARS_DIR = settings.STATIC_DIR / "uploads" / "avatars"
 PDFS_DIR = settings.STATIC_DIR / "uploads" / "pdfs"
-AVATARS_DIR.mkdir(parents=True, exist_ok=True)
-PDFS_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    AVATARS_DIR.mkdir(parents=True, exist_ok=True)
+    PDFS_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
 
 
 # ================= SCHEMAS =================
@@ -201,7 +205,7 @@ async def upload_profile_photo(request: Request, file: UploadFile = File(...)):
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    if not file.filename:
+    if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
     allowed_exts = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
@@ -209,19 +213,31 @@ async def upload_profile_photo(request: Request, file: UploadFile = File(...)):
     if ext not in allowed_exts:
         raise HTTPException(status_code=400, detail="Invalid image format. Allowed: PNG, JPG, JPEG, WEBP")
 
-    clean_filename = f"user_{user['id']}_{uuid.uuid4().hex[:8]}{ext}"
-    dest_path = AVATARS_DIR / clean_filename
-
     contents = await file.read()
     if len(contents) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Photo size exceeds 5MB limit")
 
-    with open(dest_path, "wb") as f:
-        f.write(contents)
+    # Encode as Base64 Data URL (resilient across serverless and static file environments)
+    mime_type = file.content_type or f"image/{ext.replace('.', '')}"
+    if mime_type == "image/jpg":
+        mime_type = "image/jpeg"
+    b64_str = base64.b64encode(contents).decode("utf-8")
+    photo_url = f"data:{mime_type};base64,{b64_str}"
 
-    photo_url = f"/static/uploads/avatars/{clean_filename}"
+    # Try local disk write if environment allows it
+    try:
+        clean_filename = f"user_{user['id']}_{uuid.uuid4().hex[:8]}{ext}"
+        dest_path = AVATARS_DIR / clean_filename
+        with open(dest_path, "wb") as f:
+            f.write(contents)
+    except Exception:
+        pass
+
     database.update_user_profile_fields(user["id"], profile_photo_url=photo_url)
-    database.log_activity(user["id"], "resume_uploaded", "Updated profile avatar photo")
+    try:
+        database.log_activity(user["id"], "resume_uploaded", "Updated profile avatar photo")
+    except Exception:
+        pass
 
     return {"success": True, "photo_url": photo_url}
 
