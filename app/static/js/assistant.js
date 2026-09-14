@@ -122,21 +122,32 @@ async function sendAssistantMessage(customQuery = null) {
       })
     });
 
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
     const data = await res.json();
     const typingIndicator = document.getElementById(typingId);
     if (typingIndicator) typingIndicator.remove();
 
-    if (data.content) {
-      chatMessages.push({ role: "assistant", content: data.content });
-      renderChatMessages();
+    let contentText = "";
+    if (data && typeof data.content === "string") {
+      contentText = data.content;
+    } else if (typeof data === "string") {
+      contentText = data;
+    }
+
+    if (contentText && contentText.trim().length > 0) {
+      chatMessages.push({ role: "assistant", content: contentText.trim() });
     } else {
       chatMessages.push({
         role: "assistant",
         content: "I am **V**. Please ask any specific career, roadmap, or technical skill question."
       });
-      renderChatMessages();
     }
+    renderChatMessages();
   } catch (err) {
+    console.error("Ask V fetch error:", err);
     const typingIndicator = document.getElementById(typingId);
     if (typingIndicator) typingIndicator.remove();
 
@@ -144,10 +155,10 @@ async function sendAssistantMessage(customQuery = null) {
       role: "assistant",
       content: "I am **V**. My live neural gateway is currently reconnecting, but you can explore the 140+ curated career blueprints across the platform."
     });
+    renderChatMessages();
   } finally {
     const el = document.getElementById(typingId);
     if (el) el.remove();
-    renderChatMessages();
   }
 }
 

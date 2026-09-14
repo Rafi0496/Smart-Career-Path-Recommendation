@@ -71,8 +71,8 @@ async def chat_with_v(req: ChatRequest):
     if not req.messages:
         raise HTTPException(status_code=400, detail="No chat messages provided")
     
-    response = get_mentor_response(req.messages, context=req.context)
-    return response
+    response = await get_mentor_response(req.messages, context=req.context)
+    return {"content": response, "role": "assistant"}
 
 # 3. Native Python PDF Resume Parser Endpoint
 @api_router.post("/resume/parse")
