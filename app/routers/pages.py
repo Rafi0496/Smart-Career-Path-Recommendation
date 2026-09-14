@@ -125,6 +125,18 @@ async def compare_page(request: Request):
 
 @pages_router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
+    if request.query_params.get("logged_out") == "1":
+        response = templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "active_page": "login",
+                "user": None
+            }
+        )
+        response.delete_cookie(key="user_id", path="/", samesite="lax", httponly=False)
+        return response
+
     user = get_current_user(request)
     if user:
         redirect_to = request.query_params.get("redirect") or "/dashboard"
@@ -140,6 +152,18 @@ async def login_page(request: Request):
 
 @pages_router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
+    if request.query_params.get("logged_out") == "1":
+        response = templates.TemplateResponse(
+            request=request,
+            name="register.html",
+            context={
+                "active_page": "register",
+                "user": None
+            }
+        )
+        response.delete_cookie(key="user_id", path="/", samesite="lax", httponly=False)
+        return response
+
     user = get_current_user(request)
     if user:
         redirect_to = request.query_params.get("redirect") or "/dashboard"

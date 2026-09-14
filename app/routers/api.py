@@ -296,7 +296,7 @@ async def api_login(req: AuthLoginRequest, response: Response):
 
 @api_router.post("/auth/logout")
 async def api_logout(response: Response):
-    response.delete_cookie(key="user_id", path="/")
+    response.delete_cookie(key="user_id", path="/", samesite="lax", httponly=False)
     return {"success": True}
 
 @api_router.post("/auth/recover")

@@ -894,6 +894,27 @@ def get_full_user_data_export(user_id: int) -> Dict[str, Any]:
         "generated_pdfs": pdfs
     }
 
+def delete_user_account(user_id: int) -> bool:
+    """Permanently deletes a user and all associated database records."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            cursor.execute("DELETE FROM profiles WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM recommendations WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM favorites WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM progress WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM bookmarked_careers WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM quiz_history WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM user_activity WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM achievements WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM certifications WHERE user_id = ?", (user_id,))
+            cursor.execute("DELETE FROM generated_pdfs WHERE user_id = ?", (user_id,))
+            conn.commit()
+            return True
+    except Exception:
+        return False
+
 # Initialize database schema on startup
 init_db()
 

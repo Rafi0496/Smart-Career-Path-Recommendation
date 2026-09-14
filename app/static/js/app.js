@@ -46,9 +46,16 @@ function isDummyUser(u) {
 
 // 2. Session & Client Storage Engine (Tied strictly to website browser session)
 const Storage = {
+  _isLoggingOut: false,
+
   // User Account (Session-Scoped & Cookie Synchronized)
   getUser() {
+    if (this._isLoggingOut) return null;
     try {
+      if (sessionStorage.getItem('career_path_logged_out') === '1') {
+        return null;
+      }
+
       // 1. First check server-rendered tag if present on the page
       const serverDataEl = document.getElementById('server-user-data');
       if (serverDataEl && serverDataEl.textContent.trim()) {
@@ -70,28 +77,15 @@ const Storage = {
         if (!isDummyUser(u)) {
           sessionStorage.setItem('career_path_user', JSON.stringify(u));
           sessionStorage.setItem('career_path_session_active', '1');
-          document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
+          if (u.id) {
+            document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
+          }
           return u;
         } else {
           sessionStorage.removeItem('career_path_user');
           sessionStorage.removeItem('career_path_session_active');
           localStorage.removeItem('career_path_user');
-          document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        }
-      }
-
-      // 3. Check body data-user-name attribute (only if valid genuine name)
-      const bodyName = document.body.getAttribute('data-user-name');
-      if (bodyName && !isDummyUser({ name: bodyName.trim() })) {
-        const match = document.cookie.match(/(?:^|;\s*)user_id=(\d+)/);
-        if (match && match[1]) {
-          const u = { id: parseInt(match[1]), name: bodyName.trim() };
-          if (!isDummyUser(u)) {
-            sessionStorage.setItem('career_path_user', JSON.stringify(u));
-            sessionStorage.setItem('career_path_session_active', '1');
-            document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
-            return u;
-          }
+          document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0; SameSite=Lax";
         }
       }
 
@@ -102,6 +96,11 @@ const Storage = {
   },
 
   setUser(user) {
+    this._isLoggingOut = false;
+    try {
+      sessionStorage.removeItem('career_path_logged_out');
+    } catch {}
+
     if (user && !isDummyUser(user)) {
       sessionStorage.setItem('career_path_session_active', '1');
       sessionStorage.setItem('career_path_user', JSON.stringify(user));
@@ -114,19 +113,41 @@ const Storage = {
   },
 
   logout() {
-    sessionStorage.removeItem('career_path_user');
-    sessionStorage.removeItem('career_path_session_active');
-    sessionStorage.removeItem('career_path_profile');
-    sessionStorage.removeItem('career_path_recommendations');
+    this._isLoggingOut = true;
+
+    // 1. Instantly eliminate server-rendered user script tag from DOM so getUser() cannot resurrect session
+    const serverDataEl = document.getElementById('server-user-data');
+    if (serverDataEl) serverDataEl.remove();
+    document.body.removeAttribute('data-user-name');
+
+    // 2. Wipe all storage keys
     try {
+      sessionStorage.clear();
+      sessionStorage.setItem('career_path_logged_out', '1');
       localStorage.removeItem('career_path_user');
+      localStorage.removeItem('career_path_session_active');
       localStorage.removeItem('career_path_profile');
       localStorage.removeItem('career_path_recommendations');
+      localStorage.removeItem('career_path_favorites');
+      localStorage.removeItem('career_path_comparison');
+      localStorage.removeItem('user');
     } catch {}
-    document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    // 3. Clear cookie with all path and SameSite variants
+    document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0";
+    document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=; max-age=0";
+
+    // 4. Update UI immediately to unauthenticated state
     window.dispatchEvent(new CustomEvent('auth-change', { detail: null }));
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => {
-      window.location.href = '/login';
+
+    // 5. Call server-side logout and force hard replace redirect to login
+    fetch('/api/auth/logout', { 
+      method: 'POST', 
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }
+    }).finally(() => {
+      window.location.replace('/login?logged_out=1');
     });
   },
 

@@ -7,6 +7,21 @@
 <script>
   (function() {
     try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('logged_out') === '1' || sessionStorage.getItem('career_path_logged_out') === '1') {
+        sessionStorage.clear();
+        localStorage.removeItem('career_path_user');
+        localStorage.removeItem('career_path_session_active');
+        localStorage.removeItem('career_path_profile');
+        localStorage.removeItem('career_path_recommendations');
+        localStorage.removeItem('career_path_favorites');
+        localStorage.removeItem('career_path_comparison');
+        localStorage.removeItem('user');
+        document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0; SameSite=Lax";
+        document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0";
+        return;
+      }
+
       const raw = sessionStorage.getItem('career_path_user') || localStorage.getItem('career_path_user');
       if (raw) {
         const u = JSON.parse(raw);
@@ -18,14 +33,13 @@
           if (u.id) {
             document.cookie = `user_id=${u.id}; path=/; max-age=2592000; SameSite=Lax`;
           }
-          const params = new URLSearchParams(window.location.search);
           const redirectUrl = params.get('redirect') || '/dashboard';
           window.location.replace(redirectUrl);
         } else {
           sessionStorage.removeItem('career_path_user');
           sessionStorage.removeItem('career_path_session_active');
           localStorage.removeItem('career_path_user');
-          document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; max-age=0; SameSite=Lax";
         }
       }
     } catch(e) {}
@@ -81,15 +95,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const user = Storage.getUser();
-  if (user && user.name) {
-    const params = new URLSearchParams(window.location.search);
-    const redirectUrl = params.get('redirect') || '/dashboard';
-    window.location.replace(redirectUrl);
-    return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('logged_out') === '1') {
+    showToast("You have been signed out.", "info");
+  } else if (params.get('msg') === 'account_deleted') {
+    showToast("Your account has been deleted.", "info");
+  } else {
+    const user = Storage.getUser();
+    if (user && user.name) {
+      const redirectUrl = params.get('redirect') || '/dashboard';
+      window.location.replace(redirectUrl);
+      return;
+    }
   }
 
-  const params = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect');
   if (redirect) {
     const notice = document.getElementById('redirect-notice');

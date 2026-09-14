@@ -62,11 +62,8 @@ def get_auth_user(request: Request) -> Optional[Dict[str, Any]]:
     if user_id_str and str(user_id_str).isdigit():
         uid = int(user_id_str)
         user = database.get_user_by_id(uid)
-        if not user:
-            name_hint = request.headers.get("x-user-name") or request.query_params.get("userName")
-            email_hint = request.headers.get("x-user-email") or request.query_params.get("userEmail")
-            user = database.ensure_user_exists(uid, name=name_hint, email=email_hint)
-        return user
+        if user and not database.is_dummy_name(user.get("name"), user.get("email")):
+            return user
     return None
 
 def format_relative_time(iso_str: str) -> str:
@@ -507,5 +504,5 @@ async def delete_account_endpoint(request: Request, response: Response):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     database.delete_user_account(user["id"])
-    response.delete_cookie(key="user_id", path="/")
+    response.delete_cookie(key="user_id", path="/", samesite="lax", httponly=False)
     return {"success": True}
