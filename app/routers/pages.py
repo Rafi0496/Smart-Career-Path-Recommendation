@@ -12,14 +12,16 @@ pages_router = APIRouter()
 templates = Jinja2Templates(directory=str(settings.TEMPLATES_DIR))
 
 def get_current_user(request: Request) -> Optional[dict]:
-    user_id_str = request.cookies.get("user_id")
-    if user_id_str and user_id_str.isdigit():
+    user_id_str = request.cookies.get("user_id") or request.headers.get("x-user-id") or request.query_params.get("userId")
+    if user_id_str and str(user_id_str).isdigit():
         with database.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id, name, email FROM users WHERE id = ?", (int(user_id_str),))
             row = cursor.fetchone()
             if row:
-                return dict(row)
+                u = dict(row)
+                if not database.is_dummy_name(u.get("name"), u.get("email")):
+                    return u
     return None
 
 def get_redirect_target(request: Request) -> str:

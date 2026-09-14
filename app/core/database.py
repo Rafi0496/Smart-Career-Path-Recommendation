@@ -170,6 +170,17 @@ def init_db():
                 )
             """)
 
+            # Purge any legacy dummy/test accounts
+            try:
+                cursor.execute("""
+                    DELETE FROM users 
+                    WHERE name IN ('Professional', 'Candidate', 'Anonymous', 'None', 'User', 'User 1', 'User 2', 'User 3', 'User 4', 'User 5', 'User Account')
+                       OR name LIKE 'User %'
+                       OR email LIKE '%@careerpath.io'
+                """)
+            except Exception:
+                pass
+
             conn.commit()
     except Exception as e:
         print(f"[Database Warning] Could not initialize database at {DB_PATH}: {e}")
@@ -177,10 +188,22 @@ def init_db():
 
 # ================= USER AUTHENTICATION & MANAGEMENT =================
 
+def is_dummy_name(name: Optional[str], email: Optional[str] = None) -> bool:
+    if not name:
+        return True
+    n = name.strip()
+    if n in ['Professional', 'Candidate', 'Anonymous', 'None', 'User', 'User 1', 'User 2', 'User 3', 'User 4', 'User 5', 'User Account', '']:
+        return True
+    if n.startswith('User ') and len(n) <= 10:
+        return True
+    if email and ('@careerpath.io' in email or email in ['none', 'null', '']):
+        return True
+    return False
+
 def register_user(name: str, email: str, password: str) -> Optional[Dict[str, Any]]:
     clean_name = name.strip()
     clean_email = email.strip().lower()
-    if not clean_name or not clean_email or len(password) < 4:
+    if not clean_name or not clean_email or len(password) < 4 or is_dummy_name(clean_name, clean_email):
         return None
 
     pwd_hash = hash_password(password)
@@ -216,7 +239,9 @@ def authenticate_user(email_or_name: str, password: str) -> Optional[Dict[str, A
         )
         row = cursor.fetchone()
         if row and row["password_hash"] == pwd_hash:
-            return dict(row)
+            u = dict(row)
+            if not is_dummy_name(u.get("name"), u.get("email")):
+                return u
     return None
 
 def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
@@ -225,16 +250,21 @@ def get_user_by_id(user_id: int) -> Optional[Dict[str, Any]]:
         cursor.execute("SELECT id, name, email, created_at, profile_photo_url, bio, public_share_id, is_profile_public FROM users WHERE id = ?", (user_id,))
         row = cursor.fetchone()
         if row:
-            return dict(row)
+            u = dict(row)
+            if not is_dummy_name(u.get("name"), u.get("email")):
+                return u
     return None
 
-def ensure_user_exists(user_id: int, name: Optional[str] = None, email: Optional[str] = None) -> Dict[str, Any]:
+def ensure_user_exists(user_id: int, name: Optional[str] = None, email: Optional[str] = None) -> Optional[Dict[str, Any]]:
     existing = get_user_by_id(user_id)
-    if existing:
+    if existing and not is_dummy_name(existing.get("name"), existing.get("email")):
         return existing
     
-    clean_name = name or f"User {user_id}"
-    clean_email = email or f"user_{user_id}@careerpath.io"
+    if not name or is_dummy_name(name, email):
+        return None
+    
+    clean_name = name.strip()
+    clean_email = email.strip() if email else f"{clean_name.lower().replace(' ', '')}@example.com"
     now_iso = datetime.utcnow().isoformat()
     share_id = str(uuid.uuid4())[:12]
     pwd_hash = hash_password("default_session_pass")
@@ -252,16 +282,10 @@ def ensure_user_exists(user_id: int, name: Optional[str] = None, email: Optional
     except Exception:
         pass
     
-    return get_user_by_id(user_id) or {
-        "id": user_id,
-        "name": clean_name,
-        "email": clean_email,
-        "created_at": now_iso,
-        "profile_photo_url": None,
-        "bio": None,
-        "public_share_id": share_id,
-        "is_profile_public": 0
-    }
+    u = get_user_by_id(user_id)
+    if u and not is_dummy_name(u.get("name"), u.get("email")):
+        return u
+    return None
 
 def verify_user_for_recovery(email: str, name: str) -> Optional[Dict[str, Any]]:
     with get_connection() as conn:
