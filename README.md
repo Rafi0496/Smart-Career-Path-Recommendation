@@ -199,63 +199,11 @@ Mini-Project-main/
 - pip (Python package manager)
 - Modern web browser (Chrome, Firefox, Edge, Safari)
 
-### 2. Installation Steps
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/Rafi0496/Smart-Career-Path-Recommendation.git
-   cd Smart-Career-Path-Recommendation/Mini-Project-main
-   ```
-
-2. **Create and Activate a Virtual Environment (Recommended)**:
-   - On Windows:
-     ```powershell
-     python -m venv .venv
-     .venv\Scripts\activate
-     ```
-   - On Linux / macOS:
-     ```bash
-     python3 -m venv .venv
-     source .venv/bin/activate
-     ```
-
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure Environment Variables (Optional)**:
-   Copy `.env.example` to `.env` or `.env.local`:
-   ```bash
-   cp .env.example .env
-   ```
-   Populate API keys if live cloud LLM inference is desired:
-   ```ini
-   # Groq API Key (Recommended for high-speed AI mentor inference)
-   GROQ_API_KEY=gsk_your_groq_api_key
-
-   # Google Gemini API Key (Alternative AI provider)
-   GEMINI_API_KEY=your_gemini_api_key
-
-   # OpenAI API Key (Optional)
-   OPENAI_API_KEY=sk-your_openai_api_key
-   ```
-   *Note: The platform is fully operable in standalone offline mode without third-party API keys.*
-
----
-
 ## Running the Application
 
-Launch the server using the single-command runner:
+Deployment Link : https://smart-career-path-recommendation.vercel.app/
 
-```bash
-python run.py
-```
-
-- **Web Application**: [http://localhost:8000](http://localhost:8000)
-- **Interactive Swagger API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Alternative ReDoc API Documentation**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
+By using this link you can access the Smart Career Web
 ---
 
 ## Running Verification Tests
