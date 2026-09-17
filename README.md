@@ -1,4 +1,5 @@
-# Smart Career Path Recommendation System & AI Intelligence Platform
+# Career Axis
+(Smart Career Path Recommendation System & AI Intelligence Platform)
 
 A Python-based career intelligence and guidance platform built with FastAPI, ReportLab, and modern web technologies. The platform synthesizes candidate academic backgrounds, technical proficiencies, interests, and career goals into structured, actionable career roadmaps backed by a curated taxonomy of 144+ industry career tracks, live multi-tier AI mentorship, diagnostic skill assessments, and publication-ready 4-page Executive Career Blueprint PDF generation.
 
@@ -201,7 +202,7 @@ Mini-Project-main/
 
 ## Running the Application
 
-Deployment Link : https://smart-career-path-recommendation.vercel.app/
+Deployment Link : careeraxis.vercel.app
 
 By using this link you can access the Smart Career Web
 ---
