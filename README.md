@@ -202,7 +202,7 @@ Mini-Project-main/
 
 ## Running the Application
 
-Deployment Link : careeraxis.vercel.app
+Deployment Link : [https://careeraxis.vercel.app/]
 
 By using this link you can access the Smart Career Web
 ---
