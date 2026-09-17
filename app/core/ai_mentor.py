@@ -6,7 +6,7 @@ from app.config import settings
 from app.core.career_engine import career_engine
 
 SYSTEM_PROMPT = """
-You are "V", an extraordinarily intelligent, inspiring, empathetic, and deeply knowledgeable career mentor and navigator for "Smart Career Path".
+You are "V", an extraordinarily intelligent, inspiring, empathetic, and deeply knowledgeable career mentor and navigator for "CareerAxis".
 
 YOUR CORE IDENTITY & MISSION:
 1. UNBOUNDED INTELLIGENCE: You possess deep, comprehensive knowledge across all fields: software engineering, data science, AI/ML, cloud computing, cybersecurity, product management, system design, medicine, finance, business, humanities, science, and essential life skills.
@@ -81,7 +81,7 @@ def get_heuristic_fallback(user_message: str, context: Optional[Dict[str, Any]] 
     if any(k in msg for k in ["resume", "cv", "pdf", "parse", "upload"]):
         return (
             f"### 📄 Resume Optimization & Parser Insights\n\n"
-            f"Our **Smart Career Path Resume Engine** automatically extracts:\n"
+            f"Our **CareerAxis Resume Engine** automatically extracts:\n"
             f"• **Hard Technical Skills:** Programming languages, frameworks, databases, and cloud tools.\n"
             f"• **Domain Experience:** Experience years, education background, and focus areas.\n"
             f"• **Career Gap Analysis:** Missing competencies required for target senior roles.\n\n"
@@ -171,7 +171,7 @@ def get_heuristic_fallback(user_message: str, context: Optional[Dict[str, Any]] 
     # 9. How Platform Works
     if any(w in msg for w in ["how", "start", "begin", "work", "use", "platform", "app"]):
         return (
-            "Here's how **Smart Career Path** works:\n\n"
+            "Here's how **CareerAxis** works:\n\n"
             "1. **Complete Assessment**: Enter your background, technical interests, and goals (or upload a PDF resume for instant parsing).\n"
             "2. **Get Hybrid Recommendations**: Our Python AI engine ranks the top 5 matches out of 140+ career tracks.\n"
             "3. **Execute Your Roadmap**: Follow stage-by-stage learning milestones with interactive checklist tracking.\n"

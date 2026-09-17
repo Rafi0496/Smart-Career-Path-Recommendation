@@ -13,14 +13,14 @@ from app.core.database import init_db
 async def lifespan(app: FastAPI):
     # Startup actions
     init_db()
-    print(f"[Smart Career Path] Python Full-Stack Engine Online on port {settings.PORT}")
+    print(f"[CareerAxis] Python Full-Stack Engine Online on port {settings.PORT}")
     yield
-    print("[Smart Career Path] Shutting down...")
+    print("[CareerAxis] Shutting down...")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Python Full-Stack AI Career Recommendation System & Intelligence Platform",
+    description="CareerAxis - AI Career Intelligence & Sequential Roadmap Platform",
     lifespan=lifespan
 )
 

@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ user.name }}'s Career Portfolio | Smart Career Path</title>
-  
+  <title>{{ user.name }}'s Career Portfolio | CareerAxis</title>
+  <meta name="description" content="Verified professional career portfolio and competency roadmap powered by CareerAxis." />
+  <link rel="canonical" href="https://careeraxis.vercel.app/share/{{ public_share_id }}" />
+
+  <!-- Open Graph / Social Media Meta Tags -->
+  <meta property="og:site_name" content="CareerAxis" />
+  <meta property="og:title" content="{{ user.name }}'s Career Portfolio | CareerAxis" />
+  <meta property="og:description" content="Verified professional career portfolio and competency roadmap powered by CareerAxis." />
+  <meta property="og:url" content="https://careeraxis.vercel.app/share/{{ public_share_id }}" />
+  <meta property="og:type" content="profile" />
   <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -69,7 +77,7 @@
           <i data-lucide="compass" class="w-4 h-4"></i>
         </div>
         <span class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 tracking-tight">
-          Smart Career Path
+          CareerAxis
         </span>
       </a>
 
@@ -106,7 +114,7 @@
         </div>
 
         <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
-          {{ user.bio if user.bio else 'Professional career portfolio powered by Smart Career Path AI Intelligence.' }}
+          {{ user.bio if user.bio else 'Professional career portfolio powered by CareerAxis AI Intelligence.' }}
         </p>
       </div>
     </div>
@@ -208,7 +216,7 @@
     <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <i data-lucide="compass" class="w-4 h-4 text-primary-600"></i>
-        <span>Built with <strong>Smart Career Path AI</strong></span>
+        <span>Built with <strong>CareerAxis AI</strong></span>
       </div>
       <a href="/" class="text-primary-600 dark:text-primary-400 hover:underline font-semibold">
         Discover Your Career Blueprint →

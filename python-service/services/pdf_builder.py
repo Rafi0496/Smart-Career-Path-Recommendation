@@ -45,7 +45,7 @@ class PDFBuilder:
 
         # Build lines of text
         lines = [
-            f"SMART CAREER PATH RECOMMENDATION SYSTEM - V AI",
+            f"CAREERAXIS RECOMMENDATION SYSTEM - V AI",
             f"CAREER ROADMAP: {title.upper()}",
             f"Prepared for: {user_name or 'Candidate'}",
             f"-" * 60,

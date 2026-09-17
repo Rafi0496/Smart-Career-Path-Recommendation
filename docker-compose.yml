@@ -1,12 +1,12 @@
 version: "3.9"
 
 services:
-  # Python Full-Stack AI Career Recommendation System & Intelligence Platform
+  # CareerAxis - AI Career Intelligence & Roadmap Platform
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: career-path-python-app
+    container_name: careeraxis-app
     ports:
       - "8000:8000"
       - "3000:8000"

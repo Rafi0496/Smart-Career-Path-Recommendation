@@ -10,8 +10,9 @@ load_dotenv(BASE_DIR / ".env.local")
 load_dotenv(BASE_DIR / ".env")
 
 class Settings:
-    PROJECT_NAME: str = "Smart Career Path"
+    PROJECT_NAME: str = "CareerAxis"
     VERSION: str = "3.0.0"
+    SITE_URL: str = os.getenv("SITE_URL", "https://careeraxis.vercel.app")
     PORT: int = int(os.getenv("PORT", 8000))
     HOST: str = os.getenv("HOST", "0.0.0.0")
     

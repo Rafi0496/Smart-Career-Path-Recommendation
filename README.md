@@ -1,7 +1,8 @@
-# Career Axis
-(Smart Career Path Recommendation System & AI Intelligence Platform)
+# CareerAxis - AI Career Intelligence & Roadmap Platform
 
-A Python-based career intelligence and guidance platform built with FastAPI, ReportLab, and modern web technologies. The platform synthesizes candidate academic backgrounds, technical proficiencies, interests, and career goals into structured, actionable career roadmaps backed by a curated taxonomy of 144+ industry career tracks, live multi-tier AI mentorship, diagnostic skill assessments, and publication-ready 4-page Executive Career Blueprint PDF generation.
+🌐 **Live Deployment**: [careeraxis.vercel.app](https://careeraxis.vercel.app/)
+
+A Python-based career intelligence and guidance platform built with FastAPI, ReportLab, and modern web technologies. The platform synthesizes candidate academic backgrounds, technical proficiencies, interests, and career goals into structured, actionable career roadmaps backed by a curated taxonomy of 144+ industry career tracks, live multi-tier AI mentorship ("V"), diagnostic skill assessments, and publication-ready 4-page Executive Career Blueprint PDF generation.
 
 ---
 
@@ -202,9 +203,9 @@ Mini-Project-main/
 
 ## Running the Application
 
-Deployment Link : [https://careeraxis.vercel.app/]
+Deployment Link : [https://careeraxis.vercel.app/](https://careeraxis.vercel.app/)
 
-By using this link you can access the Smart Career Web
+By using this link you can access the CareerAxis platform.
 ---
 
 ## Running Verification Tests
@@ -245,10 +246,10 @@ To build and run the application in a Docker container:
 
 ```bash
 # Build the Docker image
-docker build -t smart-career-path .
+docker build -t careeraxis .
 
 # Run the container on port 8000
-docker run -d -p 8000:8000 --name smart-career-path-app smart-career-path
+docker run -d -p 8000:8000 --name careeraxis-app careeraxis
 ```
 
 Or using Docker Compose:

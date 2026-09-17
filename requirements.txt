@@ -1,4 +1,4 @@
-# Smart Career Path Recommendation System - Python Full-Stack Dependencies
+# CareerAxis Recommendation System - Python Full-Stack Dependencies
 fastapi>=0.110.0
 uvicorn[standard]>=0.28.0
 jinja2>=3.1.3

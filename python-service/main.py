@@ -20,7 +20,7 @@ from routers import recommend, resume, quiz, export
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Precompute and cache career embeddings
-    logger.info("Starting up Smart Career Path Python ML Microservice...")
+    logger.info("Starting up CareerAxis Python ML Microservice...")
     try:
         embedding_service.initialize_model()
         logger.info("Career embedding cache ready.")
@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down Python ML Microservice...")
 
 app = FastAPI(
-    title="Smart Career Path Recommendation Engine - AI/ML Microservice",
+    title="CareerAxis Recommendation Engine - AI/ML Microservice",
     description="Python FastAPI brain handling sentence-transformers embeddings, hybrid recommender, spaCy resume parser, skill-gap quiz generation, and WeasyPrint PDF export.",
     version="2.0.0",
     lifespan=lifespan,
@@ -55,7 +55,7 @@ app.include_router(export.router)
 @app.get("/")
 async def root():
     return {
-        "service": "Smart Career Path AI/ML Microservice",
+        "service": "CareerAxis AI/ML Microservice",
         "status": "online",
         "version": "2.0.0",
         "endpoints": [

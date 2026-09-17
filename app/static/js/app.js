@@ -1,4 +1,4 @@
-// Smart Career Path - Global Client Utilities & State Management
+// CareerAxis - Global Client Utilities & State Management
 
 // 1. Theme Management
 (function initTheme() {

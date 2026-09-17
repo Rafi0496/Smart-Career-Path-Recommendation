@@ -1,1 +1,1 @@
-"""Core logic package for Smart Career Path."""
+"""Core logic package for CareerAxis."""
